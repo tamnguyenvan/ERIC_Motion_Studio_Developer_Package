@@ -316,6 +316,64 @@ class ResolverAndSlotTests(unittest.TestCase):
         self.assertGreater(metrics["right_arm_amplitude_rad"], 0.1)
         self.assertEqual(metrics["final_amplitude_rad"], 0.0)
 
+    def test_recognized_compound_clauses_do_not_require_alias_match(self):
+        result = GestureCompiler.default().compile(
+            "raise the left arm then extend the right arm outward"
+        )
+
+        self.assertTrue(result.succeeded, result)
+        self.assertEqual(
+            result.resolution.definition.canonical_id,
+            "structured_full_body",
+        )
+
+    def test_presentation_honors_sweep_direction(self):
+        compiler = GestureCompiler.default()
+        leftward = compiler.compile(
+            "welcome the audience with both hands from right to left"
+        )
+        rightward = compiler.compile(
+            "welcome the audience with both hands from left to right"
+        )
+
+        self.assertTrue(leftward.succeeded, leftward)
+        self.assertTrue(rightward.succeeded, rightward)
+        self.assertGreater(
+            leftward.motion.keyframes[1].joints.get("waist_yaw_joint"),
+            0.0,
+        )
+        self.assertLess(
+            rightward.motion.keyframes[1].joints.get("waist_yaw_joint"),
+            0.0,
+        )
+
+    def test_two_handed_wave_oscillates_both_arms(self):
+        result = GestureCompiler.default().compile("wave with both hands")
+
+        self.assertTrue(result.succeeded, result)
+        raised = result.motion.keyframes[1].joints
+        oscillated = result.motion.keyframes[2].joints
+        left_delta = (
+            oscillated.get("left_shoulder_yaw_joint")
+            - raised.get("left_shoulder_yaw_joint")
+        )
+        right_delta = (
+            oscillated.get("right_shoulder_yaw_joint")
+            - raised.get("right_shoulder_yaw_joint")
+        )
+        self.assertNotEqual(left_delta, 0.0)
+        self.assertAlmostEqual(left_delta, -right_delta)
+
+    def test_polite_neutral_reset_alias_is_not_a_modifier(self):
+        result = GestureCompiler.default().compile("please return to neutral")
+
+        self.assertTrue(result.succeeded, result)
+        self.assertEqual(
+            result.resolution.definition.canonical_id,
+            "neutral_reset",
+        )
+        self.assertEqual(result.resolution.slots.provided, frozenset())
+
 
 class GesturePureImportTests(unittest.TestCase):
     def test_gesture_language_imports_without_qt_or_mujoco(self):

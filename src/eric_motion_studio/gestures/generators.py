@@ -13,6 +13,7 @@ from eric_motion_studio.domain.values import (
 from eric_motion_studio.gestures.definitions import GestureDefinition
 from eric_motion_studio.gestures.normalization import normalize_text
 from eric_motion_studio.gestures.slots import (
+    Direction,
     GestureSlots,
     Intensity,
     Side,
@@ -139,9 +140,16 @@ def _hold_duration(slots: GestureSlots) -> int:
 
 
 class StageSequenceGenerator:
-    def __init__(self, sequence_id: str, *, side_aware: bool = False) -> None:
+    def __init__(
+        self,
+        sequence_id: str,
+        *,
+        side_aware: bool = False,
+        direction_aware: bool = False,
+    ) -> None:
         self.sequence_id = sequence_id
         self.side_aware = side_aware
+        self.direction_aware = direction_aware
 
     def generate(self, request: GenerationRequest) -> Motion:
         stages = request.stages.sequence(self.sequence_id)
@@ -150,6 +158,8 @@ class StageSequenceGenerator:
             pose = request.stages.pose(stage.pose_id)
             if self.side_aware:
                 pose = _side_pose(pose, request.slots.side)
+            if self.direction_aware and request.slots.direction is Direction.LEFT:
+                pose = _mirror_pose(pose)
             pose = _scale_pose(pose, request.slots)
             duration = _duration(stage.duration_ms, request.slots)
             if (
@@ -188,22 +198,26 @@ class WaveGenerator:
                 base,
             )
         )
-        yaw_name = (
-            "left_shoulder_yaw_joint"
-            if request.slots.side is Side.LEFT
-            else "right_shoulder_yaw_joint"
-        )
-        yaw_index = UNITREE_G1.joint_index(yaw_name)
-        direction = -1.0 if request.slots.side is Side.LEFT else 1.0
+        if request.slots.side is Side.LEFT:
+            yaw_adjustments = (("left_shoulder_yaw_joint", -1.0),)
+        elif request.slots.side is Side.BOTH:
+            yaw_adjustments = (
+                ("left_shoulder_yaw_joint", -1.0),
+                ("right_shoulder_yaw_joint", 1.0),
+            )
+        else:
+            yaw_adjustments = (("right_shoulder_yaw_joint", 1.0),)
         for cycle in range(3):
             for extremum in (-0.28, 0.28):
                 values = list(base.values)
-                values[yaw_index] = values[yaw_index] + extremum * direction
+                for yaw_name, direction in yaw_adjustments:
+                    yaw_index = UNITREE_G1.joint_index(yaw_name)
+                    values[yaw_index] = values[yaw_index] + extremum * direction
                 frames.append(
                     Keyframe(
                         f"wave cycle {cycle + 1}",
                         _duration(260, request.slots),
-                        JointValues(tuple(values)),
+                        JointValues(tuple(values), base.profile),
                     )
                 )
         if request.slots.hold_seconds:
@@ -371,7 +385,7 @@ def default_generator_registry() -> GeneratorRegistry:
     registry.register("hand_to_chest", HandToChestGenerator())
     registry.register(
         "welcome_presentation",
-        StageSequenceGenerator("welcome_presentation"),
+        StageSequenceGenerator("welcome_presentation", direction_aware=True),
     )
     registry.register("structured_full_body", StructuredFullBodyGenerator())
     registry.register("neutral_reset", NeutralGenerator())

@@ -80,11 +80,12 @@ class GestureResolver:
                 structured = self.registry.get("structured_full_body")
             except KeyError:
                 structured = None
-            if structured is not None and matches:
-                matches = [(structured, best_phrase_match(
+            if structured is not None:
+                structured_match = best_phrase_match(
                     "structured full body motion",
                     structured.aliases,
-                ))]
+                )
+                matches = [(structured, structured_match)]
 
         if not matches:
             return ResolutionResult(

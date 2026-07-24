@@ -95,6 +95,12 @@ _HOLD_PATTERN = re.compile(
 _SEQUENCE_SPLIT = re.compile(
     r"\s*(?:(?<!\d)[.;](?!\d)|\bthen\b|\bwhile\b)\s*"
 )
+_NEUTRAL_RESET_COMMAND = re.compile(
+    r"(?:(?:please|kindly)\s+)?"
+    r"(?:(?:can|could|would)\s+you\s+)?"
+    r"(?:return to neutral|neutral)"
+    r"(?:\s+please)?"
+)
 
 
 def _extract_sequence(command: str) -> tuple[str, ...]:
@@ -207,7 +213,10 @@ def extract_slots(command: str) -> GestureSlots:
     if re.search(r"\b(?:do not|dont|without) return(?:ing)? to neutral\b", text):
         neutral_return = False
         provided.add(SlotName.NEUTRAL_RETURN)
-    elif "return to neutral" in text and text not in {"return to neutral", "neutral"}:
+    elif (
+        "return to neutral" in text
+        and _NEUTRAL_RESET_COMMAND.fullmatch(text) is None
+    ):
         provided.add(SlotName.NEUTRAL_RETURN)
 
     return GestureSlots(
