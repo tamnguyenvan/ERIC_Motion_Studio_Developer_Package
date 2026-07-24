@@ -150,6 +150,19 @@ def run_viewer(
                         file=sys.stderr,
                         flush=True,
                     )
+            if mode is SimulationMode.DYNAMIC_VALIDATION:
+                try:
+                    with viewer.lock():
+                        adapter.step()
+                except SafetyViolation as error:
+                    with viewer.lock():
+                        adapter.reset()
+                    invalid_state = True
+                    print(
+                        f"VIEWER_DYNAMIC_REJECTED: {error}; neutral_applied=true",
+                        file=sys.stderr,
+                        flush=True,
+                    )
             viewer.sync()
             time.sleep(1.0 / 60.0)
 

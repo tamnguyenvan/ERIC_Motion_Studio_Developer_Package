@@ -22,7 +22,10 @@ from eric_motion_studio.runtime import (
     ViewerProcessStatus,
     ViewerStateStore,
 )
-from eric_motion_studio.runtime.viewer_process import ViewerLaunchSettings
+from eric_motion_studio.runtime.viewer_process import (
+    ViewerLaunchSettings,
+    resolve_viewer_executable,
+)
 from eric_motion_studio.ui.controllers import PlaybackController
 
 
@@ -123,6 +126,23 @@ class ViewerProcessTests(unittest.TestCase):
                 "AUTHORING_KINEMATIC",
             ),
         )
+
+    def test_viewer_executable_uses_mjpython_only_on_macos(self):
+        with tempfile.TemporaryDirectory() as directory:
+            binary_directory = Path(directory)
+            python = binary_directory / "python"
+            mjpython = binary_directory / "mjpython"
+            python.touch(mode=0o755)
+            mjpython.touch(mode=0o755)
+
+            self.assertEqual(
+                resolve_viewer_executable(python, platform="darwin"),
+                mjpython,
+            )
+            self.assertEqual(
+                resolve_viewer_executable(python, platform="linux"),
+                python,
+            )
 
     def test_start_stop_and_forced_shutdown(self):
         launched: list[tuple[str, ...]] = []
@@ -246,6 +266,19 @@ class MujocoAdapterTests(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             SimulationMode.parse("unknown")
+
+    def test_dynamic_validation_advances_simulation(self):
+        adapter = MujocoAdapter(
+            self.model_path,
+            mode=SimulationMode.DYNAMIC_VALIDATION,
+        )
+        initial_time = float(adapter.data.time)
+        initial_height = float(adapter.data.qpos[2])
+
+        applied = adapter.step()
+
+        self.assertGreater(float(adapter.data.time), initial_time)
+        self.assertNotEqual(applied.root_position[2], initial_height)
 
 
 class ViewerEntryPointTests(unittest.TestCase):

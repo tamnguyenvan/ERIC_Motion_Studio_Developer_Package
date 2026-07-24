@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from typing import Protocol
@@ -40,6 +41,23 @@ class ViewerProcessError(RuntimeError):
     pass
 
 
+def resolve_viewer_executable(
+    python_executable: Path | None = None,
+    *,
+    platform: str | None = None,
+) -> Path:
+    python = Path(python_executable or sys.executable)
+    current_platform = sys.platform if platform is None else platform
+    if current_platform != "darwin":
+        return python
+    launcher = shutil.which("mjpython", path=str(python.parent))
+    if launcher is None:
+        launcher = shutil.which("mjpython")
+    if launcher is None:
+        raise ViewerProcessError(f"mjpython was not found for the active interpreter: {python}")
+    return Path(launcher)
+
+
 def _launch(command: Sequence[str]) -> ProcessHandle:
     return subprocess.Popen(list(command))
 
@@ -48,7 +66,7 @@ def _launch(command: Sequence[str]) -> ProcessHandle:
 class ViewerLaunchSettings:
     model_path: Path
     state_path: Path
-    python_executable: Path = Path(sys.executable)
+    python_executable: Path = field(default_factory=resolve_viewer_executable)
     mode: SimulationMode = SimulationMode.AUTHORING_KINEMATIC
 
     def command(self) -> tuple[str, ...]:

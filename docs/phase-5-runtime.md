@@ -11,9 +11,10 @@ domain, or UI controller layers does not import MuJoCo.
 - `ViewerStateStore` serializes the versioned live-pose payload through a flushed,
   fsynced temporary file and atomic replacement. Missing, malformed, and stale
   state have distinct outcomes.
-- `ViewerProcessManager` launches `python -m eric_motion_studio.viewer` with the
-  active interpreter and injected model/state paths. It exposes stopped, running,
-  and crashed states and performs bounded terminate/kill shutdown.
+- `ViewerProcessManager` launches the viewer module with the active interpreter
+  and injected model/state paths, using the environment's `mjpython` launcher on
+  macOS as required by passive MuJoCo viewers. It exposes stopped, running, and
+  crashed states and performs bounded terminate/kill shutdown.
 - `ViewerPlaybackOutput` writes the initial pose before lazy viewer startup,
   forwards later playback frames, and returns to neutral on stop.
 

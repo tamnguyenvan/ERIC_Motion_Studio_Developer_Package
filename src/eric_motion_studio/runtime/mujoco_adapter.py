@@ -179,6 +179,13 @@ class MujocoAdapter:
         self._validate_runtime_state()
         return self.snapshot(sequence=sequence)
 
+    def step(self) -> AppliedPose:
+        if self.mode is not SimulationMode.DYNAMIC_VALIDATION:
+            raise RuntimeError("Simulation stepping requires dynamic-validation mode")
+        self._mujoco.mj_step(self.model, self.data)
+        self._validate_runtime_state()
+        return self.snapshot()
+
     def _validate_runtime_state(self) -> None:
         if not all(math.isfinite(float(value)) for value in self.data.qpos):
             raise SafetyViolation("MuJoCo produced a non-finite position")
