@@ -44,6 +44,8 @@ where = ["src"]
 eric_motion_studio = [
     "resources/animations/*.json",
     "resources/gestures/*.json",
+    "resources/gesture_definitions/*.json",
+    "resources/gesture_stages/*.json",
     "resources/models/g1/*.xml",
     "resources/schemas/*.json",
 ]

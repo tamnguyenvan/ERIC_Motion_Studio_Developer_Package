@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "definitions": [
+    {
+      "canonical_id": "talking_idle",
+      "aliases": [
+        "talking motion",
+        "natural talking motion",
+        "conversational idle",
+        "talking idle",
+        "presentation talking motion",
+        "happy talking motion"
+      ],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "talking_idle",
+      "defaults": {
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["presentation", "idle", "full-body"],
+      "constraints": {
+        "min_amplitude_rad": 0.04,
+        "max_duration_seconds": 12.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "wave",
+      "aliases": [
+        "wave",
+        "wave with your right hand",
+        "wave with your left hand"
+      ],
+      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "wave",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["greeting", "arm"],
+      "constraints": {
+        "min_amplitude_rad": 0.22,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "raise_arm",
+      "aliases": ["raise left arm", "raise right arm", "lift left hand", "lift right hand"],
+      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "raise_arm",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["arm", "directional"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 6.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "lower_arm",
+      "aliases": ["lower left arm", "lower right arm", "lower left hand", "lower right hand"],
+      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "lower_arm",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["arm", "directional"],
+      "constraints": {
+        "min_amplitude_rad": 0.1,
+        "max_duration_seconds": 6.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "both_arm_motion",
+      "aliases": [
+        "raise both hands",
+        "open both arms as if introducing a speaker, pause, then relax"
+      ],
+      "supported_slots": ["side", "speed", "intensity", "hold", "sequence", "neutral_return"],
+      "generator_id": "both_arm_motion",
+      "defaults": {
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["presentation", "both-arms"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "hand_to_chest",
+      "aliases": [
+        "place the right hand firmly on the centre of the chest while the left arm hangs by the side",
+        "place the left hand on the chest while extending the right arm outward"
+      ],
+      "supported_slots": ["side", "direction", "speed", "intensity", "hold", "sequence", "neutral_return"],
+      "generator_id": "hand_to_chest",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["chest", "self-reference", "arm"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "welcome_presentation",
+      "aliases": [
+        "welcome the audience with both hands",
+        "raise both hands to chest height with open palms. sweep both arms in a wide horizontal arc from the far left side of the body to the far right while rotating the torso to follow the movement. pause. return to neutral"
+      ],
+      "supported_slots": ["side", "direction", "speed", "intensity", "hold", "sequence", "neutral_return"],
+      "generator_id": "welcome_presentation",
+      "defaults": {
+        "direction": "right",
+        "speed": "normal",
+        "intensity": "strong",
+        "neutral_return": true
+      },
+      "tags": ["welcome", "presentation", "full-body"],
+      "constraints": {
+        "min_amplitude_rad": 0.22,
+        "max_duration_seconds": 12.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "scratch_head",
+      "aliases": ["scratch head", "thinking scratch", "rub side of head", "hand to temple"],
+      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "scratch_head",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["thinking", "head", "arm"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "thinking_hand_on_chin",
+      "aliases": [
+        "hand on chin",
+        "thinking pose",
+        "thoughtful pose",
+        "rub chin",
+        "thinking with hand on chin",
+        "looking thoughtful"
+      ],
+      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "thinking_hand_on_chin",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["thinking", "chin", "arm"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "neutral_reset",
+      "aliases": ["return to neutral", "neutral"],
+      "supported_slots": [],
+      "generator_id": "neutral_reset",
+      "defaults": {},
+      "tags": ["neutral", "reset"],
+      "constraints": {
+        "min_amplitude_rad": 0.0,
+        "max_duration_seconds": 2.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "structured_full_body",
+      "aliases": ["full body motion", "structured full body motion"],
+      "supported_slots": ["side", "direction", "speed", "intensity", "hold", "sequence", "neutral_return"],
+      "generator_id": "structured_full_body",
+      "defaults": {
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["compound", "full-body"],
+      "constraints": {
+        "min_amplitude_rad": 0.15,
+        "max_duration_seconds": 15.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    }
+  ]
+}

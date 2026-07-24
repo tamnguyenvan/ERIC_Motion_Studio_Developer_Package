@@ -45,26 +45,26 @@
 
 ## Milestone 3 — Extensible Gesture Language
 
-- [ ] Define a validated `GestureDefinition` schema containing canonical ID,
+- [x] Define a validated `GestureDefinition` schema containing canonical ID,
       aliases, supported slots, generator ID, defaults, tags, and constraints.
-- [ ] Move synonyms and canonical command inventory into gesture definition data.
-- [ ] Implement normalization and token/phrase matching as isolated components.
-- [ ] Implement typed slot extraction for side, direction, speed, intensity, hold,
+- [x] Move synonyms and canonical command inventory into gesture definition data.
+- [x] Implement normalization and token/phrase matching as isolated components.
+- [x] Implement typed slot extraction for side, direction, speed, intensity, hold,
       sequence, and neutral-return modifiers.
-- [ ] Implement an explicit resolution result: success, ambiguity, unsupported
+- [x] Implement an explicit resolution result: success, ambiguity, unsupported
       gesture, or invalid slot.
-- [ ] Create a generator protocol and registry with no parser-to-generator
+- [x] Create a generator protocol and registry with no parser-to-generator
       condition chain.
-- [ ] Port wave, talking idle, thinking, scratch-head, arm, presentation, and
+- [x] Port wave, talking idle, thinking, scratch-head, arm, presentation, and
       structured full-body generators incrementally.
-- [ ] Store reusable poses/stages as validated data; keep only algorithms in code.
-- [ ] Run joint-limit, amplitude, trajectory, balance, collision, and semantic
+- [x] Store reusable poses/stages as validated data; keep only algorithms in code.
+- [x] Run joint-limit, amplitude, trajectory, balance, collision, and semantic
       validators after compilation.
-- [ ] Add parameterized tests proving every alias resolves to its canonical gesture.
-- [ ] Add tests showing a synonym can be added without changing Python.
-- [ ] Add ambiguity, unknown-command, malformed-definition, and compound-command
+- [x] Add parameterized tests proving every alias resolves to its canonical gesture.
+- [x] Add tests showing a synonym can be added without changing Python.
+- [x] Add ambiguity, unknown-command, malformed-definition, and compound-command
       tests.
-- [ ] Quality gate: legacy command inventory has equal or better behavior and all
+- [x] Quality gate: legacy command inventory has equal or better behavior and all
       generator outputs remain deterministic.
 
 ## Milestone 4 — PySide6 UI Split
