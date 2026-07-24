@@ -21,16 +21,16 @@
 
 ## Milestone 1 — Standard Project Skeleton
 
-- [ ] Add `pyproject.toml` with pinned runtime dependencies, package metadata,
+- [x] Add `pyproject.toml` with pinned runtime dependencies, package metadata,
       console script, Ruff, and pytest configuration.
-- [ ] Create `src/eric_motion_studio/`, `resources/`, and `tests/`.
-- [ ] Add `python -m eric_motion_studio` and one console-script entry point.
-- [ ] Implement typed settings with package-relative defaults plus CLI/environment
+- [x] Create `src/eric_motion_studio/`, `resources/`, and `tests/`.
+- [x] Add `python -m eric_motion_studio` and one console-script entry point.
+- [x] Implement typed settings with package-relative defaults plus CLI/environment
       overrides for model, data, export, log, and runtime-state paths.
-- [ ] Store mutable user data outside packaged resources.
-- [ ] Remove Qt, MuJoCo, and UI imports from package import-time execution.
-- [ ] Add structured logging with bounded default verbosity.
-- [ ] Quality gate: clean install, import, `--help`, and headless startup checks pass.
+- [x] Store mutable user data outside packaged resources.
+- [x] Remove Qt, MuJoCo, and UI imports from package import-time execution.
+- [x] Add structured logging with bounded default verbosity.
+- [x] Quality gate: clean install, import, `--help`, and headless startup checks pass.
 
 ## Milestone 2 — Pure Domain and File Formats
 

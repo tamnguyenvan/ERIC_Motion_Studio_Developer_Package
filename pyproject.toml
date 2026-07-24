@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools==70.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eric-motion-studio"
+version = "0.1.0"
+description = "Simulation-only motion authoring tools for ERIC"
+readme = { file = "README_FOR_DEVELOPER.txt", content-type = "text/plain" }
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "absl-py==2.5.0",
+    "etils==1.14.0",
+    "fsspec==2026.6.0",
+    "glfw==2.10.2",
+    "mujoco==3.10.0",
+    "numpy==1.26.4",
+    "PyOpenGL==3.1.10",
+    "PySide6==6.11.1",
+    "PySide6_Addons==6.11.1",
+    "PySide6_Essentials==6.11.1",
+    "shiboken6==6.11.1",
+    "typing_extensions==4.16.0",
+    "zipp==4.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.4.1",
+    "ruff==0.12.5",
+]
+
+[project.scripts]
+eric-motion-studio = "eric_motion_studio.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+eric_motion_studio = [
+    "resources/animations/*.json",
+    "resources/gestures/*.json",
+    "resources/models/g1/*.xml",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

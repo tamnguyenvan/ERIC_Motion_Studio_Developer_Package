@@ -1,0 +1,101 @@
+{
+  "schema": "eric_motion_studio_animation_v1",
+  "simulation_only": true,
+  "name": "conversational_talking",
+  "model": "/Users/martinnicholas/Desktop/ERIC-MuJoCo/unitree_mujoco/unitree_robots/g1/scene_29dof.xml",
+  "created_at": "2026-07-21T21:48:07+0100",
+  "keyframes": [
+    {
+      "name": "neutral",
+      "duration_ms": 600,
+      "joint_offsets_rad": {
+        "waist_yaw_joint": 0.0,
+        "waist_roll_joint": 0.0,
+        "waist_pitch_joint": 0.0,
+        "left_shoulder_pitch_joint": 0.0,
+        "left_shoulder_roll_joint": 0.0,
+        "left_shoulder_yaw_joint": 0.0,
+        "left_elbow_joint": 0.0,
+        "left_wrist_roll_joint": 0.0,
+        "left_wrist_pitch_joint": 0.0,
+        "left_wrist_yaw_joint": 0.0,
+        "right_shoulder_pitch_joint": 0.0,
+        "right_shoulder_roll_joint": 0.0,
+        "right_shoulder_yaw_joint": 0.0,
+        "right_elbow_joint": 0.0,
+        "right_wrist_roll_joint": 0.0,
+        "right_wrist_pitch_joint": 0.0,
+        "right_wrist_yaw_joint": 0.0
+      }
+    },
+    {
+      "name": "open waist presentation",
+      "duration_ms": 900,
+      "joint_offsets_rad": {
+        "waist_yaw_joint": -0.025,
+        "waist_roll_joint": 0.0,
+        "waist_pitch_joint": 0.01,
+        "left_shoulder_pitch_joint": -0.06,
+        "left_shoulder_roll_joint": 0.045,
+        "left_shoulder_yaw_joint": -0.03,
+        "left_elbow_joint": 0.16,
+        "left_wrist_roll_joint": 0.0,
+        "left_wrist_pitch_joint": 0.0,
+        "left_wrist_yaw_joint": -0.05,
+        "right_shoulder_pitch_joint": -0.08,
+        "right_shoulder_roll_joint": -0.06,
+        "right_shoulder_yaw_joint": 0.035,
+        "right_elbow_joint": -0.18,
+        "right_wrist_roll_joint": 0.0,
+        "right_wrist_pitch_joint": 0.0,
+        "right_wrist_yaw_joint": 0.06
+      }
+    },
+    {
+      "name": "right hand emphasis",
+      "duration_ms": 750,
+      "joint_offsets_rad": {
+        "waist_yaw_joint": -0.04,
+        "waist_roll_joint": 0.0,
+        "waist_pitch_joint": 0.012,
+        "left_shoulder_pitch_joint": -0.035,
+        "left_shoulder_roll_joint": 0.03,
+        "left_shoulder_yaw_joint": 0.0,
+        "left_elbow_joint": 0.12,
+        "left_wrist_roll_joint": 0.0,
+        "left_wrist_pitch_joint": 0.0,
+        "left_wrist_yaw_joint": 0.0,
+        "right_shoulder_pitch_joint": -0.13,
+        "right_shoulder_roll_joint": -0.09,
+        "right_shoulder_yaw_joint": 0.06,
+        "right_elbow_joint": -0.24,
+        "right_wrist_roll_joint": 0.0,
+        "right_wrist_pitch_joint": 0.035,
+        "right_wrist_yaw_joint": 0.1
+      }
+    },
+    {
+      "name": "settle neutral",
+      "duration_ms": 850,
+      "joint_offsets_rad": {
+        "waist_yaw_joint": 0.0,
+        "waist_roll_joint": 0.0,
+        "waist_pitch_joint": 0.0,
+        "left_shoulder_pitch_joint": 0.0,
+        "left_shoulder_roll_joint": 0.0,
+        "left_shoulder_yaw_joint": 0.0,
+        "left_elbow_joint": 0.0,
+        "left_wrist_roll_joint": 0.0,
+        "left_wrist_pitch_joint": 0.0,
+        "left_wrist_yaw_joint": 0.0,
+        "right_shoulder_pitch_joint": 0.0,
+        "right_shoulder_roll_joint": 0.0,
+        "right_shoulder_yaw_joint": 0.0,
+        "right_elbow_joint": 0.0,
+        "right_wrist_roll_joint": 0.0,
+        "right_wrist_pitch_joint": 0.0,
+        "right_wrist_yaw_joint": 0.0
+      }
+    }
+  ]
+}
