@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eric.local/schemas/pose-v1.schema.json",
+  "title": "ERIC Motion Studio Pose V1",
+  "type": "object",
+  "required": [
+    "schema",
+    "simulation_only",
+    "joint_offsets_rad"
+  ],
+  "properties": {
+    "schema": {
+      "const": "eric_motion_studio_pose_v1"
+    },
+    "simulation_only": {
+      "type": "boolean"
+    },
+    "joint_offsets_rad": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    }
+  }
+}

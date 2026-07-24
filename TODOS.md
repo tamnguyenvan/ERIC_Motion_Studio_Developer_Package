@@ -34,14 +34,14 @@
 
 ## Milestone 2 — Pure Domain and File Formats
 
-- [ ] Extract `Keyframe`, motion, gesture, joint, and playback value objects.
-- [ ] Extract interpolation, cloning, timing, clamping, and trajectory operations.
-- [ ] Extract animation, pose, gesture, and export serializers/repositories.
-- [ ] Define and validate versioned JSON schemas at repository boundaries.
-- [ ] Preserve existing files with golden round-trip tests.
-- [ ] Centralize joint names, limits, groups, and model metadata behind a model
+- [x] Extract `Keyframe`, motion, gesture, joint, and playback value objects.
+- [x] Extract interpolation, cloning, timing, clamping, and trajectory operations.
+- [x] Extract animation, pose, gesture, and export serializers/repositories.
+- [x] Define and validate versioned JSON schemas at repository boundaries.
+- [x] Preserve existing files with golden round-trip tests.
+- [x] Centralize joint names, limits, groups, and model metadata behind a model
       profile rather than duplicating constants in app and viewer.
-- [ ] Quality gate: pure unit tests pass without PySide6 or MuJoCo imports.
+- [x] Quality gate: pure unit tests pass without PySide6 or MuJoCo imports.
 
 ## Milestone 3 — Extensible Gesture Language
 

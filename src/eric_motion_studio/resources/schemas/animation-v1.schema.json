@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eric.local/schemas/animation-v1.schema.json",
+  "title": "ERIC Motion Studio Animation V1",
+  "type": "object",
+  "required": [
+    "schema",
+    "simulation_only",
+    "motion_name",
+    "total_duration_ms",
+    "keyframes"
+  ],
+  "properties": {
+    "schema": {
+      "const": "eric_motion_studio_animation_v1"
+    },
+    "version": {
+      "const": 1
+    },
+    "simulation_only": {
+      "type": "boolean"
+    },
+    "motion_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "total_duration_ms": {
+      "type": "integer",
+      "minimum": 100
+    },
+    "keyframes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/keyframe"
+      }
+    }
+  },
+  "$defs": {
+    "keyframe": {
+      "type": "object",
+      "required": [
+        "name",
+        "duration_ms"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "joint_targets"
+          ]
+        },
+        {
+          "required": [
+            "joint_offsets_rad"
+          ]
+        }
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 10000
+        },
+        "joint_targets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "joint_offsets_rad": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

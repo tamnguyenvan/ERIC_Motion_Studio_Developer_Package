@@ -45,6 +45,7 @@ eric_motion_studio = [
     "resources/animations/*.json",
     "resources/gestures/*.json",
     "resources/models/g1/*.xml",
+    "resources/schemas/*.json",
 ]
 
 [tool.pytest.ini_options]

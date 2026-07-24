@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eric.local/schemas/gesture-v1.schema.json",
+  "title": "ERIC Motion Studio Gesture V1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "gesture_id",
+    "display_name",
+    "robot_model",
+    "frame_rate",
+    "duration_seconds",
+    "frame_count",
+    "motion_type",
+    "joint_names",
+    "frames"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "gesture_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "frame_rate": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "frame_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "joint_names": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "frames": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "timestamp",
+          "joint_targets"
+        ],
+        "properties": {
+          "timestamp": {
+            "type": "number",
+            "minimum": 0
+          },
+          "joint_targets": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  }
+}
