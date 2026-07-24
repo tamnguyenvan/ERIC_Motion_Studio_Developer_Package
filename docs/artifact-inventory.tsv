@@ -1,0 +1,146 @@
+path	sha256	owner	purpose	decision
+.gitignore	e810b493918d183c42db0c6e02e0044c2f6cf351c92fa7bf66c90864c9bf3f86	project (Phase 0)	project support artifact	keep
+AGENTS.md	9c8b12f40c324747922face4025465aee9899b0afd48d9ee31ad3e5f033b3336	project (tracked)	project documentation	keep
+PLAN.md	3a8c1ec6f9d96e83ccd84f4598cbbddfeb99a5a073ad0230513a061e8f1840ec	user working tree	project documentation	keep
+README_FOR_DEVELOPER.txt	a5bf8b6c369f2a84ba67823a83ef9e11746f07e3d4893a3b5ca3428b29a74af7	project (tracked)	documentation or text record	keep
+TODOS.md	8fd814f3bc1ff83bd1a5852cfc1604680d39792fa62fa12adce6b68a008f35e1	project (Phase 0)	project documentation	keep
+codebase/ERIC Motion Studio.command	36a612bd2b4a52ff9825eba69a73ee64a8c28d3a0796eca1fe380f1acb856049	user working tree	project support artifact	archive candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/.motion_studio_live_pose 2.json	41043ad09563b511c589fc668a0935d23c4eaf870e873eabf4f3f06b00d569f7	project (tracked)	generated viewer runtime state	archive/remove candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/.motion_studio_live_pose 3.json	78855f98467ddde12d84d6251c688cd63def4d1810c28638bab4ed50414b5da9	project (tracked)	generated viewer runtime state	archive/remove candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/.motion_studio_live_pose 4.json	c8eb9e443c226bba279c800118ab5952c2f4c8e9ab125faec08a2eba784a94c0	project (tracked)	generated viewer runtime state	archive/remove candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/.motion_studio_live_pose 5.json	628df712c3e0ff44477bb250fe2c22cd2d0003558c34c75abfd67bdc7dc114af	project (tracked)	generated viewer runtime state	archive/remove candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/.motion_studio_live_pose.json	cf22a2669056dffbfd6fc8ec8eb0f481faf7bccb6c53646914c19c13a5f43feb	user working tree	generated viewer runtime state	archive/remove candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/animations/conversational_talking.json	8fac7234a112a5be7086d58bd590aafe5d6458ec7c4c7991121014b7257eb6b4	project (tracked)	motion, gesture, or runtime data	keep
+codebase/ERIC-Gesture-Lab/animations/custom/untitled-eric-motion.json	6da5f9ec998f9b81c3f78ef0718be78b97a7f0ef412cf48185767ec52adfa05c	project (tracked)	motion, gesture, or runtime data	keep
+codebase/ERIC-Gesture-Lab/animations/scratch_head.json	13e94fe7f63c566a90808183ea801c4342038c9e208f5739c0a42b3894fd7e99	project (tracked)	motion, gesture, or runtime data	keep
+codebase/ERIC-Gesture-Lab/animations/thinking_hand_on_chin.json	cef0acf1e06783690976616c636628f515f9422aa483a5ce2bfc9c5eae7aaefc	project (tracked)	motion, gesture, or runtime data	keep
+codebase/ERIC-Gesture-Lab/brainos_exports/.gitkeep	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855	project (tracked)	project support artifact	keep
+codebase/ERIC-Gesture-Lab/command_audit_reports/command_inventory.json	e7dcd9b7dbb82358fb6965850b48dd0f2b7a3601889a852aa34b6ffa5a0c34c2	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/conversational_idle.json	96e9dd42bdb0aaedf64b2749ca308be9fd2ca97b7da493f85d4618c7a620f74a	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/do_a_cartwheel.json	3ed8be9d85d3138930a3d44903f1955267c0ab5c4335e318143db03e6c8f4f30	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/hand_on_chin.json	e8648cabef7053565c0ef690395eb0bc7dc35c0b4ff63e16ccf0f51918208ab9	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/hand_to_temple.json	d7245f78b3cbebe0d612504e45b5ff9046fca558e47971a623825b6d995bd601	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/happy_talking_motion.json	d8f4595a771e8727b511a122140c83b5d5b7a0ca25216d920a3ac5c8a5155244	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/looking_thoughtful.json	14068560b5053aca74e1ae2486e40e3b73a5641858e2146dec48a817885c2fb4	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/lower_left_arm.json	5738ca97835de3ac4c86929a056c2837b64ee70d56f2cb02f60a774e0abada58	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/lower_right_arm.json	1cf021e453a51de5c6038c3fb5cabc43f1e2054c64c5c59693fc5d047f876041	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/natural_talking_motion.json	bb1e304e70fb137109714f0c4361efa3b856de0d05603e135165aaba0729364c	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/neutral.json	a4cee36640abc753291b659fee7288ce5dcc8c3a0169751e154709d5a6ba2343	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/open_both_arms_as_if_introducing_a_speaker_pause_then_relax.json	e06cfbda6ce812eb8e15665311db8c3ad4592549c4e0db6261fe6ef2fdd0b21a	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/place_the_left_hand_on_the_chest_while_extending_the_right_arm_outward.json	06c374f5153c812446627f53e87f313b52f6359fb964ad21704b202894c21379	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/place_the_right_hand_firmly_on_the_centre_of_the_chest_while_the_left_arm_hangs_.json	6d211074df9b10bac4a1d02b22519efe1b55dacb4866675174f53781ca675640	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/presentation_talking_motion.json	e2e8b557e8b24425465aeba313b9fff344264d9b4b9ee7c58f939f17bb63c82c	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/raise_both_hands.json	fa7d22379db1160da1e11aa884ed784af2ab570b774e2703d6345386f5c01e92	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/raise_both_hands_to_chest_height_sweep_both_arms_in_a_wide_horizontal_arc_from_t.json	ac6639af654c303c52b1d7cac5fa927525e5a8ee95396112a053c5aabdb571bb	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/raise_both_hands_to_chest_height_with_open_palms_sweep_both_arms_in_a_wide_horiz.json	0d725d844efb3835a5f30ce7f6844fcb8fb04e8b2728272630f5cb2ce57e573c	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/raise_left_arm.json	c4644f2d6a446b1ecb9162defc23f0751ed9b981e6eb854a33eb50156ab96434	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/raise_right_arm.json	6038ce865ebda8eac5c02964e359460cffea83a87108c4fe7aea9cac9494df22	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/return_to_neutral.json	972e8e4aabaa158aa5bbd3fc1d916374874e74c2a7d4047b5934e32ed358c09d	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/rub_chin.json	325ab6cef8b50fc96237ec8be16f38a71aa2d721d131856713fd32057da35221	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/rub_side_of_head.json	f4f57db7f9c24e710c35d6415187e1bc961b789fdec92b7d411bacbdc46db2bb	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/scratch_head.json	ad32534e49e041afea8b3810c41bd97f90356edfbc8dbe06ecf18021460b6f0d	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/talking_idle.json	221f99254d131e6feedcd6a57de25077f1d1a9bac09cb9c3adae8bfec0fffab7	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/talking_motion.json	2f6bdbac8f0bcbdaa6d5e4b887f6132ceb174ac220ebc02e82912670b065edb0	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/thinking_pose.json	45eeb08067332d155c4f0cbc6c3a142f9f342134a765962980f53bd43449f4cf	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/thinking_scratch.json	975a771ab8724702f771efe1987558e8d40b971a4c21e0fa38e61182badc85eb	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/thinking_with_hand_on_chin.json	e05694a463772f0fee746fbaafd3626cd51a62ed9b197d491cf3500d4197f29e	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/thoughtful_pose.json	668f1443426d5b164ec286411eb2d8eecde45fa07c4996ebe4617eafebfb4037	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/wave.json	b085c18c49677adde386bc4ae091939f916240c299ac041afcfdec10b5d17587	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/wave_right_hand.json	9da3d98e3d6273f25b535c16a463697517aa0df873767e475c9d6bcd39dd2822	user working tree	generated command audit report	remove candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/command_audit_reports/wave_with_your_left_hand.json	927458df6bee23466bcabd0481297cfdfa10ce3a720a1c64023ad77fbc2a90af	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/wave_with_your_right_hand.json	e95e08e3db73f0d173864eeadf1670e22702e925d6704140d1b36e418430ef9a	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/command_audit_reports/welcome_the_audience_with_both_hands.json	38434c2503174eec65184ba07762ed6b2bd9fee08b78d1b7d7f1786ec8ed53b1	project (tracked)	generated command audit report	keep as regression baseline
+codebase/ERIC-Gesture-Lab/eric_motion_studio.py	06e6cc347c7e29a162ca2b324feb9f0d69c8ca46b8eacf35bd7d477696837c65	project (tracked)	authoritative legacy application	keep
+codebase/ERIC-Gesture-Lab/eric_motion_studio.py.backup	312cce4a2fc7a3679146e1a1db1c4c7b5af7710f1449f96e5f358c494a95c085	user working tree	legacy source backup	archive candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/eric_motion_studio_viewer.py	ef0cd54f063be6d0fcb9baf3d821e94478ac78e1431b4cd9699b592fd31607bf	project (tracked)	legacy viewer application	keep
+codebase/ERIC-Gesture-Lab/gestures/presentation_idle.json	153ffd81360cd389d53daccd75494600ebbcff769aff43bf3f01505049d7280a	project (tracked)	motion, gesture, or runtime data	keep
+codebase/ERIC-Gesture-Lab/gestures/right_hand_to_chest.json	16ce64ee7ec363a9ef246c4cfc3fe9ac94167a7e358cacc247e73b953190eb21	project (tracked)	motion, gesture, or runtime data	keep
+codebase/ERIC-Gesture-Lab/gestures/welcome_sweep.json	4859201e70c96b5c9399c18e4bf92a832d4d144f84a7eba3c2cb2d8589aabc91	project (tracked)	motion, gesture, or runtime data	keep
+codebase/ERIC-Gesture-Lab/logs/motion-studio-launch.log	23acc18c7ef9e22487ea37eddffe10f19505692043d0242e72622dddf1c071b0	user working tree	project support artifact	archive candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/pyside6-file-flags-before-nohidden-20260723-151631.txt	c53952c42133e5cbb76c3fc206ad4925564e89122c04e7b41ffd0d1e41e0963a	user working tree	environment repair diagnostic inventory	archive candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/qt-plugin-file-flags-before-nohidden-20260723-151527.txt	2bc99576f6115ddb2a6e601c09e01f09f1b34d1fc74985a1b793e47b6226fffa	user working tree	environment repair diagnostic inventory	archive candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/requirements.txt	c0b148df23a2c751649496f765eba6995f78862b47e444be171689d0e6e5d8d3	project (tracked)	documentation or text record	keep
+codebase/ERIC-Gesture-Lab/right_arm_test.py	98d494597aee784f7bb466321932ab089eafaca044d5d412dda104351f0bb29a	user working tree	ad hoc visual experiment	archive candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/screenshot.png	f4793ad7474664f14e10dd93a6cf58bc94753f840c53cc0a0387543e09317d8b	user working tree	image or UI capture	archive candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/talking_test.py	43ad290a5dc55eb392387b0c8632a2738b6508fdaec91d3ccf163a11ed08645d	user working tree	ad hoc visual experiment	archive candidate; preserved pending owner approval
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/g1_23dof.xml	a57de7920966fef0f845130f0f44df76be6240770d3f0ce1ac5c6f0d1c6f2f76	project (tracked)	MuJoCo model definition	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/g1_29dof.xml	423e28bd718b19f7a65cda539b6f794ddbb268b4b9bdbd85f4bd982b30729617	project (tracked)	MuJoCo model definition	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/g1_joint_index_dds.md	1297b948c9e31f2c38ec44996eb153d6a0f88c929b58b0be0d8358345a9d7b62	project (tracked)	documentation or text record	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/height_field.png	996b940ec9fcbe5551d436f76040f6b3690e90fb056ff8f2ba8c650c91f39e10	project (tracked)	image or UI capture	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/images/g1_23dof.png	8cd8db7c7abd7a7123cc1bc702e9a7aefb22ac18e8a5b52745b7b60cd371e1d3	project (tracked)	image or UI capture	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/images/g1_29dof.png	9d7d6c0755b6eadf2386d476cc64137f217f16ea2f7c8e0e06daf0d8e00e60ea	project (tracked)	image or UI capture	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/images/g1_29dof_with_hand.png	2a14b131c83f437ad5954bb2efc38da5e6afb9ee6817fb9871072b3adf55a3f4	project (tracked)	image or UI capture	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/images/g1_dual_arm.png	e8d427240c35ac5dd012a4bf4fc52dabe8bddd476a883ae9364d05fc3e8b85ee	project (tracked)	image or UI capture	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/head_link.STL	d297328b3569fc85074355e76cba6c889d19de5361224bcd3c5b8ce82e13b9b6	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_ankle_pitch_link.STL	d49e3abc6f5b12e532062cd575b87b5ef40cd2a3fc18f54a1ca5bba4f773d51d	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_ankle_roll_link.STL	c4092af943141d4d9f74232f3cfa345afc6565f46a077793b8ae0e68b39dc33f	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_elbow_link.STL	fa752198accd104d5c4c3a01382e45165b944fbbc5acce085059223324e5bed3	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hand_index_0_link.STL	efaabe6a8c850f628c55ab5ed8402757d5263262e8c32943f9bfbec4329d9a8a	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hand_index_1_link.STL	926e5fc790ddbabf222e7b7ee5b790a45b090d27a4a87e558a5ba57516b6a805	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hand_middle_0_link.STL	efaabe6a8c850f628c55ab5ed8402757d5263262e8c32943f9bfbec4329d9a8a	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hand_middle_1_link.STL	926e5fc790ddbabf222e7b7ee5b790a45b090d27a4a87e558a5ba57516b6a805	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hand_palm_link.STL	d48b0b1dbd2def01867de0840ed643e6ae8f4882fe81368540830448e2fba58f	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hand_thumb_0_link.STL	c63f6a2e8d700940c172cfa8a5fab2d8c2785abc43bc258d3adf315ceb1fa653	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hand_thumb_1_link.STL	ba3d13e21e8ed1e4885bdbf562326abdae41964c0fee63eceeebebdcf5fff935	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hand_thumb_2_link.STL	9985783981720896e54347dbcf9d8cbfb991a264ac4fa44cfc017dae1b83fdcd	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hip_pitch_link.STL	4725168105ee768ee31638ef22b53f6be2d7641bfd7cfefe803488d884776fa4	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hip_roll_link.STL	91f25922ee8a7c3152790051bebad17b4d9cd243569c38fe340285ff93a97acf	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_hip_yaw_link.STL	a16d88aa6ddac8083aa7ad55ed317bea44b1fa003d314fba88965b7ed0f3b55b	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_knee_link.STL	8d92b9e3d3a636761150bb8025e32514c4602b91c7028d523ee42b3e632de477	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_rubber_hand.STL	cff2221a690fa69303f61fce68f2d155c1517b52efb6ca9262dd56e0bc6e70fe	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_shoulder_pitch_link.STL	f0d1cfd02fcf0d42f95e678eeca33da3afbcc366ffba5c052847773ec4f31d52	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_shoulder_roll_link.STL	fb9df21687773522598dc384f1a2945c7519f11cbc8bd372a49170316d6eee88	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_shoulder_yaw_link.STL	1aa97e9748e924336567992181f78c7cd0652fd52a4afcca3df6b2ef6f9e712e	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_wrist_pitch_link.STL	b251d8e05047f695d0f536cd78c11973cfa4e78d08cfe82759336cc3471de3a9	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_wrist_roll_link.STL	edc387c9a0ba8c2237e9b296d32531426fabeb6f53e58df45c76106bca74148c	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_wrist_roll_rubber_hand.STL	e81030abd023bd9e4a308ef376d814a2c12d684d8a7670c335bbd5cd7809c909	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/left_wrist_yaw_link.STL	83f8fb3a726bf9613d65dd14f0f447cb918c3c95b3938042a0c9c09749267d3b	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/logo_link.STL	8571a0a19bc4916fa55f91449f51d5fdefd751000054865a842449429d5f155b	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/pelvis.STL	5ba6bbc888e630550140d3c26763f10206da8c8bd30ed886b8ede41c61f57a31	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/pelvis_contour_link.STL	5cc5c2c7a312329e3feeb2b03d3fc09fc29705bd01864f6767e51be959662420	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_ankle_pitch_link.STL	15be426539ec1be70246d4d82a168806db64a41301af8b35c197a33348c787a9	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_ankle_roll_link.STL	4b66222ea56653e627711b56d0a8949b4920da5df091da0ceb343f54e884e3a5	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_elbow_link.STL	1be925d7aa268bb8fddf5362b9173066890c7d32092c05638608126e59d1e2ab	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hand_index_0_link.STL	8bac717a5ff4c5a6f4ca839091ad935392859795a68a5a547bc5ecb3f196f40d	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hand_index_1_link.STL	06a5f46b5705a1e54205fc01ed437d475e194a205b72ba78d00c8f26481237bb	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hand_middle_0_link.STL	a02dd3c5b6747e76016f3a1cab27173fa218b0eb271570847be64d8a390022d1	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hand_middle_1_link.STL	60ca1810b7b1371733556660e9e2167790355a83cad9ba55dbd236f2020a228a	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hand_palm_link.STL	5e95f19c4daa3ed7f765d465ba763153d7a76e4c02cbe6d8c567cd67f89f1c1b	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hand_thumb_0_link.STL	30f91ca9cccda42065c98cbe635ff87cd1e004b82d38888fd7e741cf0998d01d	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hand_thumb_1_link.STL	acdd00f613ea4253229461e1367be5331e6631df49e1d40fe283c2bd4c66469f	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hand_thumb_2_link.STL	36256d0253ae42e0652fbe3e3992b6ac9b5aefd839694ad39b4af143d4efa85f	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hip_pitch_link.STL	e4f3c99d7f4a7d34eadbef9461fc66e3486cb5442db1ec50c86317d459f1a9c6	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hip_roll_link.STL	4c254ef66a356f492947f360dd931965477b631e3fcc841f91ccc46d945d54f6	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_hip_yaw_link.STL	e479c2936ca2057e9eb2f7dff6c189b7419d7b8484dea0b298cbb36a2a6aa668	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_knee_link.STL	63c4008449c9bbe701a6e2b557b7a252e90cf3a5abcf54cee46862b9a69f8ec8	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_rubber_hand.STL	99533b778bca6246144fa511bb9d4e555e075c641f2a0251e04372869cd99d67	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_shoulder_pitch_link.STL	24cdb387e0128dfe602770a81c56cdce3a0181d34d039a11d1aaf8819b7b8c02	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_shoulder_roll_link.STL	962b97c48f9ce9e8399f45dd9522e0865d19aa9fd299406b2d475a8fc4a53e81	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_shoulder_yaw_link.STL	a0b76489271da0c72461a344c9ffb0f0c6e64f019ea5014c1624886c442a2fe5	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_wrist_pitch_link.STL	d22f8f3b3127f15a63e5be1ee273cd5075786c3142f1c3d9f76cbf43d2a26477	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_wrist_roll_link.STL	a7ee9212ff5b94d6cb7f52bb1bbf3f352194d5b598acff74f4c77d340c5b344f	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_wrist_roll_rubber_hand.STL	0729aff1ac4356f9314de13a46906267642e58bc47f0d8a7f17f6590a6242ccf	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/right_wrist_yaw_link.STL	bc9dece2d12509707e0057ba2e48df8f3d56db0c79410212963a25e8a50f61a6	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/torso_constraint_L_link.STL	82be7f93e85b3d303a1d1e1847e2c916939bd61c424ed1ebd28691ec33909dd1	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/torso_constraint_L_rod_link.STL	c10de1effa7ea797ac268006aa2a739036c7e1f326b2012d711ee2c20c5a6e96	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/torso_constraint_R_link.STL	54ded433a3a0c76027365856fdbd55215643de88846f7d436598a4071e682725	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/torso_constraint_R_rod_link.STL	cb83fd38a9f06c99e3f301c70f12d94ae770a8f0cf9501f83580a27f908990b4	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/torso_link.STL	e96d023f0368a4e3450b86ca5d4f10227d8141156a373e7da8cb3c93266523e0	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/waist_constraint_L.STL	8ebafdcb4de6871113f0ca2c356618d6e46b1d50f6c0bf9e37f47b9d8e100d99	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/waist_constraint_R.STL	791902a291ffbd35ab97383b7b44ea5d975de7c80eef838797c970790b382ca9	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/waist_roll_link.STL	34f0aa73f41131230be4d25876c944fdf6c24d62553f199ff8b980c15e8913df	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/waist_support_link.STL	1fae9e1bb609848a1667d32eed8d6083ae443538a306843056a2a660f1b2926a	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/meshes/waist_yaw_link.STL	2883f20e03f09b669b5b4ce10677ee6b5191c0934b584d7cbaef2d0662856ffb	project (tracked)	robot model mesh	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/scene.xml	a05f5b2f5d166c5b5ad4766a404eab7f5c6071245b7d658551139236d38eb63d	project (tracked)	MuJoCo model definition	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/scene_23dof.xml	58436a034c2548b3cd3935d1e5c6d3e22d93e0105c6b6a4d82f36185c94dce7d	project (tracked)	MuJoCo model definition	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/scene_29dof.xml	e254f11acce2ec6f6efa5bf9b15e288bbd0ca29aeeabb1e1d0fea92f65436bbf	project (tracked)	MuJoCo model definition	keep
+codebase/ERIC-Gesture-Lab/unitree_mujoco/unitree_robots/g1/unitree_hfield.png	8a3f9777e096c5e8b6a5f8b2ca9382d5b25e2cacc15be7b5ac41f1e432e61a6c	project (tracked)	image or UI capture	keep
+codebase/ERIC-Gesture-Lab/venv-motionstudio-packages-before-repair.txt	c0b148df23a2c751649496f765eba6995f78862b47e444be171689d0e6e5d8d3	user working tree	environment repair diagnostic inventory	archive candidate; preserved pending owner approval
+docs/artifact-review.md	17a0fc2bb8e2977b2fdddf870e6e089973f4c98516c198a845af53b4dc25c463	project (Phase 0)	project documentation	keep
+docs/phase-0-baseline.md	0793a610d298f5e392ff7bb07fc21e79e9bafdfa291af5ce37e5bdbab69c33b5	project (Phase 0)	project documentation	keep
+tests/fixtures/command-audit-markers.txt	9b784eb46b29dcb66f4ef2ebf60a22bbe627ff56f7e87b132ccfa1ed0481f057	project (Phase 0)	regression test or fixture	keep
+tests/fixtures/self-test-markers.txt	51435bfc8bd8664474b49a58c2ed4b6b6c9744f6ec07e9f6afc71475c96b5245	project (Phase 0)	regression test or fixture	keep
+tests/legacy_support.py	538a3c08fdaf3f150be7439381036f49abdd55d909eb6664d19a115189600f70	project (Phase 0)	regression test or fixture	keep
+tests/test_legacy_characterization.py	4a0fa27177e3dfc9caa2b3d9885d63524c9df080ffadaa898a107626e89ce52e	project (Phase 0)	regression test or fixture	keep
+tests/test_legacy_cli.py	56e139b2cc11f81b002a1335b8c613b0ba40ac2fb79825eaf4454e2e56aa5294	project (Phase 0)	regression test or fixture	keep
+tools/build_artifact_inventory.py	b1fe0ce22145d186c02c1b10946fc18be2cf642326048788f438b575540f8a7b	project (Phase 0)	Python source	keep

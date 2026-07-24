@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ERIC Motion Studio local/generated state
+.venv/
+codebase/ERIC-Gesture-Lab/.motion_studio_live_pose*.json
+codebase/ERIC-Gesture-Lab/.motion_studio_live_pose*.tmp
+codebase/ERIC-Gesture-Lab/brainos_exports/
+codebase/ERIC-Gesture-Lab/command_audit_reports/
+codebase/ERIC-Gesture-Lab/logs/
+codebase/ERIC-Gesture-Lab/screenshot*.png
