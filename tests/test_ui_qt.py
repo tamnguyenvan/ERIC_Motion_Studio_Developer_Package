@@ -123,6 +123,22 @@ class QtCriticalFlowTests(unittest.TestCase):
         )
         self.assertEqual(self.window.status_panel.status_label.text(), "Undo")
 
+    def test_description_edit_commits_once_after_focus_loss(self):
+        description = self.window.metadata_widget.description_edit
+        description.setFocus()
+        QTest.keyClicks(description, "abc")
+        self.application.processEvents()
+
+        self.assertEqual(description.toPlainText(), "abc")
+        self.assertEqual(self.window.documents.state.motion.description, "")
+        self.assertEqual(self.window.documents.state.undo_depth, 0)
+
+        self.window.metadata_widget.name_edit.setFocus()
+        self.application.processEvents()
+
+        self.assertEqual(self.window.documents.state.motion.description, "abc")
+        self.assertEqual(self.window.documents.state.undo_depth, 1)
+
     def test_gesture_playback_save_and_export_flows(self):
         self.window.gesture_widget.prompt_edit.setText(
             "wave with your left hand"

@@ -63,6 +63,7 @@ class DocumentController:
     ) -> None:
         self.store = store
         self._state = DocumentState(motion or new_motion())
+        self._saved_motion = self._state.motion
         self._undo: list[Motion] = []
         self._redo: list[Motion] = []
         self._listeners: list[DocumentListener] = []
@@ -110,7 +111,7 @@ class DocumentController:
         self._state = replace(
             self._state,
             motion=motion,
-            dirty=True,
+            dirty=motion != self._saved_motion,
             selected_keyframe=selection,
         )
         self._publish()
@@ -120,6 +121,7 @@ class DocumentController:
         self._undo.clear()
         self._redo.clear()
         self._state = DocumentState(new_motion(name))
+        self._saved_motion = self._state.motion
         self._publish()
         self.report_status("New motion created")
 
@@ -132,6 +134,7 @@ class DocumentController:
         self._undo.clear()
         self._redo.clear()
         self._state = DocumentState(motion=motion, path=path)
+        self._saved_motion = motion
         self._publish()
         self.report_status(f"Motion opened: {path.name}")
         return True
@@ -146,6 +149,7 @@ class DocumentController:
         except Exception as error:
             self.report_status(f"Save failed: {error}")
             return False
+        self._saved_motion = self._state.motion
         self._state = replace(self._state, path=target, dirty=False)
         self._publish()
         self.report_status(f"Motion saved: {target.name}")
@@ -253,7 +257,7 @@ class DocumentController:
         self._state = replace(
             self._state,
             motion=previous,
-            dirty=True,
+            dirty=previous != self._saved_motion,
             selected_keyframe=min(
                 self._state.selected_keyframe,
                 len(previous.keyframes) - 1,
@@ -270,7 +274,7 @@ class DocumentController:
         self._state = replace(
             self._state,
             motion=next_motion,
-            dirty=True,
+            dirty=next_motion != self._saved_motion,
             selected_keyframe=min(
                 self._state.selected_keyframe,
                 len(next_motion.keyframes) - 1,
@@ -350,6 +354,7 @@ class PlaybackController:
     def __init__(self, output: PlaybackOutput) -> None:
         self.output = output
         self._plan: PlaybackPlan | None = None
+        self._loop = False
         self._elapsed = 0.0
         self._state = PlaybackViewState()
         self._listeners: list[PlaybackListener] = []
@@ -368,6 +373,7 @@ class PlaybackController:
 
     def set_motion(self, motion: Motion) -> None:
         self._plan = dense_trajectory(motion.keyframes)
+        self._loop = motion.loop
         self._elapsed = 0.0
         self._state = PlaybackViewState(
             frame_count=len(self._plan.frames),
@@ -380,6 +386,8 @@ class PlaybackController:
             return
         if self._state.frame_index >= len(self._plan.frames) - 1:
             self.seek(0)
+        elif self._state.frame_index == 0:
+            self.output.apply_frame(self._plan.frames[0])
         self._state = replace(self._state, playing=True, paused=False)
         self._publish()
 
@@ -430,5 +438,14 @@ class PlaybackController:
             self._state = replace(self._state, frame_index=index)
             self._publish()
         if index == len(self._plan.frames) - 1:
-            self._state = replace(self._state, playing=False, paused=False)
+            if self._loop:
+                self._elapsed = 0.0
+                self.output.apply_frame(self._plan.frames[0])
+                self._state = replace(self._state, frame_index=0)
+            else:
+                self._state = replace(
+                    self._state,
+                    playing=False,
+                    paused=False,
+                )
             self._publish()

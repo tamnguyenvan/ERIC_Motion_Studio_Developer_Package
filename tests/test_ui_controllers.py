@@ -63,7 +63,11 @@ class FakePlaybackOutput:
         self.reset_count += 1
 
 
-def two_frame_motion(name: str = "Generated") -> Motion:
+def two_frame_motion(
+    name: str = "Generated",
+    *,
+    loop: bool = False,
+) -> Motion:
     return Motion(
         name=name,
         keyframes=(
@@ -76,6 +80,7 @@ def two_frame_motion(name: str = "Generated") -> Motion:
                 ),
             ),
         ),
+        loop=loop,
         created_at="1970-01-01T00:00:00+00:00",
         updated_at="1970-01-01T00:00:00+00:00",
     )
@@ -155,6 +160,30 @@ class DocumentControllerTests(unittest.TestCase):
             )
             self.assertFalse(self.controller.state.dirty)
 
+    def test_undo_and_redo_compare_against_saved_revision(self):
+        self.controller.set_metadata(
+            name="Edited",
+            description="",
+            loop=False,
+        )
+        self.controller.undo()
+        self.assertFalse(self.controller.state.dirty)
+        self.controller.redo()
+        self.assertTrue(self.controller.state.dirty)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "saved.json"
+            self.assertTrue(self.controller.save(path))
+            self.controller.set_metadata(
+                name="Edited again",
+                description="",
+                loop=False,
+            )
+            self.controller.undo()
+            self.assertFalse(self.controller.state.dirty)
+            self.controller.redo()
+            self.assertTrue(self.controller.state.dirty)
+
     def test_gesture_authoring_and_export_are_injected(self):
         generated = two_frame_motion()
         gestures = FakeGestureService(generated)
@@ -183,6 +212,7 @@ class PlaybackControllerTests(unittest.TestCase):
 
         controller.play()
         self.assertTrue(controller.state.playing)
+        self.assertEqual(output.frames[-1].timestamp, 0.0)
         controller.advance(0.2)
         self.assertGreater(controller.state.frame_index, 0)
         controller.pause()
@@ -202,6 +232,18 @@ class PlaybackControllerTests(unittest.TestCase):
         self.assertEqual(output.reset_count, 1)
         with self.assertRaises(ValueError):
             controller.set_speed(3.0)
+
+    def test_looping_restarts_at_the_initial_frame(self):
+        output = FakePlaybackOutput()
+        controller = PlaybackController(output)
+        controller.set_motion(two_frame_motion(loop=True))
+
+        controller.play()
+        controller.advance(1.0)
+
+        self.assertTrue(controller.state.playing)
+        self.assertEqual(controller.state.frame_index, 0)
+        self.assertEqual(output.frames[-1].timestamp, 0.0)
 
 
 if __name__ == "__main__":

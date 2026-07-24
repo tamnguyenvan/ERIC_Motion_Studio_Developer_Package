@@ -12,6 +12,14 @@ from PySide6.QtWidgets import (
 from eric_motion_studio.domain import Motion
 
 
+class _DescriptionEdit(QTextEdit):
+    editingFinished = Signal()
+
+    def focusOutEvent(self, event) -> None:
+        super().focusOutEvent(event)
+        self.editingFinished.emit()
+
+
 class MotionMetadataWidget(QGroupBox):
     metadataChanged = Signal(str, str, bool)
 
@@ -20,7 +28,7 @@ class MotionMetadataWidget(QGroupBox):
         self.setObjectName("motionMetadataPanel")
         self.name_edit = QLineEdit()
         self.name_edit.setObjectName("motionNameEdit")
-        self.description_edit = QTextEdit()
+        self.description_edit = _DescriptionEdit()
         self.description_edit.setObjectName("motionDescriptionEdit")
         self.description_edit.setMaximumHeight(90)
         self.loop_check = QCheckBox("Loop playback")
@@ -32,7 +40,7 @@ class MotionMetadataWidget(QGroupBox):
         layout.addRow("", self.loop_check)
 
         self.name_edit.editingFinished.connect(self._emit_metadata)
-        self.description_edit.textChanged.connect(self._emit_metadata)
+        self.description_edit.editingFinished.connect(self._emit_metadata)
         self.loop_check.toggled.connect(self._emit_metadata)
 
     def _emit_metadata(self) -> None:
