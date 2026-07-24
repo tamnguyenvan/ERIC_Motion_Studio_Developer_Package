@@ -37,7 +37,6 @@ from eric_motion_studio.gestures.validators import (
     ValidationReport,
 )
 
-
 __all__ = [
     "CompilationResult",
     "DefinitionValidationError",

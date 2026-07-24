@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping, Protocol
-
+from typing import Protocol
 
 APP_SLUG = "eric-motion-studio"
 ENV_PREFIX = "ERIC_MOTION_STUDIO_"
@@ -71,7 +71,7 @@ class Settings:
         cls,
         overrides: PathOverrides | None = None,
         environment: Mapping[str, str] | None = None,
-    ) -> "Settings":
+    ) -> Settings:
         env = os.environ if environment is None else environment
         default_data = _user_data_root(env)
         default_state = _user_state_root(env)
@@ -98,9 +98,7 @@ class Settings:
             model_path = _absolute(overrides.model_path or model_path)
             data_dir = _absolute(overrides.data_dir or data_dir)
             log_path = _absolute(overrides.log_path or log_path)
-            runtime_state_path = _absolute(
-                overrides.runtime_state_path or runtime_state_path
-            )
+            runtime_state_path = _absolute(overrides.runtime_state_path or runtime_state_path)
 
         export_dir = _environment_path(env, "EXPORT_DIR", data_dir / "exports")
         if overrides is not None:

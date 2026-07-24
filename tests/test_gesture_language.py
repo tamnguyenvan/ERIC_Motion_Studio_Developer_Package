@@ -29,11 +29,8 @@ from eric_motion_studio.gestures.generators import default_generator_registry
 from eric_motion_studio.gestures.stages import StageLibrary, StageValidationError
 from eric_motion_studio.gestures.validators import validate_compiled_motion
 
-
 ROOT = Path(__file__).resolve().parents[1]
-DEFINITIONS_PATH = (
-    RESOURCE_ROOT / "gesture_definitions" / "builtins.json"
-)
+DEFINITIONS_PATH = RESOURCE_ROOT / "gesture_definitions" / "builtins.json"
 STAGES_PATH = RESOURCE_ROOT / "gesture_stages" / "builtin_stages.json"
 
 LEGACY_COMMANDS = {
@@ -61,10 +58,7 @@ LEGACY_COMMANDS = {
             "place the right hand firmly on the centre of the chest "
             "while the left arm hangs by the side"
         ),
-        (
-            "place the left hand on the chest while extending the "
-            "right arm outward"
-        ),
+        ("place the left hand on the chest while extending the right arm outward"),
     ),
     "welcome_presentation": (
         "welcome the audience with both hands",
@@ -240,8 +234,7 @@ class ResolverAndSlotTests(unittest.TestCase):
 
     def test_typed_slot_extraction(self):
         slots = extract_slots(
-            "Slowly wave the left hand outward, hold for 2.5 seconds, "
-            "then return to neutral"
+            "Slowly wave the left hand outward, hold for 2.5 seconds, then return to neutral"
         )
 
         self.assertEqual(slots.side, Side.LEFT)
@@ -275,9 +268,7 @@ class ResolverAndSlotTests(unittest.TestCase):
         duplicate["canonical_id"] = "salute"
         duplicate["aliases"] = ["wave"]
         ambiguous_payload["definitions"].append(duplicate)
-        ambiguous = GestureResolver(
-            GestureRegistry.from_payload(ambiguous_payload)
-        ).resolve("wave")
+        ambiguous = GestureResolver(GestureRegistry.from_payload(ambiguous_payload)).resolve("wave")
 
         self.assertEqual(ambiguous.status, ResolutionStatus.AMBIGUOUS)
         self.assertEqual(ambiguous.candidates, ("salute", "wave"))
@@ -301,8 +292,7 @@ class ResolverAndSlotTests(unittest.TestCase):
     def test_compound_command_uses_structured_generator(self):
         compiler = GestureCompiler.default()
         result = compiler.compile(
-            "raise the left arm then extend the right arm outward "
-            "then return to neutral"
+            "raise the left arm then extend the right arm outward then return to neutral"
         )
 
         self.assertTrue(result.succeeded, result)
@@ -329,12 +319,8 @@ class ResolverAndSlotTests(unittest.TestCase):
 
     def test_presentation_honors_sweep_direction(self):
         compiler = GestureCompiler.default()
-        leftward = compiler.compile(
-            "welcome the audience with both hands from right to left"
-        )
-        rightward = compiler.compile(
-            "welcome the audience with both hands from left to right"
-        )
+        leftward = compiler.compile("welcome the audience with both hands from right to left")
+        rightward = compiler.compile("welcome the audience with both hands from left to right")
 
         self.assertTrue(leftward.succeeded, leftward)
         self.assertTrue(rightward.succeeded, rightward)
@@ -353,13 +339,11 @@ class ResolverAndSlotTests(unittest.TestCase):
         self.assertTrue(result.succeeded, result)
         raised = result.motion.keyframes[1].joints
         oscillated = result.motion.keyframes[2].joints
-        left_delta = (
-            oscillated.get("left_shoulder_yaw_joint")
-            - raised.get("left_shoulder_yaw_joint")
+        left_delta = oscillated.get("left_shoulder_yaw_joint") - raised.get(
+            "left_shoulder_yaw_joint"
         )
-        right_delta = (
-            oscillated.get("right_shoulder_yaw_joint")
-            - raised.get("right_shoulder_yaw_joint")
+        right_delta = oscillated.get("right_shoulder_yaw_joint") - raised.get(
+            "right_shoulder_yaw_joint"
         )
         self.assertNotEqual(left_delta, 0.0)
         self.assertAlmostEqual(left_delta, -right_delta)

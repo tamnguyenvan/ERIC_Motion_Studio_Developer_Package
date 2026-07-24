@@ -17,7 +17,6 @@ from eric_motion_studio.infrastructure.formats import (
     SchemaValidationError,
 )
 
-
 __all__ = [
     "ANIMATION_SCHEMA",
     "ANIMATION_VERSION",

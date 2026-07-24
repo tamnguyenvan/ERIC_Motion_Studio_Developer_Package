@@ -75,9 +75,7 @@ def two_frame_motion(
             Keyframe(
                 "Raised",
                 300,
-                JointValues.from_mapping(
-                    {"right_shoulder_pitch_joint": -0.5}
-                ),
+                JointValues.from_mapping({"right_shoulder_pitch_joint": -0.5}),
             ),
         ),
         loop=loop,
@@ -104,9 +102,7 @@ class DocumentControllerTests(unittest.TestCase):
         self.assertTrue(self.controller.state.dirty)
         self.assertEqual(self.controller.state.motion.name, "Edited")
 
-        raised = JointValues.from_mapping(
-            {"right_shoulder_pitch_joint": -0.5}
-        )
+        raised = JointValues.from_mapping({"right_shoulder_pitch_joint": -0.5})
         self.controller.add_keyframe(raised)
         self.assertEqual(len(self.controller.state.motion.keyframes), 2)
         self.assertEqual(self.controller.state.selected_keyframe, 1)
@@ -140,15 +136,9 @@ class DocumentControllerTests(unittest.TestCase):
 
     def test_unsaved_change_decisions(self):
         self.controller.set_metadata(name="Dirty", description="", loop=False)
-        self.assertFalse(
-            self.controller.resolve_unsaved(UnsavedDecision.CANCEL)
-        )
-        self.assertTrue(
-            self.controller.resolve_unsaved(UnsavedDecision.DISCARD)
-        )
-        self.assertFalse(
-            self.controller.resolve_unsaved(UnsavedDecision.SAVE)
-        )
+        self.assertFalse(self.controller.resolve_unsaved(UnsavedDecision.CANCEL))
+        self.assertTrue(self.controller.resolve_unsaved(UnsavedDecision.DISCARD))
+        self.assertFalse(self.controller.resolve_unsaved(UnsavedDecision.SAVE))
 
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "saved.json"

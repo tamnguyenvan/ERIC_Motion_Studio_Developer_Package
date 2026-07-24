@@ -29,9 +29,7 @@ class GestureLibraryWidget(QGroupBox):
         self.gesture_list = QListWidget()
         self.gesture_list.setObjectName("gestureList")
         for definition in definitions:
-            item = QListWidgetItem(
-                definition.canonical_id.replace("_", " ").title()
-            )
+            item = QListWidgetItem(definition.canonical_id.replace("_", " ").title())
             item.setData(256, definition.canonical_id)
             item.setToolTip(", ".join(definition.aliases))
             self.gesture_list.addItem(item)

@@ -36,7 +36,6 @@ from eric_motion_studio.infrastructure import (
     SchemaValidationError,
 )
 
-
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = ROOT / "src" / "eric_motion_studio"
 RESOURCE_ROOT = PACKAGE_ROOT / "resources"
@@ -295,10 +294,7 @@ class RepositoryGoldenTests(unittest.TestCase):
     def test_json_schema_documents_are_versioned_and_valid_json(self):
         schema_paths = sorted((RESOURCE_ROOT / "schemas").glob("*.schema.json"))
         self.assertEqual(len(schema_paths), 5)
-        identifiers = {
-            json.loads(path.read_text())["$id"]
-            for path in schema_paths
-        }
+        identifiers = {json.loads(path.read_text())["$id"] for path in schema_paths}
         self.assertEqual(len(identifiers), len(schema_paths))
         self.assertTrue(all("v1" in identifier for identifier in identifiers))
 

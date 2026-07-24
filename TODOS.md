@@ -95,17 +95,17 @@
 
 ## Milestone 6 — Cutover
 
-- [ ] Copy required built-in resources into the active resource layout without
+- [x] Copy required built-in resources into the active resource layout without
       importing or writing into `codebase/`.
-- [ ] Update developer documentation and supported platform launchers to invoke
+- [x] Update developer documentation and supported platform launchers to invoke
       only the new package entry point.
-- [ ] Run format, lint, unit, integration, headless self-test, and command audit.
-- [ ] Run manual regression checks for authoring, playback, saved gestures, file
+- [x] Run format, lint, unit, integration, headless self-test, and command audit.
+- [x] Run manual regression checks for authoring, playback, saved gestures, file
       compatibility, exports, and viewer synchronization.
-- [ ] Verify the new application has no absolute paths and no runtime dependency on
+- [x] Verify the new application has no absolute paths and no runtime dependency on
       the legacy tree.
-- [ ] Mark `codebase/` clearly as read-only legacy backup.
-- [ ] Quality gate: all tests and parity checklist pass before declaring cutover.
+- [x] Mark `codebase/` clearly as read-only legacy backup.
+- [x] Quality gate: all tests and parity checklist pass before declaring cutover.
 
 ## Milestone 7 — Active-Tree Cleanup and Release
 

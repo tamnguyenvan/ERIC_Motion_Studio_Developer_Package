@@ -81,17 +81,11 @@ class KeyframeEditorWidget(QGroupBox):
         self.keyframe_list.clear()
         for index, frame in enumerate(motion.keyframes, start=1):
             self.keyframe_list.addItem(
-                QListWidgetItem(
-                    f"{index}. {frame.name} — {frame.duration_ms} ms"
-                )
+                QListWidgetItem(f"{index}. {frame.name} — {frame.duration_ms} ms")
             )
         self.keyframe_list.setCurrentRow(selected_index)
-        self.duration_spin.setValue(
-            motion.keyframes[selected_index].duration_ms
-        )
+        self.duration_spin.setValue(motion.keyframes[selected_index].duration_ms)
         self.delete_button.setEnabled(len(motion.keyframes) > 1)
         self.up_button.setEnabled(selected_index > 0)
-        self.down_button.setEnabled(
-            selected_index < len(motion.keyframes) - 1
-        )
+        self.down_button.setEnabled(selected_index < len(motion.keyframes) - 1)
         del blockers

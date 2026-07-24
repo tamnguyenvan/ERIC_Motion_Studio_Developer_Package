@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Mapping
 
-from eric_motion_studio.domain.model import ModelProfile, UNITREE_G1
-
+from eric_motion_studio.domain.model import UNITREE_G1, ModelProfile
 
 DEFAULT_KEYFRAME_DURATION_MS = 900
 MIN_TRAJECTORY_FRAME_DURATION_MS = 1
@@ -44,7 +43,7 @@ class JointValues:
         cls,
         values: Mapping[str, object] | None = None,
         profile: ModelProfile = UNITREE_G1,
-    ) -> "JointValues":
+    ) -> JointValues:
         source = values or {}
         unknown = sorted(set(source) - set(profile.joint_names))
         if unknown:
@@ -57,7 +56,7 @@ class JointValues:
         )
 
     @classmethod
-    def neutral(cls, profile: ModelProfile = UNITREE_G1) -> "JointValues":
+    def neutral(cls, profile: ModelProfile = UNITREE_G1) -> JointValues:
         return cls(tuple(0.0 for _ in profile.joint_names), profile)
 
     def get(self, joint_name: str) -> float:
@@ -87,11 +86,7 @@ class Keyframe:
             raise ValueError("Keyframe name must not be empty")
         if not isinstance(self.duration_ms, int) or isinstance(self.duration_ms, bool):
             raise ValueError("Keyframe duration must be an integer")
-        if not (
-            MIN_TRAJECTORY_FRAME_DURATION_MS
-            <= self.duration_ms
-            <= MAX_KEYFRAME_DURATION_MS
-        ):
+        if not (MIN_TRAJECTORY_FRAME_DURATION_MS <= self.duration_ms <= MAX_KEYFRAME_DURATION_MS):
             raise ValueError(
                 "Keyframe duration must be between "
                 f"{MIN_TRAJECTORY_FRAME_DURATION_MS} "
@@ -212,8 +207,7 @@ class PlaybackState:
             raise ValueError("Playback position must be non-negative")
         if not MIN_PLAYBACK_SPEED <= self.speed <= MAX_PLAYBACK_SPEED:
             raise ValueError(
-                f"Playback speed must be between {MIN_PLAYBACK_SPEED} "
-                f"and {MAX_PLAYBACK_SPEED}"
+                f"Playback speed must be between {MIN_PLAYBACK_SPEED} and {MAX_PLAYBACK_SPEED}"
             )
 
 

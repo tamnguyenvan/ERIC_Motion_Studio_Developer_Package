@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 import math
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
 
 from eric_motion_studio.gestures.normalization import normalize_text
 from eric_motion_studio.gestures.slots import (
@@ -17,7 +17,6 @@ from eric_motion_studio.gestures.slots import (
     SlotName,
     Speed,
 )
-
 
 DEFINITION_SCHEMA_VERSION = 1
 _IDENTIFIER = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -36,7 +35,7 @@ class GestureConstraints:
     collision_check: bool
 
     @classmethod
-    def from_payload(cls, raw_payload: object) -> "GestureConstraints":
+    def from_payload(cls, raw_payload: object) -> GestureConstraints:
         if not isinstance(raw_payload, Mapping):
             raise DefinitionValidationError("constraints must be an object")
         required = {
@@ -55,9 +54,7 @@ class GestureConstraints:
             minimum = float(raw_payload["min_amplitude_rad"])
             maximum_duration = float(raw_payload["max_duration_seconds"])
         except (TypeError, ValueError) as error:
-            raise DefinitionValidationError(
-                "constraint numeric fields must be numbers"
-            ) from error
+            raise DefinitionValidationError("constraint numeric fields must be numbers") from error
         if (
             not math.isfinite(minimum)
             or minimum < 0.0
@@ -74,9 +71,7 @@ class GestureConstraints:
             )
         }
         if any(not isinstance(value, bool) for value in boolean_values.values()):
-            raise DefinitionValidationError(
-                "constraint boolean fields must be booleans"
-            )
+            raise DefinitionValidationError("constraint boolean fields must be booleans")
         return cls(
             min_amplitude_rad=minimum,
             max_duration_seconds=maximum_duration,
@@ -97,7 +92,7 @@ class GestureDefinition:
     constraints: GestureConstraints
 
     @classmethod
-    def from_payload(cls, raw_payload: object) -> "GestureDefinition":
+    def from_payload(cls, raw_payload: object) -> GestureDefinition:
         if not isinstance(raw_payload, Mapping):
             raise DefinitionValidationError("gesture definition must be an object")
         canonical_id = raw_payload.get("canonical_id")
@@ -141,9 +136,8 @@ class GestureDefinition:
         _validate_defaults(raw_defaults)
 
         raw_tags = raw_payload.get("tags")
-        if (
-            not isinstance(raw_tags, list)
-            or any(not isinstance(tag, str) or not tag.strip() for tag in raw_tags)
+        if not isinstance(raw_tags, list) or any(
+            not isinstance(tag, str) or not tag.strip() for tag in raw_tags
         ):
             raise DefinitionValidationError("tags must contain non-empty strings")
 
@@ -154,9 +148,7 @@ class GestureDefinition:
             generator_id=generator_id,
             defaults=tuple(raw_defaults.items()),
             tags=tuple(raw_tags),
-            constraints=GestureConstraints.from_payload(
-                raw_payload.get("constraints")
-            ),
+            constraints=GestureConstraints.from_payload(raw_payload.get("constraints")),
         )
 
     @property
@@ -176,9 +168,7 @@ def _validate_defaults(defaults: Mapping[str, object]) -> None:
             try:
                 enum_type(str(defaults[name]))
             except ValueError as error:
-                raise DefinitionValidationError(
-                    f"default {name!r} is invalid"
-                ) from error
+                raise DefinitionValidationError(f"default {name!r} is invalid") from error
     if "hold" in defaults:
         try:
             hold = float(defaults["hold"])
@@ -201,13 +191,10 @@ class GestureRegistry:
         if len(set(identifiers)) != len(identifiers):
             raise DefinitionValidationError("canonical gesture IDs must be unique")
         self._definitions = definitions
-        self._by_id = {
-            definition.canonical_id: definition
-            for definition in definitions
-        }
+        self._by_id = {definition.canonical_id: definition for definition in definitions}
 
     @classmethod
-    def from_payload(cls, raw_payload: object) -> "GestureRegistry":
+    def from_payload(cls, raw_payload: object) -> GestureRegistry:
         if not isinstance(raw_payload, Mapping):
             raise DefinitionValidationError("definition registry must be an object")
         if raw_payload.get("schema_version") != DEFINITION_SCHEMA_VERSION:
@@ -218,27 +205,20 @@ class GestureRegistry:
         if not isinstance(raw_definitions, list) or not raw_definitions:
             raise DefinitionValidationError("definitions must be a non-empty array")
         return cls(
-            tuple(
-                GestureDefinition.from_payload(definition)
-                for definition in raw_definitions
-            )
+            tuple(GestureDefinition.from_payload(definition) for definition in raw_definitions)
         )
 
     @classmethod
-    def from_directory(cls, directory: Path) -> "GestureRegistry":
+    def from_directory(cls, directory: Path) -> GestureRegistry:
         definitions: list[GestureDefinition] = []
         paths = sorted(directory.glob("*.json"))
         if not paths:
-            raise DefinitionValidationError(
-                f"No gesture definitions found in {directory}"
-            )
+            raise DefinitionValidationError(f"No gesture definitions found in {directory}")
         for path in paths:
             try:
                 payload = json.loads(path.read_text())
             except json.JSONDecodeError as error:
-                raise DefinitionValidationError(
-                    f"{path} contains invalid JSON: {error}"
-                ) from error
+                raise DefinitionValidationError(f"{path} contains invalid JSON: {error}") from error
             registry = cls.from_payload(payload)
             definitions.extend(registry.definitions)
         return cls(tuple(definitions))

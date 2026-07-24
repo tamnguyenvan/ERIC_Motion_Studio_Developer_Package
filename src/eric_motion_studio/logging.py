@@ -9,7 +9,6 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_MAX_LOG_BYTES = 1_000_000
 DEFAULT_BACKUP_COUNT = 3
 

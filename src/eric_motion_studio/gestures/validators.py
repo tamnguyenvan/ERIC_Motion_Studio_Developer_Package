@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from eric_motion_studio.domain import Motion, UNITREE_G1, dense_trajectory
+from eric_motion_studio.domain import UNITREE_G1, Motion, dense_trajectory
 from eric_motion_studio.gestures.definitions import GestureDefinition
 from eric_motion_studio.gestures.slots import GestureSlots, Side
 
@@ -75,11 +75,7 @@ def _validate_amplitude(
     issues: list[ValidationIssue],
     metrics: dict[str, float],
 ) -> None:
-    amplitude = max(
-        abs(value)
-        for frame in motion.keyframes
-        for value in frame.joints.values
-    )
+    amplitude = max(abs(value) for frame in motion.keyframes for value in frame.joints.values)
     metrics["max_amplitude_rad"] = amplitude
     if amplitude + 1e-9 < definition.constraints.min_amplitude_rad:
         issues.append(
@@ -104,14 +100,8 @@ def _validate_trajectory(
     duration = plan.duration_seconds
     metrics["trajectory_duration_seconds"] = duration
     metrics["trajectory_frame_count"] = float(len(plan.frames))
-    if not all(
-        math.isfinite(value)
-        for frame in plan.frames
-        for value in frame.joints.values
-    ):
-        issues.append(
-            ValidationIssue("trajectory", "Trajectory contains non-finite values")
-        )
+    if not all(math.isfinite(value) for frame in plan.frames for value in frame.joints.values):
+        issues.append(ValidationIssue("trajectory", "Trajectory contains non-finite values"))
     if duration > definition.constraints.max_duration_seconds:
         issues.append(
             ValidationIssue(
@@ -128,14 +118,9 @@ def _validate_balance(
 ) -> None:
     leg_names = UNITREE_G1.groups["legs"]
     max_leg_offset = max(
-        abs(frame.joints.get(name))
-        for frame in motion.keyframes
-        for name in leg_names
+        abs(frame.joints.get(name)) for frame in motion.keyframes for name in leg_names
     )
-    max_waist_roll = max(
-        abs(frame.joints.get("waist_roll_joint"))
-        for frame in motion.keyframes
-    )
+    max_waist_roll = max(abs(frame.joints.get("waist_roll_joint")) for frame in motion.keyframes)
     metrics["max_leg_offset_rad"] = max_leg_offset
     metrics["max_waist_roll_rad"] = max_waist_roll
     if max_leg_offset > 0.28 or max_waist_roll > 0.10:

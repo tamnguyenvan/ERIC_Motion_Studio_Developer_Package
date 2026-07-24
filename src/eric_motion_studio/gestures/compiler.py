@@ -55,13 +55,9 @@ class GestureCompiler:
         self.generators = generators
 
     @classmethod
-    def default(cls, resource_root: Path = RESOURCE_ROOT) -> "GestureCompiler":
-        registry = GestureRegistry.from_directory(
-            resource_root / "gesture_definitions"
-        )
-        stages = StageLibrary.from_path(
-            resource_root / "gesture_stages" / "builtin_stages.json"
-        )
+    def default(cls, resource_root: Path = RESOURCE_ROOT) -> GestureCompiler:
+        registry = GestureRegistry.from_directory(resource_root / "gesture_definitions")
+        stages = StageLibrary.from_path(resource_root / "gesture_stages" / "builtin_stages.json")
         return cls(registry, stages, default_generator_registry())
 
     def compile(self, command: str) -> CompilationResult:

@@ -6,7 +6,6 @@ import re
 import unicodedata
 from dataclasses import dataclass
 
-
 _NON_WORD = re.compile(r"[^a-z0-9]+")
 _SPACE = re.compile(r"\s+")
 

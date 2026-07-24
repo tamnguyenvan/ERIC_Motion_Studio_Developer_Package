@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from enum import StrEnum
-from typing import Mapping
 
 from eric_motion_studio.gestures.normalization import normalize_text
 
@@ -63,21 +63,15 @@ class GestureSlots:
     neutral_return: bool = True
     provided: frozenset[SlotName] = frozenset()
 
-    def with_defaults(self, defaults: Mapping[str, object]) -> "GestureSlots":
+    def with_defaults(self, defaults: Mapping[str, object]) -> GestureSlots:
         values: dict[str, object] = {}
         if SlotName.SIDE not in self.provided and defaults.get("side") is not None:
             values["side"] = Side(str(defaults["side"]))
-        if (
-            SlotName.DIRECTION not in self.provided
-            and defaults.get("direction") is not None
-        ):
+        if SlotName.DIRECTION not in self.provided and defaults.get("direction") is not None:
             values["direction"] = Direction(str(defaults["direction"]))
         if SlotName.SPEED not in self.provided and defaults.get("speed") is not None:
             values["speed"] = Speed(str(defaults["speed"]))
-        if (
-            SlotName.INTENSITY not in self.provided
-            and defaults.get("intensity") is not None
-        ):
+        if SlotName.INTENSITY not in self.provided and defaults.get("intensity") is not None:
             values["intensity"] = Intensity(str(defaults["intensity"]))
         if SlotName.HOLD not in self.provided and defaults.get("hold") is not None:
             values["hold_seconds"] = float(defaults["hold"])
@@ -92,9 +86,7 @@ class GestureSlots:
 _HOLD_PATTERN = re.compile(
     r"\b(?:hold|pause)(?:\s+(?:for))?\s+(\d+(?:\.\d+)?)\s*(seconds?|secs?|s)\b"
 )
-_SEQUENCE_SPLIT = re.compile(
-    r"\s*(?:(?<!\d)[.;](?!\d)|\bthen\b|\bwhile\b)\s*"
-)
+_SEQUENCE_SPLIT = re.compile(r"\s*(?:(?<!\d)[.;](?!\d)|\bthen\b|\bwhile\b)\s*")
 _NEUTRAL_RESET_COMMAND = re.compile(
     r"(?:(?:please|kindly)\s+)?"
     r"(?:(?:can|could|would)\s+you\s+)?"
@@ -128,13 +120,7 @@ def extract_slots(command: str) -> GestureSlots:
     strong = any(word in text.split() for word in ("strong", "strongly", "firmly", "wide"))
     if subtle and strong:
         raise SlotExtractionError("Command contains conflicting intensity modifiers")
-    intensity = (
-        Intensity.SUBTLE
-        if subtle
-        else Intensity.STRONG
-        if strong
-        else Intensity.NORMAL
-    )
+    intensity = Intensity.SUBTLE if subtle else Intensity.STRONG if strong else Intensity.NORMAL
     if subtle or strong:
         provided.add(SlotName.INTENSITY)
 
@@ -184,9 +170,7 @@ def extract_slots(command: str) -> GestureSlots:
         }
         words = set(text.split())
         matches = [
-            candidate
-            for candidate, terms in direction_terms.items()
-            if words.intersection(terms)
+            candidate for candidate, terms in direction_terms.items() if words.intersection(terms)
         ]
         if len(matches) > 1:
             raise SlotExtractionError("Command contains conflicting directions")
@@ -213,10 +197,7 @@ def extract_slots(command: str) -> GestureSlots:
     if re.search(r"\b(?:do not|dont|without) return(?:ing)? to neutral\b", text):
         neutral_return = False
         provided.add(SlotName.NEUTRAL_RETURN)
-    elif (
-        "return to neutral" in text
-        and _NEUTRAL_RESET_COMMAND.fullmatch(text) is None
-    ):
+    elif "return to neutral" in text and _NEUTRAL_RESET_COMMAND.fullmatch(text) is None:
         provided.add(SlotName.NEUTRAL_RETURN)
 
     return GestureSlots(

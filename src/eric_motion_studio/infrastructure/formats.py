@@ -11,7 +11,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from eric_motion_studio.domain.model import ModelProfile, UNITREE_G1
+from eric_motion_studio.domain.model import UNITREE_G1, ModelProfile
 from eric_motion_studio.domain.values import (
     MAX_KEYFRAME_DURATION_MS,
     MIN_KEYFRAME_DURATION_MS,
@@ -22,7 +22,6 @@ from eric_motion_studio.domain.values import (
     Pose,
     TrajectoryFrame,
 )
-
 
 ANIMATION_SCHEMA = "eric_motion_studio_animation_v1"
 ANIMATION_VERSION = 1
@@ -42,7 +41,7 @@ def _mapping(payload: object, context: str) -> Mapping[str, Any]:
 
 
 def _sequence(payload: object, context: str) -> Sequence[Any]:
-    if not isinstance(payload, Sequence) or isinstance(payload, (str, bytes)):
+    if not isinstance(payload, Sequence) or isinstance(payload, str | bytes):
         raise SchemaValidationError(f"{context} must be an array")
     return payload
 
@@ -94,20 +93,15 @@ class AnimationSerializer:
     def from_payload(self, raw_payload: object) -> Motion:
         payload = _mapping(raw_payload, "animation")
         if payload.get("schema") != ANIMATION_SCHEMA:
-            raise SchemaValidationError(
-                f"animation.schema must be {ANIMATION_SCHEMA!r}"
-            )
+            raise SchemaValidationError(f"animation.schema must be {ANIMATION_SCHEMA!r}")
         if payload.get("version") not in (None, ANIMATION_VERSION):
-            raise SchemaValidationError(
-                f"animation.version must be {ANIMATION_VERSION}"
-            )
+            raise SchemaValidationError(f"animation.version must be {ANIMATION_VERSION}")
 
         raw_frames = _sequence(payload.get("keyframes"), "animation.keyframes")
         if not raw_frames:
             raise SchemaValidationError("animation.keyframes must not be empty")
         frames = tuple(
-            self._keyframe_from_payload(frame, index)
-            for index, frame in enumerate(raw_frames)
+            self._keyframe_from_payload(frame, index) for index, frame in enumerate(raw_frames)
         )
         name = payload.get("motion_name") or payload.get("name")
         if not isinstance(name, str) or not name.strip():
@@ -122,9 +116,7 @@ class AnimationSerializer:
                     "animation.total_duration_ms must be an integer"
                 ) from error
             if duration != sum(frame.duration_ms for frame in frames):
-                raise SchemaValidationError(
-                    "animation.total_duration_ms does not match keyframes"
-                )
+                raise SchemaValidationError("animation.total_duration_ms does not match keyframes")
 
         return Motion(
             name=name,
@@ -189,19 +181,21 @@ class AnimationSerializer:
 
     def to_payload(self, motion: Motion) -> dict[str, Any]:
         payload: dict[str, Any] = dict(motion.metadata)
-        payload.update({
-            "schema": ANIMATION_SCHEMA,
-            "version": ANIMATION_VERSION,
-            "simulation_only": motion.simulation_only,
-            "motion_name": motion.name,
-            "name": motion.name,
-            "model": motion.model_ref,
-            "loop": motion.loop,
-            "total_duration_ms": motion.total_duration_ms,
-            "created_at": motion.created_at,
-            "updated_at": motion.updated_at,
-            "keyframes": [self._keyframe_to_payload(frame) for frame in motion.keyframes],
-        })
+        payload.update(
+            {
+                "schema": ANIMATION_SCHEMA,
+                "version": ANIMATION_VERSION,
+                "simulation_only": motion.simulation_only,
+                "motion_name": motion.name,
+                "name": motion.name,
+                "model": motion.model_ref,
+                "loop": motion.loop,
+                "total_duration_ms": motion.total_duration_ms,
+                "created_at": motion.created_at,
+                "updated_at": motion.updated_at,
+                "keyframes": [self._keyframe_to_payload(frame) for frame in motion.keyframes],
+            }
+        )
         if motion.description:
             payload["description"] = motion.description
         return payload
@@ -251,13 +245,15 @@ class PoseSerializer:
 
     def to_payload(self, pose: Pose) -> dict[str, Any]:
         payload: dict[str, Any] = dict(pose.metadata)
-        payload.update({
-            "schema": POSE_SCHEMA,
-            "simulation_only": pose.simulation_only,
-            "model": pose.model_ref,
-            "created_at": pose.created_at,
-            "joint_offsets_rad": pose.joints.to_mapping(digits=6),
-        })
+        payload.update(
+            {
+                "schema": POSE_SCHEMA,
+                "simulation_only": pose.simulation_only,
+                "model": pose.model_ref,
+                "created_at": pose.created_at,
+                "joint_offsets_rad": pose.joints.to_mapping(digits=6),
+            }
+        )
         return payload
 
 
@@ -268,9 +264,7 @@ class GestureSerializer:
     def from_payload(self, raw_payload: object) -> Gesture:
         payload = _mapping(raw_payload, "gesture")
         if payload.get("schema_version") != GESTURE_SCHEMA_VERSION:
-            raise SchemaValidationError(
-                f"gesture.schema_version must be {GESTURE_SCHEMA_VERSION}"
-            )
+            raise SchemaValidationError(f"gesture.schema_version must be {GESTURE_SCHEMA_VERSION}")
         joint_names = _sequence(payload.get("joint_names"), "gesture.joint_names")
         if tuple(joint_names) != self.profile.joint_names:
             raise SchemaValidationError(
@@ -286,8 +280,7 @@ class GestureSerializer:
         if not raw_frames:
             raise SchemaValidationError("gesture.frames must not be empty")
         frames = tuple(
-            self._frame_from_payload(frame, index)
-            for index, frame in enumerate(raw_frames)
+            self._frame_from_payload(frame, index) for index, frame in enumerate(raw_frames)
         )
         if payload.get("frame_count") != len(frames):
             raise SchemaValidationError("gesture.frame_count does not match frames")
@@ -296,9 +289,7 @@ class GestureSerializer:
             "gesture.duration_seconds",
         )
         if abs(declared_duration - frames[-1].timestamp) > 1e-6:
-            raise SchemaValidationError(
-                "gesture.duration_seconds does not match the final frame"
-            )
+            raise SchemaValidationError("gesture.duration_seconds does not match the final frame")
 
         raw_tags = _sequence(payload.get("tags", []), "gesture.tags")
         if not all(isinstance(tag, str) for tag in raw_tags):
@@ -385,31 +376,33 @@ class GestureSerializer:
                 "gesture frame profiles do not match the configured model profile"
             )
         payload: dict[str, Any] = dict(gesture.metadata)
-        payload.update({
-            "schema_version": GESTURE_SCHEMA_VERSION,
-            "gesture_id": gesture.gesture_id,
-            "display_name": gesture.display_name,
-            "source_prompt": gesture.source_prompt,
-            "created_at": gesture.created_at,
-            "robot_model": gesture.robot_model,
-            "simulation_only": gesture.simulation_only,
-            "frame_rate": gesture.frame_rate,
-            "duration_seconds": round(gesture.duration_seconds, 6),
-            "frame_count": len(gesture.frames),
-            "motion_type": gesture.motion_type,
-            "loopable": gesture.loopable,
-            "interruptible": gesture.interruptible,
-            "return_to_neutral": gesture.return_to_neutral,
-            "tags": list(gesture.tags),
-            "joint_names": list(self.profile.joint_names),
-            "frames": [
-                {
-                    "timestamp": round(frame.timestamp, 6),
-                    "joint_targets": list(frame.joints.values),
-                }
-                for frame in gesture.frames
-            ],
-        })
+        payload.update(
+            {
+                "schema_version": GESTURE_SCHEMA_VERSION,
+                "gesture_id": gesture.gesture_id,
+                "display_name": gesture.display_name,
+                "source_prompt": gesture.source_prompt,
+                "created_at": gesture.created_at,
+                "robot_model": gesture.robot_model,
+                "simulation_only": gesture.simulation_only,
+                "frame_rate": gesture.frame_rate,
+                "duration_seconds": round(gesture.duration_seconds, 6),
+                "frame_count": len(gesture.frames),
+                "motion_type": gesture.motion_type,
+                "loopable": gesture.loopable,
+                "interruptible": gesture.interruptible,
+                "return_to_neutral": gesture.return_to_neutral,
+                "tags": list(gesture.tags),
+                "joint_names": list(self.profile.joint_names),
+                "frames": [
+                    {
+                        "timestamp": round(frame.timestamp, 6),
+                        "joint_targets": list(frame.joints.values),
+                    }
+                    for frame in gesture.frames
+                ],
+            }
+        )
         return payload
 
 
@@ -420,20 +413,14 @@ class BrainOSSerializer:
     def from_payload(self, raw_payload: object) -> Motion:
         payload = dict(_mapping(raw_payload, "BrainOS export"))
         if payload.get("schema") != BRAINOS_SCHEMA:
-            raise SchemaValidationError(
-                f"BrainOS export.schema must be {BRAINOS_SCHEMA!r}"
-            )
+            raise SchemaValidationError(f"BrainOS export.schema must be {BRAINOS_SCHEMA!r}")
         if payload.get("source") != "ERIC Motion Studio":
-            raise SchemaValidationError(
-                "BrainOS export.source must be 'ERIC Motion Studio'"
-            )
+            raise SchemaValidationError("BrainOS export.source must be 'ERIC Motion Studio'")
         version = payload.get("version")
         if not isinstance(version, int) or isinstance(version, bool) or version != 1:
             raise SchemaValidationError("BrainOS export.version must be 1")
         if payload.get("simulation_only") is not True:
-            raise SchemaValidationError(
-                "BrainOS export.simulation_only must be true"
-            )
+            raise SchemaValidationError("BrainOS export.simulation_only must be true")
         payload.pop("source", None)
         payload.pop("export_note", None)
         payload["schema"] = ANIMATION_SCHEMA
@@ -441,19 +428,14 @@ class BrainOSSerializer:
 
     def to_payload(self, motion: Motion) -> dict[str, Any]:
         if not motion.simulation_only:
-            raise SchemaValidationError(
-                "BrainOS exports require simulation_only to be true"
-            )
+            raise SchemaValidationError("BrainOS exports require simulation_only to be true")
         payload = self.animations.to_payload(motion)
         payload.update(
             {
                 "schema": BRAINOS_SCHEMA,
                 "source": "ERIC Motion Studio",
                 "description": motion.description,
-                "export_note": (
-                    "Local simulation-only package. "
-                    "Not deployed to physical ERIC."
-                ),
+                "export_note": ("Local simulation-only package. Not deployed to physical ERIC."),
             }
         )
         return payload

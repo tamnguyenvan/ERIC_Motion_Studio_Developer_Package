@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Mapping
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,9 +48,7 @@ class ModelProfile:
         object.__setattr__(
             self,
             "groups",
-            MappingProxyType(
-                {name: tuple(joints) for name, joints in self.groups.items()}
-            ),
+            MappingProxyType({name: tuple(joints) for name, joints in self.groups.items()}),
         )
 
     def joint_index(self, joint_name: str) -> int:
@@ -143,10 +141,7 @@ UNITREE_G1 = ModelProfile(
     model_id="unitree_g1_29dof",
     display_name="Unitree G1",
     joint_names=FULL_BODY_JOINTS,
-    limits={
-        name: JointLimit(lower, upper)
-        for name, (lower, upper) in _LIMIT_VALUES.items()
-    },
+    limits={name: JointLimit(lower, upper) for name, (lower, upper) in _LIMIT_VALUES.items()},
     groups={
         "left_leg": LEFT_LEG_JOINTS,
         "right_leg": RIGHT_LEG_JOINTS,

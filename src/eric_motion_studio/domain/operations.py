@@ -161,8 +161,6 @@ def remove_keyframe(motion: Motion, index: int) -> Motion:
     return replace(
         motion,
         keyframes=tuple(
-            frame
-            for frame_index, frame in enumerate(motion.keyframes)
-            if frame_index != index
+            frame for frame_index, frame in enumerate(motion.keyframes) if frame_index != index
         ),
     )

@@ -5,7 +5,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 # ruff: noqa: E402
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -22,7 +21,6 @@ from eric_motion_studio.ui.services import (
     NullPlaybackOutput,
     UnsavedDecision,
 )
-
 from test_ui_controllers import FakeExportService, FakeMotionStore
 
 
@@ -71,9 +69,7 @@ class QtCriticalFlowTests(unittest.TestCase):
         self.dialogs = FakeDialogs(self.root)
         services = ApplicationServices(
             motions=self.store,
-            gestures=CompilerGestureAuthoringService(
-                GestureCompiler.default()
-            ),
+            gestures=CompilerGestureAuthoringService(GestureCompiler.default()),
             exports=self.exports,
             playback=NullPlaybackOutput(),
             dialogs=self.dialogs,
@@ -140,9 +136,7 @@ class QtCriticalFlowTests(unittest.TestCase):
         self.assertEqual(self.window.documents.state.undo_depth, 1)
 
     def test_gesture_playback_save_and_export_flows(self):
-        self.window.gesture_widget.prompt_edit.setText(
-            "wave with your left hand"
-        )
+        self.window.gesture_widget.prompt_edit.setText("wave with your left hand")
         QTest.mouseClick(
             self.window.gesture_widget.compile_button,
             Qt.LeftButton,

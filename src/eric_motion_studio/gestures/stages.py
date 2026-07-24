@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
 
 from eric_motion_studio.domain import UNITREE_G1, JointValues, ModelProfile
 from eric_motion_studio.domain.values import (
     MAX_KEYFRAME_DURATION_MS,
     MIN_KEYFRAME_DURATION_MS,
 )
-
 
 STAGE_SCHEMA_VERSION = 1
 
@@ -49,7 +48,7 @@ class StageLibrary:
         cls,
         path: Path,
         profile: ModelProfile = UNITREE_G1,
-    ) -> "StageLibrary":
+    ) -> StageLibrary:
         try:
             payload = json.loads(path.read_text())
         except json.JSONDecodeError as error:
@@ -57,9 +56,7 @@ class StageLibrary:
         if not isinstance(payload, dict):
             raise StageValidationError("stage library must be an object")
         if payload.get("schema_version") != STAGE_SCHEMA_VERSION:
-            raise StageValidationError(
-                f"stage schema_version must be {STAGE_SCHEMA_VERSION}"
-            )
+            raise StageValidationError(f"stage schema_version must be {STAGE_SCHEMA_VERSION}")
 
         raw_poses = payload.get("poses")
         if not isinstance(raw_poses, dict) or not raw_poses:
@@ -73,9 +70,7 @@ class StageLibrary:
             try:
                 pose = JointValues.from_mapping(raw_pose, profile)
             except (TypeError, ValueError) as error:
-                raise StageValidationError(
-                    f"pose {pose_id!r} is invalid: {error}"
-                ) from error
+                raise StageValidationError(f"pose {pose_id!r} is invalid: {error}") from error
             violations = [
                 name
                 for name, value in pose.to_mapping().items()
@@ -93,22 +88,16 @@ class StageLibrary:
         sequences: dict[str, tuple[Stage, ...]] = {}
         for sequence_id, raw_stages in raw_sequences.items():
             if not isinstance(raw_stages, list) or not raw_stages:
-                raise StageValidationError(
-                    f"sequence {sequence_id!r} must be a non-empty array"
-                )
+                raise StageValidationError(f"sequence {sequence_id!r} must be a non-empty array")
             stages = tuple(
-                _stage_from_payload(raw_stage, poses, sequence_id)
-                for raw_stage in raw_stages
+                _stage_from_payload(raw_stage, poses, sequence_id) for raw_stage in raw_stages
             )
             sequences[sequence_id] = stages
 
         raw_patterns = payload.get("clause_patterns")
         if not isinstance(raw_patterns, list) or not raw_patterns:
             raise StageValidationError("clause_patterns must be a non-empty array")
-        patterns = tuple(
-            _pattern_from_payload(raw_pattern, poses)
-            for raw_pattern in raw_patterns
-        )
+        patterns = tuple(_pattern_from_payload(raw_pattern, poses) for raw_pattern in raw_patterns)
         return cls(poses, sequences, patterns)
 
     def pose(self, pose_id: str) -> JointValues:
@@ -130,23 +119,17 @@ def _stage_from_payload(
     sequence_id: str,
 ) -> Stage:
     if not isinstance(raw_stage, dict):
-        raise StageValidationError(
-            f"sequence {sequence_id!r} stages must be objects"
-        )
+        raise StageValidationError(f"sequence {sequence_id!r} stages must be objects")
     pose_id = raw_stage.get("pose")
     duration = raw_stage.get("duration_ms")
     if not isinstance(pose_id, str) or pose_id not in poses:
-        raise StageValidationError(
-            f"sequence {sequence_id!r} references an unknown pose"
-        )
+        raise StageValidationError(f"sequence {sequence_id!r} references an unknown pose")
     if (
         not isinstance(duration, int)
         or isinstance(duration, bool)
         or not MIN_KEYFRAME_DURATION_MS <= duration <= MAX_KEYFRAME_DURATION_MS
     ):
-        raise StageValidationError(
-            f"sequence {sequence_id!r} contains an invalid duration"
-        )
+        raise StageValidationError(f"sequence {sequence_id!r} contains an invalid duration")
     return Stage(pose_id, duration)
 
 

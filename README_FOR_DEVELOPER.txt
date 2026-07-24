@@ -1,43 +1,68 @@
 ERIC Motion Studio
+==================
 
-Simulation only.
+Simulation-only motion authoring for the Unitree G1 model. The application does
+not connect to physical ERIC hardware, BrainOS, DDS, or SDK2.
 
-Environment:
-- macOS
+Requirements
+------------
+
 - Python 3.11
-- MuJoCo
-- PySide6
-- Unitree G1 simulation
+- macOS or Linux with a graphical desktop for the MuJoCo viewer
 
-No physical robot.
-No BrainOS.
-No DDS.
-No SDK2.
+Install from the repository root:
 
-Current issue:
+    python3.11 -m venv .venv
+    .venv/bin/pip install -e ".[dev]"
 
-The application launches correctly.
+Supported entry points
+----------------------
 
-Existing gestures work.
+Launch the authoring application:
 
-Commands such as:
+    .venv/bin/eric-motion-studio
 
-- raise left hand
-- raise right hand
-- lift left hand
-- lift right hand
+Equivalent module invocation:
 
-currently produce:
+    .venv/bin/python -m eric_motion_studio
 
-MOTION_PARSE_FAILED
-NO_MOTION_GENERATED
+On macOS, `launchers/macos/ERIC Motion Studio.command` is the supported
+double-click launcher. It resolves the repository and virtual environment
+relative to its own location; it contains no machine-specific paths.
 
-Requested work:
+The viewer is normally supervised by the authoring application. Its diagnostic
+entry point is:
 
-1. Confirm the launcher is using the correct source file.
-2. Remove duplicate-file confusion.
-3. Extend the natural-language motion parser.
-4. Implement any missing motion routines.
-5. Test all changes in MuJoCo.
-6. Preserve existing functionality.
-7. If practical, leave the project easier to maintain.
+    .venv/bin/eric-motion-studio-viewer --self-test
+
+Validation
+----------
+
+Run the complete test and cutover gates:
+
+    .venv/bin/ruff format --check src tests tools
+    .venv/bin/ruff check src tests tools
+    QT_QPA_PLATFORM=offscreen .venv/bin/pytest
+    .venv/bin/eric-motion-studio --headless --no-console-log
+    .venv/bin/eric-motion-studio --self-test
+    .venv/bin/eric-motion-studio --audit-commands
+    .venv/bin/python tools/cutover_audit.py
+    .venv/bin/eric-motion-studio-viewer --self-test
+
+Audit one prompt:
+
+    .venv/bin/eric-motion-studio --audit-command "wave right hand"
+
+Runtime data
+------------
+
+Built-in resources are immutable package data. User motions, exports, logs, and
+viewer IPC are stored under platform user-data/state directories by default.
+Use `--data-dir`, `--export-dir`, `--log-path`, `--runtime-state-path`, or the
+matching `ERIC_MOTION_STUDIO_*` environment variables to override them.
+
+Legacy backup
+-------------
+
+`codebase/` is a read-only historical backup. It is not a supported launcher,
+import path, resource fallback, or runtime-data destination.

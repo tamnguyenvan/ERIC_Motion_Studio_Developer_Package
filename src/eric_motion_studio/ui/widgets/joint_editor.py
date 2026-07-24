@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from eric_motion_studio.domain import JointValues, ModelProfile, UNITREE_G1
+from eric_motion_studio.domain import UNITREE_G1, JointValues, ModelProfile
 
 
 class JointEditorWidget(QGroupBox):
@@ -51,18 +51,12 @@ class JointEditorWidget(QGroupBox):
 
     def current_joints(self) -> JointValues:
         return JointValues.from_mapping(
-            {
-                name: spin.value()
-                for name, spin in self.spin_boxes.items()
-            },
+            {name: spin.value() for name, spin in self.spin_boxes.items()},
             self.profile,
         )
 
     def set_joints(self, joints: JointValues) -> None:
-        blockers = [
-            QSignalBlocker(spin)
-            for spin in self.spin_boxes.values()
-        ]
+        blockers = [QSignalBlocker(spin) for spin in self.spin_boxes.values()]
         for name, spin in self.spin_boxes.items():
             spin.setValue(joints.get(name))
         del blockers

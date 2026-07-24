@@ -156,9 +156,7 @@ class LegacyCharacterizationTests(unittest.TestCase):
                 "schema": "brainos_motion_package_v1",
                 "source": "ERIC Motion Studio",
                 "description": "wave right hand",
-                "export_note": (
-                    "Local simulation-only package. Not deployed to physical ERIC."
-                ),
+                "export_note": ("Local simulation-only package. Not deployed to physical ERIC."),
             }
         )
 

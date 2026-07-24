@@ -37,10 +37,7 @@ class QtDialogService(DialogService):
         path, _filter = QFileDialog.getSaveFileName(
             self.parent,
             "Export local BrainOS motion",
-            str(
-                self.settings.export_dir
-                / f"{suggested_name}.brainos-motion.json"
-            ),
+            str(self.settings.export_dir / f"{suggested_name}.brainos-motion.json"),
             "BrainOS local motion (*.brainos-motion.json)",
         )
         return Path(path) if path else None

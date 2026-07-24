@@ -31,7 +31,6 @@ from eric_motion_studio.domain.values import (
     TrajectoryFrame,
 )
 
-
 __all__ = [
     "FULL_BODY_JOINTS",
     "UNITREE_G1",

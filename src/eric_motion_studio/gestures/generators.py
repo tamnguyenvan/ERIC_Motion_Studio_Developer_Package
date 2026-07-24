@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from eric_motion_studio.domain import JointValues, Keyframe, Motion, UNITREE_G1
+from eric_motion_studio.domain import UNITREE_G1, JointValues, Keyframe, Motion
 from eric_motion_studio.domain.values import (
     MAX_KEYFRAME_DURATION_MS,
     MIN_KEYFRAME_DURATION_MS,
@@ -22,7 +22,6 @@ from eric_motion_studio.gestures.slots import (
 )
 from eric_motion_studio.gestures.stages import StageLibrary
 
-
 GENERATED_TIMESTAMP = "1970-01-01T00:00:00+00:00"
 
 
@@ -35,8 +34,7 @@ class GenerationRequest:
 
 
 class GestureGenerator(Protocol):
-    def generate(self, request: GenerationRequest) -> Motion:
-        ...
+    def generate(self, request: GenerationRequest) -> Motion: ...
 
 
 class GeneratorRegistry:
@@ -162,10 +160,7 @@ class StageSequenceGenerator:
                 pose = _mirror_pose(pose)
             pose = _scale_pose(pose, request.slots)
             duration = _duration(stage.duration_ms, request.slots)
-            if (
-                request.slots.hold_seconds
-                and index == len(stages) - 2
-            ):
+            if request.slots.hold_seconds and index == len(stages) - 2:
                 duration = min(
                     MAX_KEYFRAME_DURATION_MS,
                     duration + _hold_duration(request.slots),
@@ -261,9 +256,7 @@ class ArmGenerator:
             Keyframe(self.pose_id, active_duration, target),
         ]
         if request.slots.neutral_return:
-            frames.append(
-                Keyframe("arm settle", _duration(650, request.slots), neutral)
-            )
+            frames.append(Keyframe("arm settle", _duration(650, request.slots), neutral))
         return _motion(request, frames)
 
 
@@ -293,9 +286,7 @@ class HandToChestGenerator:
             ),
         ]
         if request.slots.neutral_return:
-            frames.append(
-                Keyframe("chest settle", _duration(700, request.slots), neutral)
-            )
+            frames.append(Keyframe("chest settle", _duration(700, request.slots), neutral))
         return _motion(request, frames)
 
 

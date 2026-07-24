@@ -1,5 +1,10 @@
 # Unitree G1 Model
 
-The Phase 1 package includes the G1 scene and model definitions as immutable
-configuration resources. Mesh migration remains separate from mutable
-application data and will be completed with the MuJoCo adapter milestone.
+This directory is the complete immutable Unitree G1 29-DoF runtime model:
+
+- `scene_29dof.xml` is the configured viewer scene;
+- `g1_29dof.xml` defines the robot, joints, and actuators; and
+- `meshes/` contains every mesh referenced by the model.
+
+The package and installed wheel resolve these files relative to this directory.
+No runtime fallback to the legacy tree is supported.

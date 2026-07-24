@@ -68,11 +68,7 @@ class GestureResolver:
             if match is not None:
                 matches.append((definition, match))
 
-        exact_matches = [
-            (definition, match)
-            for definition, match in matches
-            if match.exact
-        ]
+        exact_matches = [(definition, match) for definition, match in matches if match.exact]
         if exact_matches:
             matches = exact_matches
         elif _has_multiple_movement_clauses(slots.sequence):
@@ -106,9 +102,7 @@ class GestureResolver:
                 status=ResolutionStatus.AMBIGUOUS,
                 normalized_command=normalized,
                 slots=slots,
-                candidates=tuple(
-                    sorted(definition.canonical_id for definition in candidates)
-                ),
+                candidates=tuple(sorted(definition.canonical_id for definition in candidates)),
                 message="Multiple gesture definitions matched equally",
             )
 
@@ -135,10 +129,7 @@ class GestureResolver:
                 candidates=(definition.canonical_id,),
                 message=f"Gesture defaults are invalid: {error}",
             )
-        if (
-            definition.constraints.requires_neutral_return
-            and not resolved_slots.neutral_return
-        ):
+        if definition.constraints.requires_neutral_return and not resolved_slots.neutral_return:
             return ResolutionResult(
                 status=ResolutionStatus.INVALID_SLOT,
                 normalized_command=normalized,
@@ -172,10 +163,4 @@ def _has_multiple_movement_clauses(sequence: tuple[str, ...]) -> bool:
         "place",
         "bend",
     }
-    return (
-        sum(
-            bool(set(clause.split()).intersection(movement_terms))
-            for clause in sequence
-        )
-        >= 2
-    )
+    return sum(bool(set(clause.split()).intersection(movement_terms)) for clause in sequence) >= 2

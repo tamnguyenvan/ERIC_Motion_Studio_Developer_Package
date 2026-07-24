@@ -7,7 +7,6 @@ from eric_motion_studio.ui.widgets.motion_metadata import MotionMetadataWidget
 from eric_motion_studio.ui.widgets.playback_controls import PlaybackControlsWidget
 from eric_motion_studio.ui.widgets.status_panel import StatusPanel
 
-
 __all__ = [
     "GestureLibraryWidget",
     "JointEditorWidget",

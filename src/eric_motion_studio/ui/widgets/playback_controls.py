@@ -62,7 +62,5 @@ class PlaybackControlsWidget(QGroupBox):
         self.speed_spin.setValue(state.speed)
         self.play_button.setEnabled(not state.playing)
         self.pause_button.setEnabled(state.playing)
-        self.stop_button.setEnabled(
-            state.playing or state.paused or state.frame_index > 0
-        )
+        self.stop_button.setEnabled(state.playing or state.paused or state.frame_index > 0)
         del blockers
