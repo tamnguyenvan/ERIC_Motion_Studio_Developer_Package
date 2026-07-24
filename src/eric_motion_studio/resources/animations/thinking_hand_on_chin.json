@@ -2,7 +2,7 @@
   "schema": "eric_motion_studio_animation_v1",
   "simulation_only": true,
   "name": "Thinking \u2013 Hand on Chin",
-  "model": "/Users/martinnicholas/Desktop/ERIC-MuJoCo/unitree_mujoco/unitree_robots/g1/scene_29dof.xml",
+  "model": "models/g1/scene_29dof.xml",
   "created_at": "2026-07-23T08:01:05+0100",
   "keyframes": [
     {

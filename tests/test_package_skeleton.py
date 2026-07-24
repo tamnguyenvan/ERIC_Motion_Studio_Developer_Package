@@ -101,6 +101,19 @@ class PackageSkeletonTests(unittest.TestCase):
             3,
         )
 
+    def test_packaged_animations_use_portable_model_references(self):
+        from eric_motion_studio.config import RESOURCE_ROOT
+
+        for animation_path in (RESOURCE_ROOT / "animations").glob("*.json"):
+            payload = json.loads(animation_path.read_text())
+            model_reference = Path(payload["model"])
+
+            self.assertFalse(model_reference.is_absolute(), animation_path.name)
+            self.assertTrue(
+                (RESOURCE_ROOT / model_reference).is_file(),
+                animation_path.name,
+            )
+
     def test_structured_logging_is_json_and_bounded(self):
         from eric_motion_studio.logging import (
             DEFAULT_BACKUP_COUNT,
