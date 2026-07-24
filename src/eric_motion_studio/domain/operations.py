@@ -8,6 +8,7 @@ from eric_motion_studio.domain.values import (
     DEFAULT_FRAME_RATE,
     MAX_KEYFRAME_DURATION_MS,
     MIN_KEYFRAME_DURATION_MS,
+    MIN_TRAJECTORY_FRAME_DURATION_MS,
     JointValues,
     Keyframe,
     Motion,
@@ -127,7 +128,7 @@ def keyframes_from_trajectory(
     name_prefix: str = "Trajectory frame",
 ) -> tuple[Keyframe, ...]:
     duration_ms = max(
-        MIN_KEYFRAME_DURATION_MS,
+        MIN_TRAJECTORY_FRAME_DURATION_MS,
         round(1000.0 / plan.frame_rate),
     )
     return tuple(

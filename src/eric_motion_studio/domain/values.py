@@ -11,6 +11,7 @@ from eric_motion_studio.domain.model import ModelProfile, UNITREE_G1
 
 
 DEFAULT_KEYFRAME_DURATION_MS = 900
+MIN_TRAJECTORY_FRAME_DURATION_MS = 1
 MIN_KEYFRAME_DURATION_MS = 100
 MAX_KEYFRAME_DURATION_MS = 10_000
 DEFAULT_FRAME_RATE = 30
@@ -86,9 +87,14 @@ class Keyframe:
             raise ValueError("Keyframe name must not be empty")
         if not isinstance(self.duration_ms, int) or isinstance(self.duration_ms, bool):
             raise ValueError("Keyframe duration must be an integer")
-        if not MIN_KEYFRAME_DURATION_MS <= self.duration_ms <= MAX_KEYFRAME_DURATION_MS:
+        if not (
+            MIN_TRAJECTORY_FRAME_DURATION_MS
+            <= self.duration_ms
+            <= MAX_KEYFRAME_DURATION_MS
+        ):
             raise ValueError(
-                f"Keyframe duration must be between {MIN_KEYFRAME_DURATION_MS} "
+                "Keyframe duration must be between "
+                f"{MIN_TRAJECTORY_FRAME_DURATION_MS} "
                 f"and {MAX_KEYFRAME_DURATION_MS} milliseconds"
             )
 

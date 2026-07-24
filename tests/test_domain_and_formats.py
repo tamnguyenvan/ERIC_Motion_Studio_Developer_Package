@@ -11,16 +11,19 @@ from pathlib import Path
 
 from eric_motion_studio.domain import (
     UNITREE_G1,
+    Gesture,
     JointValues,
     Keyframe,
     Motion,
     PlaybackState,
     Pose,
+    TrajectoryFrame,
     append_keyframe,
     clamp_joint_values,
     clone_motion,
     dense_trajectory,
     interpolate_joint_values,
+    keyframes_from_trajectory,
     remove_keyframe,
     replace_keyframe,
     retime_motion,
@@ -122,6 +125,17 @@ class DomainOperationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             replace(state, speed=4.0)
 
+    def test_trajectory_conversion_preserves_frame_timing(self):
+        plan = dense_trajectory(self.motion.keyframes, frame_rate=30)
+        keyframes = keyframes_from_trajectory(plan)
+        reconstructed = dense_trajectory(keyframes, frame_rate=30)
+
+        self.assertEqual({frame.duration_ms for frame in keyframes}, {33})
+        self.assertAlmostEqual(
+            reconstructed.duration_seconds,
+            plan.duration_seconds,
+        )
+
 
 class RepositoryGoldenTests(unittest.TestCase):
     def test_all_packaged_animations_round_trip(self):
@@ -221,6 +235,62 @@ class RepositoryGoldenTests(unittest.TestCase):
             AnimationRepository().serializer.from_payload(invalid_animation)
         with self.assertRaises(SchemaValidationError):
             GestureRepository().serializer.from_payload(invalid_gesture)
+
+    def test_animation_rejects_non_integer_keyframe_durations(self):
+        serializer = AnimationRepository().serializer
+        source = RESOURCE_ROOT / "animations" / "conversational_talking.json"
+        valid_payload = json.loads(source.read_text())
+
+        for duration in (None, "900", 900.0, True):
+            with self.subTest(duration=duration):
+                payload = json.loads(json.dumps(valid_payload))
+                if duration is None:
+                    payload["keyframes"][0].pop("duration_ms")
+                else:
+                    payload["keyframes"][0]["duration_ms"] = duration
+                with self.assertRaises(SchemaValidationError):
+                    serializer.from_payload(payload)
+
+    def test_gesture_serialization_rejects_mismatched_frame_profile(self):
+        reordered_profile = replace(
+            UNITREE_G1,
+            joint_names=tuple(reversed(UNITREE_G1.joint_names)),
+        )
+        gesture = Gesture(
+            gesture_id="profile-mismatch",
+            display_name="Profile mismatch",
+            source_prompt="test",
+            frames=(
+                TrajectoryFrame(
+                    0.0,
+                    JointValues.neutral(reordered_profile),
+                ),
+            ),
+        )
+
+        with self.assertRaises(SchemaValidationError):
+            GestureRepository().serializer.to_payload(gesture)
+
+    def test_brainos_enforces_version_and_simulation_only(self):
+        serializer = BrainOSExportRepository().serializer
+        motion = Motion(
+            name="Export",
+            keyframes=(Keyframe("Pose", 900, JointValues.neutral()),),
+        )
+        valid_payload = serializer.to_payload(motion)
+
+        for field, value in (("version", None), ("simulation_only", False)):
+            with self.subTest(field=field):
+                payload = dict(valid_payload)
+                if value is None:
+                    payload.pop(field)
+                else:
+                    payload[field] = value
+                with self.assertRaises(SchemaValidationError):
+                    serializer.from_payload(payload)
+
+        with self.assertRaises(SchemaValidationError):
+            serializer.to_payload(replace(motion, simulation_only=False))
 
     def test_json_schema_documents_are_versioned_and_valid_json(self):
         schema_paths = sorted((RESOURCE_ROOT / "schemas").glob("*.schema.json"))

@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any
 
 from eric_motion_studio.domain.model import ModelProfile, UNITREE_G1
-from eric_motion_studio.domain.operations import clamp
 from eric_motion_studio.domain.values import (
     MAX_KEYFRAME_DURATION_MS,
     MIN_KEYFRAME_DURATION_MS,
@@ -166,19 +165,16 @@ class AnimationSerializer:
             offsets,
             f"animation.keyframes[{index}].joint_targets",
         )
-        try:
-            duration = int(frame.get("duration_ms", 900))
-        except (TypeError, ValueError) as error:
+        duration = frame.get("duration_ms")
+        if not isinstance(duration, int) or isinstance(duration, bool):
             raise SchemaValidationError(
                 f"animation.keyframes[{index}].duration_ms must be an integer"
-            ) from error
-        duration = int(
-            clamp(
-                duration,
-                MIN_KEYFRAME_DURATION_MS,
-                MAX_KEYFRAME_DURATION_MS,
             )
-        )
+        if not MIN_KEYFRAME_DURATION_MS <= duration <= MAX_KEYFRAME_DURATION_MS:
+            raise SchemaValidationError(
+                f"animation.keyframes[{index}].duration_ms must be between "
+                f"{MIN_KEYFRAME_DURATION_MS} and {MAX_KEYFRAME_DURATION_MS}"
+            )
         try:
             joints = JointValues.from_mapping(offset_mapping, self.profile)
         except (TypeError, ValueError) as error:
@@ -384,6 +380,10 @@ class GestureSerializer:
         return TrajectoryFrame(timestamp, joints)
 
     def to_payload(self, gesture: Gesture) -> dict[str, Any]:
+        if any(frame.joints.profile != self.profile for frame in gesture.frames):
+            raise SchemaValidationError(
+                "gesture frame profiles do not match the configured model profile"
+            )
         payload: dict[str, Any] = dict(gesture.metadata)
         payload.update({
             "schema_version": GESTURE_SCHEMA_VERSION,
@@ -427,12 +427,23 @@ class BrainOSSerializer:
             raise SchemaValidationError(
                 "BrainOS export.source must be 'ERIC Motion Studio'"
             )
+        version = payload.get("version")
+        if not isinstance(version, int) or isinstance(version, bool) or version != 1:
+            raise SchemaValidationError("BrainOS export.version must be 1")
+        if payload.get("simulation_only") is not True:
+            raise SchemaValidationError(
+                "BrainOS export.simulation_only must be true"
+            )
         payload.pop("source", None)
         payload.pop("export_note", None)
         payload["schema"] = ANIMATION_SCHEMA
         return self.animations.from_payload(payload)
 
     def to_payload(self, motion: Motion) -> dict[str, Any]:
+        if not motion.simulation_only:
+            raise SchemaValidationError(
+                "BrainOS exports require simulation_only to be true"
+            )
         payload = self.animations.to_payload(motion)
         payload.update(
             {
