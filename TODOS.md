@@ -69,15 +69,15 @@
 
 ## Milestone 4 — PySide6 UI Split
 
-- [ ] Extract the main window shell from application state and use cases.
-- [ ] Split motion metadata, gesture library, joint editor, keyframe editor,
+- [x] Extract the main window shell from application state and use cases.
+- [x] Split motion metadata, gesture library, joint editor, keyframe editor,
       playback controls, and status panels into focused widgets.
-- [ ] Add controllers/services for document lifecycle, undo/redo, playback,
+- [x] Add controllers/services for document lifecycle, undo/redo, playback,
       gesture authoring, export, and unsaved-change handling.
-- [ ] Replace direct file/process access in widgets with injected interfaces.
-- [ ] Preserve shortcuts, signals, selection behavior, and visible status messages.
-- [ ] Add unit tests for controllers and Qt tests for critical user flows.
-- [ ] Quality gate: UI smoke test and critical interaction tests pass.
+- [x] Replace direct file/process access in widgets with injected interfaces.
+- [x] Preserve shortcuts, signals, selection behavior, and visible status messages.
+- [x] Add unit tests for controllers and Qt tests for critical user flows.
+- [x] Quality gate: UI smoke test and critical interaction tests pass.
 
 ## Milestone 5 — MuJoCo, Viewer, and Runtime I/O
 
