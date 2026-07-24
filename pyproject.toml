@@ -32,6 +32,7 @@ dev = [
 
 [project.scripts]
 eric-motion-studio = "eric_motion_studio.cli:main"
+eric-motion-studio-viewer = "eric_motion_studio.viewer:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -47,6 +48,7 @@ eric_motion_studio = [
     "resources/gesture_definitions/*.json",
     "resources/gesture_stages/*.json",
     "resources/models/g1/*.xml",
+    "resources/models/g1/meshes/*.STL",
     "resources/schemas/*.json",
 ]
 

@@ -81,16 +81,16 @@
 
 ## Milestone 5 — MuJoCo, Viewer, and Runtime I/O
 
-- [ ] Extract model loading, bindings, neutral state, simulation mode, and safety
+- [x] Extract model loading, bindings, neutral state, simulation mode, and safety
       checks into a MuJoCo adapter.
-- [ ] Extract viewer state serialization and atomic file IPC.
-- [ ] Make the viewer a package entry point using shared configuration/model data.
-- [ ] Replace hardcoded interpreter and viewer paths with the active interpreter
+- [x] Extract viewer state serialization and atomic file IPC.
+- [x] Make the viewer a package entry point using shared configuration/model data.
+- [x] Replace hardcoded interpreter and viewer paths with the active interpreter
       and injected process-launch settings.
-- [ ] Handle viewer startup, shutdown, crash, stale state, and malformed state
+- [x] Handle viewer startup, shutdown, crash, stale state, and malformed state
       explicitly.
-- [ ] Add headless integration tests for model load and pose application.
-- [ ] Quality gate: app/viewer integration passes in `.venv` and manual MuJoCo
+- [x] Add headless integration tests for model load and pose application.
+- [x] Quality gate: app/viewer integration passes in `.venv` and manual MuJoCo
       playback matches the legacy baseline.
 
 ## Milestone 6 — Cutover

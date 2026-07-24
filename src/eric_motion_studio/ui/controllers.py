@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Callable
 
 from eric_motion_studio.domain import (
     JointValues,
@@ -24,7 +24,6 @@ from eric_motion_studio.ui.services import (
     PlaybackOutput,
     UnsavedDecision,
 )
-
 
 DocumentListener = Callable[["DocumentState"], None]
 StatusListener = Callable[[str], None]
@@ -103,9 +102,7 @@ class DocumentController:
         self._undo.append(self._state.motion)
         self._redo.clear()
         selection = (
-            self._state.selected_keyframe
-            if selected_keyframe is None
-            else selected_keyframe
+            self._state.selected_keyframe if selected_keyframe is None else selected_keyframe
         )
         selection = max(0, min(selection, len(motion.keyframes) - 1))
         self._state = replace(
@@ -335,9 +332,7 @@ class ExportController:
         except Exception as error:
             self.documents.report_status(f"Export failed: {error}")
             return False
-        self.documents.report_status(
-            f"BrainOS local export created: {path.name}"
-        )
+        self.documents.report_status(f"BrainOS local export created: {path.name}")
         return True
 
 
@@ -358,6 +353,7 @@ class PlaybackController:
         self._elapsed = 0.0
         self._state = PlaybackViewState()
         self._listeners: list[PlaybackListener] = []
+        self._status_listeners: list[StatusListener] = []
 
     @property
     def state(self) -> PlaybackViewState:
@@ -366,6 +362,15 @@ class PlaybackController:
     def subscribe(self, listener: PlaybackListener) -> None:
         self._listeners.append(listener)
         listener(self._state)
+
+    def subscribe_status(self, listener: StatusListener) -> None:
+        self._status_listeners.append(listener)
+
+    def _report_output_error(self, error: Exception) -> None:
+        self._state = replace(self._state, playing=False, paused=False)
+        self._publish()
+        for listener in self._status_listeners:
+            listener(f"Viewer unavailable: {error}")
 
     def _publish(self) -> None:
         for listener in self._listeners:
@@ -381,24 +386,34 @@ class PlaybackController:
         )
         self._publish()
 
-    def play(self) -> None:
+    def play(self) -> bool:
         if self._plan is None:
-            return
-        if self._state.frame_index >= len(self._plan.frames) - 1:
-            self.seek(0)
-        elif self._state.frame_index == 0:
-            self.output.apply_frame(self._plan.frames[0])
+            return False
+        try:
+            if self._state.frame_index >= len(self._plan.frames) - 1:
+                if not self.seek(0):
+                    return False
+            elif self._state.frame_index == 0:
+                self.output.apply_frame(self._plan.frames[0])
+        except Exception as error:
+            self._report_output_error(error)
+            return False
         self._state = replace(self._state, playing=True, paused=False)
         self._publish()
+        return True
 
     def pause(self) -> None:
         if self._state.playing:
             self._state = replace(self._state, playing=False, paused=True)
             self._publish()
 
-    def stop(self) -> None:
+    def stop(self) -> bool:
         self._elapsed = 0.0
-        self.output.reset()
+        try:
+            self.output.reset()
+        except Exception as error:
+            self._report_output_error(error)
+            return False
         self._state = replace(
             self._state,
             playing=False,
@@ -406,6 +421,7 @@ class PlaybackController:
             frame_index=0,
         )
         self._publish()
+        return True
 
     def set_speed(self, speed: float) -> None:
         if not 0.25 <= speed <= 2.0:
@@ -413,15 +429,20 @@ class PlaybackController:
         self._state = replace(self._state, speed=speed)
         self._publish()
 
-    def seek(self, frame_index: int) -> None:
+    def seek(self, frame_index: int) -> bool:
         if self._plan is None:
-            return
+            return False
         index = max(0, min(frame_index, len(self._plan.frames) - 1))
         frame = self._plan.frames[index]
         self._elapsed = frame.timestamp
-        self.output.apply_frame(frame)
+        try:
+            self.output.apply_frame(frame)
+        except Exception as error:
+            self._report_output_error(error)
+            return False
         self._state = replace(self._state, frame_index=index)
         self._publish()
+        return True
 
     def advance(self, elapsed_seconds: float) -> None:
         if not self._state.playing or self._plan is None:
@@ -434,13 +455,21 @@ class PlaybackController:
         ):
             index += 1
         if index != self._state.frame_index:
-            self.output.apply_frame(self._plan.frames[index])
+            try:
+                self.output.apply_frame(self._plan.frames[index])
+            except Exception as error:
+                self._report_output_error(error)
+                return
             self._state = replace(self._state, frame_index=index)
             self._publish()
         if index == len(self._plan.frames) - 1:
             if self._loop:
                 self._elapsed = 0.0
-                self.output.apply_frame(self._plan.frames[0])
+                try:
+                    self.output.apply_frame(self._plan.frames[0])
+                except Exception as error:
+                    self._report_output_error(error)
+                    return
                 self._state = replace(self._state, frame_index=0)
             else:
                 self._state = replace(

@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from PySide6.QtCore import QTimer, Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QKeySequence
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -16,6 +16,12 @@ from PySide6.QtWidgets import (
 )
 
 from eric_motion_studio.config import Settings
+from eric_motion_studio.runtime import (
+    ViewerPlaybackOutput,
+    ViewerProcessManager,
+    ViewerStateStore,
+)
+from eric_motion_studio.runtime.viewer_process import ViewerLaunchSettings
 from eric_motion_studio.ui.controllers import (
     DocumentController,
     DocumentState,
@@ -28,7 +34,6 @@ from eric_motion_studio.ui.qt_services import QtDialogService
 from eric_motion_studio.ui.services import (
     ApplicationServices,
     CompilerGestureAuthoringService,
-    NullPlaybackOutput,
     RepositoryMotionExportService,
     RepositoryMotionStore,
     UnsavedDecision,
@@ -52,11 +57,18 @@ def default_services(
     parent: QWidget,
     settings: Settings,
 ) -> ApplicationServices:
+    state_store = ViewerStateStore(settings.runtime_state_path)
+    viewer_process = ViewerProcessManager(
+        ViewerLaunchSettings(
+            model_path=settings.model_path,
+            state_path=settings.runtime_state_path,
+        )
+    )
     return ApplicationServices(
         motions=RepositoryMotionStore(),
         gestures=CompilerGestureAuthoringService(),
         exports=RepositoryMotionExportService(),
-        playback=NullPlaybackOutput(),
+        playback=ViewerPlaybackOutput(state_store, viewer_process),
         dialogs=QtDialogService(parent, settings),
     )
 
@@ -126,6 +138,7 @@ class MotionStudioWindow(QMainWindow):
         self.documents.subscribe(self._render_document)
         self.documents.subscribe_status(self.status_panel.set_message)
         self.playback.subscribe(self._render_playback)
+        self.playback.subscribe_status(self.status_panel.set_message)
         self.status_panel.set_message("Ready")
 
     def _create_actions(self) -> None:
@@ -185,9 +198,7 @@ class MotionStudioWindow(QMainWindow):
         self.new_action.triggered.connect(self._new_document)
         self.open_action.triggered.connect(self._open_document)
         self.save_action.triggered.connect(self._save_document)
-        self.save_as_action.triggered.connect(
-            lambda: self._save_document(force_path=True)
-        )
+        self.save_as_action.triggered.connect(lambda: self._save_document(force_path=True))
         self.export_action.triggered.connect(self._export_document)
         self.quit_action.triggered.connect(self.close)
         self.undo_action.triggered.connect(self.documents.undo)
@@ -202,28 +213,18 @@ class MotionStudioWindow(QMainWindow):
                 loop=loop,
             )
         )
-        self.keyframe_widget.selectionChanged.connect(
-            self.documents.select_keyframe
-        )
+        self.keyframe_widget.selectionChanged.connect(self.documents.select_keyframe)
         self.keyframe_widget.addRequested.connect(self._add_keyframe)
         self.keyframe_widget.captureRequested.connect(
-            lambda: self.documents.capture_selected(
-                self.joint_widget.current_joints()
-            )
+            lambda: self.documents.capture_selected(self.joint_widget.current_joints())
         )
-        self.keyframe_widget.deleteRequested.connect(
-            self.documents.delete_selected
-        )
+        self.keyframe_widget.deleteRequested.connect(self.documents.delete_selected)
         self.keyframe_widget.moveRequested.connect(self.documents.move_selected)
-        self.keyframe_widget.durationChanged.connect(
-            self.documents.set_keyframe_duration
-        )
+        self.keyframe_widget.durationChanged.connect(self.documents.set_keyframe_duration)
         self.joint_widget.jointsChanged.connect(
             lambda _joints: self.status_panel.set_message("Pose preview updated")
         )
-        self.gesture_widget.compileRequested.connect(
-            self.gesture_authoring.compile_and_apply
-        )
+        self.gesture_widget.compileRequested.connect(self.gesture_authoring.compile_and_apply)
         self.gesture_widget.gestureSelected.connect(self._select_gesture)
 
         self.playback_widget.playRequested.connect(self._play)
@@ -272,9 +273,7 @@ class MotionStudioWindow(QMainWindow):
         decision = self.services.dialogs.confirm_unsaved(state.motion.name)
         save_path = state.path
         if decision is UnsavedDecision.SAVE and save_path is None:
-            save_path = self.services.dialogs.select_save_motion(
-                _slugify(state.motion.name)
-            )
+            save_path = self.services.dialogs.select_save_motion(_slugify(state.motion.name))
             if save_path is None:
                 return False
         return self.documents.resolve_unsaved(decision, save_path)
@@ -299,9 +298,7 @@ class MotionStudioWindow(QMainWindow):
         return path is not None and self.documents.save(path)
 
     def _export_document(self) -> None:
-        path = self.services.dialogs.select_export_path(
-            _slugify(self.documents.state.motion.name)
-        )
+        path = self.services.dialogs.select_export_path(_slugify(self.documents.state.motion.name))
         if path is not None:
             self.exports.export(path)
 
@@ -309,19 +306,23 @@ class MotionStudioWindow(QMainWindow):
         self.documents.add_keyframe(self.joint_widget.current_joints())
 
     def _play(self) -> None:
-        self.playback.play()
-        self.status_panel.set_message("Playback started")
+        if self.playback.play():
+            self.status_panel.set_message("Playback started")
 
     def _pause(self) -> None:
         self.playback.pause()
         self.status_panel.set_message("Playback paused")
 
     def _stop(self) -> None:
-        self.playback.stop()
-        self.status_panel.set_message("Playback stopped")
+        if self.playback.stop():
+            self.status_panel.set_message("Playback stopped")
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if self._ensure_safe_to_replace():
+            try:
+                self.services.playback.close()
+            except Exception as error:
+                self.status_panel.set_message(f"Viewer shutdown failed: {error}")
             event.accept()
         else:
             event.ignore()
