@@ -1,0 +1,255 @@
+[
+  {
+    "accepted_phrases": [
+      "talking motion",
+      "natural talking motion",
+      "conversational idle",
+      "talking idle",
+      "presentation talking motion",
+      "happy talking motion"
+    ],
+    "affected_joints": [
+      "waist_yaw_joint",
+      "waist_roll_joint",
+      "waist_pitch_joint",
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "canonical_action": "talking_idle",
+    "return_to_neutral": true,
+    "supported_side": "body"
+  },
+  {
+    "accepted_phrases": [
+      "wave",
+      "wave with your right hand",
+      "wave with your left hand"
+    ],
+    "affected_joints": [
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "canonical_action": "wave",
+    "return_to_neutral": true,
+    "supported_side": "left,right"
+  },
+  {
+    "accepted_phrases": [
+      "raise left arm",
+      "raise right arm"
+    ],
+    "affected_joints": [
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "canonical_action": "raise_arm",
+    "return_to_neutral": true,
+    "supported_side": "left,right"
+  },
+  {
+    "accepted_phrases": [
+      "lower left arm",
+      "lower right arm"
+    ],
+    "affected_joints": [
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "canonical_action": "lower_arm",
+    "return_to_neutral": true,
+    "supported_side": "left,right"
+  },
+  {
+    "accepted_phrases": [
+      "raise both hands",
+      "open both arms as if introducing a speaker, pause, then relax"
+    ],
+    "affected_joints": [
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "canonical_action": "both_arm_motion",
+    "return_to_neutral": true,
+    "supported_side": "both"
+  },
+  {
+    "accepted_phrases": [
+      "place the right hand firmly on the centre of the chest while the left arm hangs by the side",
+      "place the left hand on the chest while extending the right arm outward"
+    ],
+    "affected_joints": [
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "canonical_action": "hand_to_chest",
+    "return_to_neutral": true,
+    "supported_side": "left,right"
+  },
+  {
+    "accepted_phrases": [
+      "welcome the audience with both hands",
+      "raise both hands to chest height with open palms. sweep both arms in a wide horizontal arc from the far left side of the body to the far right while rotating the torso to follow the movement. pause. return to neutral"
+    ],
+    "affected_joints": [
+      "waist_yaw_joint",
+      "waist_roll_joint",
+      "waist_pitch_joint",
+      "left_shoulder_pitch_joint",
+      "left_shoulder_roll_joint",
+      "left_shoulder_yaw_joint",
+      "left_elbow_joint",
+      "left_wrist_roll_joint",
+      "left_wrist_pitch_joint",
+      "left_wrist_yaw_joint",
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint"
+    ],
+    "canonical_action": "welcome_presentation",
+    "return_to_neutral": true,
+    "supported_side": "body"
+  },
+  {
+    "accepted_phrases": [
+      "scratch head",
+      "thinking scratch",
+      "rub side of head",
+      "hand to temple"
+    ],
+    "affected_joints": [
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint",
+      "waist_yaw_joint",
+      "waist_roll_joint",
+      "waist_pitch_joint"
+    ],
+    "canonical_action": "scratch_head",
+    "return_to_neutral": true,
+    "supported_side": "right"
+  },
+  {
+    "accepted_phrases": [
+      "hand on chin",
+      "thinking pose",
+      "thoughtful pose",
+      "rub chin",
+      "thinking with hand on chin",
+      "looking thoughtful"
+    ],
+    "affected_joints": [
+      "right_shoulder_pitch_joint",
+      "right_shoulder_roll_joint",
+      "right_shoulder_yaw_joint",
+      "right_elbow_joint",
+      "right_wrist_roll_joint",
+      "right_wrist_pitch_joint",
+      "right_wrist_yaw_joint",
+      "waist_yaw_joint",
+      "waist_roll_joint",
+      "waist_pitch_joint"
+    ],
+    "canonical_action": "thinking_hand_on_chin",
+    "return_to_neutral": true,
+    "supported_side": "right"
+  },
+  {
+    "accepted_phrases": [
+      "return to neutral",
+      "neutral"
+    ],
+    "affected_joints": [],
+    "canonical_action": "neutral_reset",
+    "return_to_neutral": true,
+    "supported_side": "body"
+  },
+  {
+    "accepted_phrases": [
+      "do a cartwheel"
+    ],
+    "affected_joints": [],
+    "canonical_action": "unknown_prompt",
+    "return_to_neutral": false,
+    "supported_side": "none"
+  }
+]

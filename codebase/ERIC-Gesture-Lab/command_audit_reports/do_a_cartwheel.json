@@ -1,0 +1,14 @@
+{
+  "active_joints": [],
+  "duration": 0.0,
+  "frame_count": 0,
+  "inactive_joint_changes": {},
+  "joint_ranges": {},
+  "neutral_return_error": null,
+  "parsed_action": "unknown_prompt",
+  "peak_targets": {},
+  "prompt": "do a cartwheel",
+  "reason": "ok",
+  "side": null,
+  "validation_result": "PASS"
+}

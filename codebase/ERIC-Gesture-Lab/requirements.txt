@@ -1,0 +1,13 @@
+absl-py==2.5.0
+etils==1.14.0
+fsspec==2026.6.0
+glfw==2.10.2
+mujoco==3.10.0
+numpy==1.26.4
+PyOpenGL==3.1.10
+PySide6==6.11.1
+PySide6_Addons==6.11.1
+PySide6_Essentials==6.11.1
+shiboken6==6.11.1
+typing_extensions==4.16.0
+zipp==4.1.0
