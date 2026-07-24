@@ -88,7 +88,11 @@ def decision(path: str, tracked: set[str]) -> str:
 
 def main() -> None:
     tracked = git_paths("ls-files")
-    modified = git_paths("diff", "--name-only")
+    modified = git_paths("diff", "--name-only") | git_paths(
+        "diff",
+        "--cached",
+        "--name-only",
+    )
     rows = []
     for artifact in sorted(ROOT.rglob("*")):
         if not artifact.is_file() or artifact == OUTPUT:
