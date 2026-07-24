@@ -110,12 +110,8 @@ except Exception as exc:  # pragma: no cover - shown to user at startup
     print(f"ERROR: MuJoCo import failed: {exc}", file=sys.stderr)
     raise SystemExit(1)
 
-MODEL_PATH = (
-    Path.home()
-    / "Projects/ERIC_Motion_Studio_Developer_Package/codebase/ERIC-Gesture-Lab/unitree_mujoco"
-    / "unitree_robots/g1/scene_29dof.xml"
-)
-LAB_DIR = Path.home() / "Projects/ERIC_Motion_Studio_Developer_Package/codebase/ERIC-Gesture-Lab"
+LAB_DIR = Path(__file__).resolve().parent
+MODEL_PATH = LAB_DIR / "unitree_mujoco" / "unitree_robots/g1/scene_29dof.xml"
 POSES_DIR = LAB_DIR / "poses"
 ANIMATIONS_DIR = LAB_DIR / "animations"
 CUSTOM_ANIMATIONS_DIR = ANIMATIONS_DIR / "custom"
