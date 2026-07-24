@@ -48,6 +48,7 @@ Run the complete test and cutover gates:
     .venv/bin/eric-motion-studio --audit-commands
     .venv/bin/python tools/cutover_audit.py
     .venv/bin/eric-motion-studio-viewer --self-test
+    .venv/bin/python tools/release_audit.py
 
 Audit one prompt:
 
@@ -66,3 +67,12 @@ Legacy backup
 
 `codebase/` is a read-only historical backup. It is not a supported launcher,
 import path, resource fallback, or runtime-data destination.
+
+Project documentation
+---------------------
+
+- `docs/architecture.md` — package boundaries and runtime ownership
+- `docs/gesture-authoring.md` — data-driven gesture workflow
+- `docs/file-formats.md` — versioned JSON formats and compatibility rules
+- `docs/testing.md` — local and CI quality gates
+- `docs/release.md` — versioning, release, and rollback procedure

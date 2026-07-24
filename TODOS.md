@@ -109,11 +109,11 @@
 
 ## Milestone 7 — Active-Tree Cleanup and Release
 
-- [ ] Remove verified duplicates and generated artifacts from the active project;
+- [x] Remove verified duplicates and generated artifacts from the active project;
       do not alter the preserved `codebase/` backup.
-- [ ] Ensure only one supported app entry point and one supported viewer entry point
+- [x] Ensure only one supported app entry point and one supported viewer entry point
       remain.
-- [ ] Add architecture, gesture-authoring, file-format, testing, and release docs.
-- [ ] Add CI for formatting, linting, tests, and headless self-test.
-- [ ] Produce an initial versioned release and rollback instructions.
-- [ ] Quality gate: fresh-clone setup and launch succeed using only documented steps.
+- [x] Add architecture, gesture-authoring, file-format, testing, and release docs.
+- [x] Add CI for formatting, linting, tests, and headless self-test.
+- [x] Produce an initial versioned release and rollback instructions.
+- [x] Quality gate: fresh-clone setup and launch succeed using only documented steps.

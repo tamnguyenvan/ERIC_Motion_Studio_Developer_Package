@@ -221,6 +221,8 @@ __marimo__/
 
 # ERIC Motion Studio local/generated state
 .venv/
+src/eric_motion_studio.egg-info/
+release-artifacts/
 codebase/ERIC-Gesture-Lab/.motion_studio_live_pose*.json
 codebase/ERIC-Gesture-Lab/.motion_studio_live_pose*.tmp
 codebase/ERIC-Gesture-Lab/brainos_exports/

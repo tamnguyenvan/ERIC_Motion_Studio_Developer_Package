@@ -23,3 +23,11 @@ purpose, and disposition.
 
 The stale `.command` launcher is explicitly non-authoritative. It is retained
 only for owner review because it contains obsolete macOS Desktop paths.
+
+## Phase 7 active-tree disposition
+
+The supported tree contains no duplicate Python application or viewer source.
+Generated package metadata, bytecode, release artifacts, runtime state, logs,
+and caches are ignored and excluded from releases. The historical candidates
+listed above remain under `codebase/` untouched as required by the legacy-backup
+policy; they are not active runtime inputs.
