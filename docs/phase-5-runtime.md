@@ -15,6 +15,9 @@ domain, or UI controller layers does not import MuJoCo.
   and injected model/state paths, using the environment's `mjpython` launcher on
   macOS as required by passive MuJoCo viewers. It exposes stopped, running, and
   crashed states and performs bounded terminate/kill shutdown.
+- GUI startup validates the PySide6 Cocoa plugin on macOS and removes stale
+  `QT_*` and `DYLD_*` overrides before Qt application creation, allowing the
+  isolated PySide6 runtime to perform its own plugin discovery.
 - `ViewerPlaybackOutput` writes the initial pose before lazy viewer startup,
   forwards later playback frames, and returns to neutral on stop.
 
