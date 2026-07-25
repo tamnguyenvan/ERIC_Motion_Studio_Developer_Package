@@ -43,8 +43,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 eric_motion_studio = [
-    "resources/animations/*.json",
-    "resources/gestures/*.json",
     "resources/gesture_definitions/*.json",
     "resources/gesture_lexicon/*.json",
     "resources/gesture_stages/*.json",

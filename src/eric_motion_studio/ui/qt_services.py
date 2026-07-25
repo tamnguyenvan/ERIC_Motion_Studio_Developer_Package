@@ -19,7 +19,7 @@ class QtDialogService(DialogService):
         path, _filter = QFileDialog.getOpenFileName(
             self.parent,
             "Open ERIC motion",
-            str(self.settings.data_dir),
+            str(self.settings.motions_dir),
             "ERIC motion (*.json);;JSON files (*.json)",
         )
         return Path(path) if path else None
@@ -28,7 +28,7 @@ class QtDialogService(DialogService):
         path, _filter = QFileDialog.getSaveFileName(
             self.parent,
             "Save ERIC motion",
-            str(self.settings.data_dir / f"{suggested_name}.json"),
+            str(self.settings.motions_dir / f"{suggested_name}.json"),
             "ERIC motion (*.json)",
         )
         return Path(path) if path else None
@@ -46,7 +46,7 @@ class QtDialogService(DialogService):
         path, _filter = QFileDialog.getOpenFileName(
             self.parent,
             "Load ERIC pose",
-            str(self.settings.data_dir),
+            str(self.settings.poses_dir),
             "ERIC pose (*.json);;JSON files (*.json)",
         )
         return Path(path) if path else None
@@ -55,7 +55,7 @@ class QtDialogService(DialogService):
         path, _filter = QFileDialog.getSaveFileName(
             self.parent,
             "Save ERIC pose",
-            str(self.settings.data_dir / f"{suggested_name}.json"),
+            str(self.settings.poses_dir / f"{suggested_name}.json"),
             "ERIC pose (*.json)",
         )
         return Path(path) if path else None
@@ -73,6 +73,16 @@ class QtDialogService(DialogService):
         if result == QMessageBox.Discard:
             return UnsavedDecision.DISCARD
         return UnsavedDecision.CANCEL
+
+    def confirm_delete_motion(self, motion_name: str) -> bool:
+        result = QMessageBox.question(
+            self.parent,
+            "Delete motion",
+            f"Delete {motion_name} from My Motions?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        return result == QMessageBox.Yes
 
     def show_error(self, title: str, message: str) -> None:
         QMessageBox.critical(self.parent, title, message)

@@ -84,8 +84,15 @@ release checks.
 ## Runtime data and configuration
 
 Packaged resources are immutable and live under
-`src/eric_motion_studio/resources/`. User motions, exports, logs, and viewer
-IPC state are stored in platform user-data/state directories by default.
+`src/eric_motion_studio/resources/`. Built-in motions are generated from
+definitions and stages. User motions, poses, compiled artifacts, exports, logs,
+and viewer IPC state are stored in platform user-data/state directories by
+default.
+
+Writable data is separated into `motions/`, `poses/`, `compiled/`, and
+`exports/`. On Linux the default root is
+`~/.local/share/eric-motion-studio/`; on macOS it is
+`~/Library/Application Support/ERIC Motion Studio/`.
 
 Override paths with these CLI options or matching environment variables:
 
@@ -99,7 +106,7 @@ Override paths with these CLI options or matching environment variables:
 
 ```text
 src/eric_motion_studio/       application package
-src/eric_motion_studio/resources/  models, gestures, animations, schemas
+src/eric_motion_studio/resources/  definitions, stages, models, schemas, icons
 tests/                         unit, integration, Qt, and parity tests
 tools/                         cutover and release audits
 docs/                          architecture and operator documentation

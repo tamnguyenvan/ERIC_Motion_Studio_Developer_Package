@@ -53,6 +53,9 @@ class FakeDialogs:
     def confirm_unsaved(self, _motion_name: str) -> UnsavedDecision:
         return self.unsaved_decision
 
+    def confirm_delete_motion(self, _motion_name: str) -> bool:
+        return True
+
     def show_error(self, title: str, message: str) -> None:
         self.errors.append((title, message))
 
@@ -221,6 +224,27 @@ class QtCriticalFlowTests(unittest.TestCase):
             self.services.playback.last_frame.joints.get("right_shoulder_pitch_joint"),
             0.0,
         )
+
+    def test_builtin_motion_can_be_copied_saved_and_approved(self):
+        idle = next(
+            entry for entry in self.window.library.entries() if entry.canonical_id == "idle_pose"
+        )
+
+        self.window._load_library_motion(idle.entry_id)
+        self.assertTrue(self.window.documents.state.dirty)
+        self.assertIsNone(self.window.documents.state.path)
+
+        self.window._save_to_library()
+        motion_path = self.window.documents.state.path
+        self.assertIsNotNone(motion_path)
+        self.assertEqual(motion_path.parent, self.window.settings.motions_dir)
+
+        self.window._approve_motion()
+        self.assertEqual(
+            dict(self.window.documents.state.motion.metadata)["library_status"],
+            "approved",
+        )
+        self.assertTrue(any(self.window.settings.compiled_dir.glob("*.gesture.json")))
 
     def test_keyframe_rename_duplicate_preview_and_playback_actions(self):
         item = self.window.keyframe_widget.keyframe_list.item(0)

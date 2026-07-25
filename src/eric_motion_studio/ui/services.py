@@ -11,7 +11,9 @@ from eric_motion_studio.domain import Motion, Pose, TrajectoryFrame
 from eric_motion_studio.gestures import CompilationResult, GestureCompiler
 from eric_motion_studio.infrastructure import (
     AnimationRepository,
+    ApprovedMotion,
     BrainOSExportRepository,
+    MotionLibraryEntry,
     PoseRepository,
 )
 
@@ -32,6 +34,18 @@ class PoseStore(Protocol):
     def load(self, path: Path) -> Pose: ...
 
     def save(self, path: Path, pose: Pose) -> None: ...
+
+
+class MotionLibraryService(Protocol):
+    def entries(self) -> tuple[MotionLibraryEntry, ...]: ...
+
+    def load(self, entry_id: str) -> tuple[Motion, Path | None]: ...
+
+    def save(self, motion: Motion, path: Path | None = None) -> Path: ...
+
+    def approve(self, motion: Motion, path: Path | None = None) -> ApprovedMotion: ...
+
+    def delete(self, entry_id: str) -> Path: ...
 
 
 class GestureAuthoringService(Protocol):
@@ -64,6 +78,8 @@ class DialogService(Protocol):
     def select_save_pose(self, suggested_name: str) -> Path | None: ...
 
     def confirm_unsaved(self, motion_name: str) -> UnsavedDecision: ...
+
+    def confirm_delete_motion(self, motion_name: str) -> bool: ...
 
     def show_error(self, title: str, message: str) -> None: ...
 
@@ -134,3 +150,4 @@ class ApplicationServices:
     playback: PlaybackOutput
     dialogs: DialogService
     poses: PoseStore | None = None
+    library: MotionLibraryService | None = None

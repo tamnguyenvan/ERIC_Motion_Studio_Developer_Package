@@ -18,6 +18,19 @@ boundaries. `config.Settings` is the only source of default resource and mutable
 runtime paths. The viewer is a separate process supervised through the packaged
 viewer entry point.
 
+The Motion Library is layered:
+
+```text
+gesture definitions + stages -> generated read-only built-ins
+user data/motions/            -> editable draft or approved motions
+user data/compiled/           -> derived dense gesture artifacts
+```
+
+Built-ins and user motions appear in one UI library, but package resources
+remain immutable. Loading a built-in creates an editable user copy. Approval is
+metadata on the source motion and produces a replaceable compiled artifact; the
+dense artifact is never the canonical authoring source.
+
 Supported entry points are declared in `pyproject.toml`:
 
 - `eric-motion-studio` for authoring, audits, and headless diagnostics;

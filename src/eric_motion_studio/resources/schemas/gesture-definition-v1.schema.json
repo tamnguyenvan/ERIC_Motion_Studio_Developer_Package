@@ -27,6 +27,11 @@
             "minItems": 1,
             "items": {"type": "string", "minLength": 1}
           },
+          "triggers": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
           "supported_slots": {
             "type": "array",
             "uniqueItems": true,

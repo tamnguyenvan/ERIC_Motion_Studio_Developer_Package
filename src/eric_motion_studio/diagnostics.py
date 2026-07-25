@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TextIO
 
 from eric_motion_studio.config import Settings
-from eric_motion_studio.domain import dense_trajectory
+from eric_motion_studio.domain import Gesture, dense_trajectory
 from eric_motion_studio.gestures import GestureCompiler
 from eric_motion_studio.infrastructure import (
     AnimationRepository,
@@ -144,8 +144,6 @@ def audit_all_gestures_in_mujoco(
 
 def run_self_test(settings: Settings, *, stream: TextIO) -> bool:
     resource_root = settings.resource_root
-    animation_paths = tuple(sorted((resource_root / "animations").glob("*.json")))
-    gesture_paths = tuple(sorted((resource_root / "gestures").glob("*.json")))
     required_paths = (
         settings.model_path,
         resource_root / "models" / "g1" / "g1_29dof.xml",
@@ -158,7 +156,7 @@ def run_self_test(settings: Settings, *, stream: TextIO) -> bool:
         resource_root / "schemas" / "gesture-lexicon-v1.schema.json",
     )
     missing = [path for path in required_paths if not path.is_file()]
-    if missing or len(animation_paths) != 3 or len(gesture_paths) != 3:
+    if missing:
         _write(
             stream,
             "RESOURCE_LAYOUT_TEST_FAILED "
@@ -167,7 +165,7 @@ def run_self_test(settings: Settings, *, stream: TextIO) -> bool:
         return False
     _write(
         stream,
-        f"RESOURCE_LAYOUT_TEST_OK animations={len(animation_paths)} gestures={len(gesture_paths)}",
+        "RESOURCE_LAYOUT_TEST_OK canonical_sources=definitions,lexicon,stages",
     )
 
     compiler = GestureCompiler.default(resource_root)
@@ -192,8 +190,14 @@ def run_self_test(settings: Settings, *, stream: TextIO) -> bool:
 
     animations = AnimationRepository()
     gestures = GestureRepository()
-    loaded_animations = tuple(animations.load(path) for path in animation_paths)
-    loaded_gestures = tuple(gestures.load(path) for path in gesture_paths)
+    trajectory = dense_trajectory(motion.keyframes)
+    artifact = Gesture(
+        gesture_id="self_test_wave",
+        display_name=motion.name,
+        source_prompt="wave with your right hand",
+        frames=trajectory.frames,
+        frame_rate=trajectory.frame_rate,
+    )
 
     with tempfile.TemporaryDirectory(prefix="eric-motion-studio-cutover-") as directory:
         root = Path(directory)
@@ -206,14 +210,13 @@ def run_self_test(settings: Settings, *, stream: TextIO) -> bool:
         if not _motions_equivalent(animations.load(animation_path), motion):
             _write(stream, "FILE_COMPATIBILITY_REGRESSION_FAILED animation")
             return False
-        gestures.save(gesture_path, loaded_gestures[0])
-        if gestures.load(gesture_path) != loaded_gestures[0]:
+        gestures.save(gesture_path, artifact)
+        if gestures.load(gesture_path) != artifact:
             _write(stream, "FILE_COMPATIBILITY_REGRESSION_FAILED gesture")
             return False
         _write(
             stream,
-            "FILE_COMPATIBILITY_REGRESSION_OK "
-            f"animations={len(loaded_animations)} gestures={len(loaded_gestures)}",
+            "FILE_COMPATIBILITY_REGRESSION_OK motions=1 compiled_gestures=1",
         )
 
         exports = BrainOSExportRepository()

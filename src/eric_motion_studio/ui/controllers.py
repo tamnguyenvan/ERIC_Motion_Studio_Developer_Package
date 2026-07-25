@@ -381,6 +381,29 @@ class DocumentController:
             status=f"Gesture compiled: {motion.name}",
         )
 
+    def load_library_motion(
+        self,
+        motion: Motion,
+        *,
+        path: Path | None,
+        editable_copy: bool,
+    ) -> None:
+        self._undo.clear()
+        self._redo.clear()
+        self._saved_motion = motion
+        self._state = DocumentState(
+            motion=motion,
+            path=path,
+            dirty=editable_copy,
+            selected_keyframe=0,
+        )
+        self._publish()
+        self.report_status(
+            f"Editable built-in copy loaded: {motion.name}"
+            if editable_copy
+            else f"Library motion opened: {motion.name}"
+        )
+
     def undo(self) -> None:
         if not self._undo:
             return

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -39,6 +40,10 @@ def _user_data_root(environment: Mapping[str, str]) -> Path:
     if value := environment.get("XDG_DATA_HOME"):
         return _absolute(value) / APP_SLUG
     home = _absolute(environment.get("HOME", Path.home()))
+    if sys.platform == "darwin":
+        return home / "Library" / "Application Support" / "ERIC Motion Studio"
+    if sys.platform == "win32" and (app_data := environment.get("APPDATA")):
+        return _absolute(app_data) / "ERIC Motion Studio"
     return home / ".local" / "share" / APP_SLUG
 
 
@@ -65,6 +70,18 @@ class Settings:
     log_path: Path
     runtime_state_path: Path
     resource_root: Path = RESOURCE_ROOT
+
+    @property
+    def motions_dir(self) -> Path:
+        return self.data_dir / "motions"
+
+    @property
+    def poses_dir(self) -> Path:
+        return self.data_dir / "poses"
+
+    @property
+    def compiled_dir(self) -> Path:
+        return self.data_dir / "compiled"
 
     @classmethod
     def load(
@@ -117,6 +134,9 @@ class Settings:
 
         for directory in {
             self.data_dir,
+            self.motions_dir,
+            self.poses_dir,
+            self.compiled_dir,
             self.export_dir,
             self.log_path.parent,
             self.runtime_state_path.parent,
@@ -127,6 +147,9 @@ class Settings:
         return {
             "model_path": str(self.model_path),
             "data_dir": str(self.data_dir),
+            "motions_dir": str(self.motions_dir),
+            "poses_dir": str(self.poses_dir),
+            "compiled_dir": str(self.compiled_dir),
             "export_dir": str(self.export_dir),
             "log_path": str(self.log_path),
             "runtime_state_path": str(self.runtime_state_path),

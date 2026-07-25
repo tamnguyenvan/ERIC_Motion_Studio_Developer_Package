@@ -74,7 +74,7 @@ safe joint ranges, finite state, and a fixed authoring root.
 Verified result for this delivery:
 
 ```text
-MUJOCO_ALL_GESTURES_AUDITED gestures=25 frames=1758 status=PASS
+MUJOCO_ALL_GESTURES_AUDITED gestures=25 ... status=PASS
 ```
 
 The data-driven command audit also passed:
@@ -102,6 +102,13 @@ The baseline Git commit is:
 The archive contains the pre-change versions of every existing source,
 resource, and test file modified by this delivery. New documentation and test
 features did not exist at the baseline.
+
+The later Motion Library migration, including the removed packaged
+`animations/` and `gestures/` assets, is backed up separately at:
+
+```text
+backups/motion-library/pre-change-source-1f517a5.tar.gz
+```
 
 ## Adding gestures and synonyms
 

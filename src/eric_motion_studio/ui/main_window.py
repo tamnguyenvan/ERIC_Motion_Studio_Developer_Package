@@ -17,6 +17,8 @@ from PySide6.QtWidgets import (
 
 from eric_motion_studio.config import Settings
 from eric_motion_studio.domain import JointValues, Pose
+from eric_motion_studio.gestures import GestureCompiler
+from eric_motion_studio.infrastructure import MotionLibrary, migrate_legacy_user_files
 from eric_motion_studio.runtime import (
     ViewerPlaybackOutput,
     ViewerProcessManager,
@@ -59,6 +61,12 @@ def default_services(
     parent: QWidget,
     settings: Settings,
 ) -> ApplicationServices:
+    migrate_legacy_user_files(
+        settings.data_dir,
+        settings.motions_dir,
+        settings.poses_dir,
+        settings.compiled_dir,
+    )
     state_store = ViewerStateStore(settings.runtime_state_path)
     viewer_process = ViewerProcessManager(
         ViewerLaunchSettings(
@@ -66,13 +74,19 @@ def default_services(
             state_path=settings.runtime_state_path,
         )
     )
+    gesture_service = CompilerGestureAuthoringService()
     return ApplicationServices(
         motions=RepositoryMotionStore(),
-        gestures=CompilerGestureAuthoringService(),
+        gestures=gesture_service,
         exports=RepositoryMotionExportService(),
         playback=ViewerPlaybackOutput(state_store, viewer_process),
         dialogs=QtDialogService(parent, settings),
         poses=RepositoryPoseStore(),
+        library=MotionLibrary(
+            settings.motions_dir,
+            settings.compiled_dir,
+            gesture_service.compiler,
+        ),
     )
 
 
@@ -87,6 +101,14 @@ class MotionStudioWindow(QMainWindow):
         self.settings = settings
         self.services = services or default_services(self, settings)
         self.pose_store = self.services.poses or RepositoryPoseStore()
+        compiler = getattr(self.services.gestures, "compiler", None) or GestureCompiler.default(
+            settings.resource_root
+        )
+        self.library = self.services.library or MotionLibrary(
+            settings.motions_dir,
+            settings.compiled_dir,
+            compiler,
+        )
         self.documents = DocumentController(self.services.motions)
         self.gesture_authoring = GestureAuthoringController(
             self.services.gestures,
@@ -108,6 +130,7 @@ class MotionStudioWindow(QMainWindow):
         definition_items = definitions.definitions if definitions is not None else ()
         self.metadata_widget = MotionMetadataWidget()
         self.gesture_widget = GestureLibraryWidget(definition_items)
+        self.gesture_widget.set_entries(self.library.entries())
         self.joint_widget = JointEditorWidget()
         self.keyframe_widget = KeyframeEditorWidget()
         self.playback_widget = PlaybackControlsWidget()
@@ -269,6 +292,11 @@ class MotionStudioWindow(QMainWindow):
         self.joint_widget.loadPoseRequested.connect(self._load_pose)
         self.gesture_widget.compileRequested.connect(self.gesture_authoring.compile_and_apply)
         self.gesture_widget.gestureSelected.connect(self._select_gesture)
+        self.gesture_widget.motionLoadRequested.connect(self._load_library_motion)
+        self.gesture_widget.saveToLibraryRequested.connect(self._save_to_library)
+        self.gesture_widget.approveRequested.connect(self._approve_motion)
+        self.gesture_widget.deleteRequested.connect(self._delete_library_motion)
+        self.gesture_widget.refreshRequested.connect(self._refresh_library)
 
         self.playback_widget.playRequested.connect(self._play)
         self.playback_widget.playFromStartRequested.connect(self._play_from_start)
@@ -340,7 +368,76 @@ class MotionStudioWindow(QMainWindow):
             path = self.services.dialogs.select_save_motion(
                 _slugify(self.documents.state.motion.name)
             )
-        return path is not None and self.documents.save(path)
+        saved = path is not None and self.documents.save(path)
+        if saved:
+            self._refresh_library()
+        return saved
+
+    def _refresh_library(self) -> None:
+        self.gesture_widget.set_entries(self.library.entries())
+
+    def _load_library_motion(self, entry_id: str) -> None:
+        if not self._ensure_safe_to_replace():
+            return
+        try:
+            motion, path = self.library.load(entry_id)
+        except Exception as error:
+            self.services.dialogs.show_error("Load library motion failed", str(error))
+            return
+        self.documents.load_library_motion(
+            motion,
+            path=path,
+            editable_copy=path is None,
+        )
+
+    def _save_to_library(self) -> None:
+        state = self.documents.state
+        path = state.path if state.path is not None else None
+        try:
+            target = self.library.save(state.motion, path)
+            stored, stored_path = self.library.load(f"user:{target.name}")
+            self.documents.load_library_motion(
+                stored,
+                path=stored_path,
+                editable_copy=False,
+            )
+        except Exception as error:
+            self.services.dialogs.show_error("Save to library failed", str(error))
+            return
+        self._refresh_library()
+        self.status_panel.set_message(f"Motion saved to library: {target.name}")
+
+    def _approve_motion(self) -> None:
+        state = self.documents.state
+        try:
+            approved = self.library.approve(state.motion, state.path)
+            self.documents.load_library_motion(
+                approved.motion,
+                path=approved.motion_path,
+                editable_copy=False,
+            )
+        except Exception as error:
+            self.services.dialogs.show_error("Approve motion failed", str(error))
+            return
+        self._refresh_library()
+        self.status_panel.set_message(f"Motion approved: {approved.artifact_path.name}")
+
+    def _delete_library_motion(self, entry_id: str) -> None:
+        entry = next(
+            (item for item in self.library.entries() if item.entry_id == entry_id),
+            None,
+        )
+        if entry is None or not self.services.dialogs.confirm_delete_motion(entry.display_name):
+            return
+        try:
+            deleted = self.library.delete(entry_id)
+        except Exception as error:
+            self.services.dialogs.show_error("Delete motion failed", str(error))
+            return
+        if self.documents.state.path == deleted:
+            self.documents.new_document()
+        self._refresh_library()
+        self.status_panel.set_message(f"Motion deleted: {deleted.name}")
 
     def _export_document(self) -> None:
         path = self.services.dialogs.select_export_path(_slugify(self.documents.state.motion.name))

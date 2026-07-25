@@ -73,6 +73,9 @@ class PackageSkeletonTests(unittest.TestCase):
             self.assertEqual(settings.resource_root, RESOURCE_ROOT)
             for mutable_path in (
                 settings.data_dir,
+                settings.motions_dir,
+                settings.poses_dir,
+                settings.compiled_dir,
                 settings.export_dir,
                 settings.log_path,
                 settings.runtime_state_path,
@@ -81,6 +84,9 @@ class PackageSkeletonTests(unittest.TestCase):
 
             settings.prepare_mutable_directories()
             self.assertTrue(settings.data_dir.is_dir())
+            self.assertTrue(settings.motions_dir.is_dir())
+            self.assertTrue(settings.poses_dir.is_dir())
+            self.assertTrue(settings.compiled_dir.is_dir())
             self.assertTrue(settings.export_dir.is_dir())
             self.assertTrue(settings.log_path.parent.is_dir())
             self.assertTrue(settings.runtime_state_path.parent.is_dir())
@@ -91,27 +97,20 @@ class PackageSkeletonTests(unittest.TestCase):
         settings = Settings.load(environment={"HOME": "/tmp/eric-test-home"})
 
         self.assertTrue(settings.model_path.is_file())
+        for relative in (
+            "gesture_definitions/builtins.json",
+            "gesture_lexicon/builtins.json",
+            "gesture_stages/builtin_stages.json",
+        ):
+            self.assertTrue((settings.resource_root / relative).is_file(), relative)
         self.assertEqual(
-            len(list((settings.resource_root / "animations").glob("*.json"))),
-            3,
+            list((settings.resource_root / "animations").glob("*.json")),
+            [],
         )
         self.assertEqual(
-            len(list((settings.resource_root / "gestures").glob("*.json"))),
-            3,
+            list((settings.resource_root / "gestures").glob("*.json")),
+            [],
         )
-
-    def test_packaged_animations_use_portable_model_references(self):
-        from eric_motion_studio.config import RESOURCE_ROOT
-
-        for animation_path in (RESOURCE_ROOT / "animations").glob("*.json"):
-            payload = json.loads(animation_path.read_text())
-            model_reference = Path(payload["model"])
-
-            self.assertFalse(model_reference.is_absolute(), animation_path.name)
-            self.assertTrue(
-                (RESOURCE_ROOT / model_reference).is_file(),
-                animation_path.name,
-            )
 
     def test_structured_logging_is_json_and_bounded(self):
         from eric_motion_studio.logging import (

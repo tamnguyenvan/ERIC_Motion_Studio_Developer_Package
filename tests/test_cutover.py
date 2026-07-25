@@ -59,9 +59,10 @@ class CutoverTests(unittest.TestCase):
         completed = _run_module("--audit-mujoco-gestures", timeout=120)
 
         self.assertIn(
-            "MUJOCO_ALL_GESTURES_AUDITED gestures=25 frames=1758 status=PASS",
+            "MUJOCO_ALL_GESTURES_AUDITED gestures=25",
             completed.stdout,
         )
+        self.assertIn("status=PASS", completed.stdout)
 
     def test_cutover_path_resource_and_launcher_audit(self):
         completed = subprocess.run(

@@ -46,10 +46,17 @@ def _resource_violations() -> list[str]:
     missing_meshes = [name for name in mesh_names if not (model_root / "meshes" / name).is_file()]
     if missing_meshes:
         violations.append(f"missing model meshes: {','.join(missing_meshes)}")
-    for resource_type, expected in (("animations", 3), ("gestures", 3)):
+    for relative in (
+        "gesture_definitions/builtins.json",
+        "gesture_lexicon/builtins.json",
+        "gesture_stages/builtin_stages.json",
+    ):
+        if not (SOURCE_ROOT / "resources" / relative).is_file():
+            violations.append(f"missing canonical motion source: {relative}")
+    for resource_type in ("animations", "gestures"):
         count = len(tuple((SOURCE_ROOT / "resources" / resource_type).glob("*.json")))
-        if count != expected:
-            violations.append(f"expected {expected} packaged {resource_type}, found {count}")
+        if count:
+            violations.append(f"redundant packaged {resource_type} remain active: {count}")
     return violations
 
 

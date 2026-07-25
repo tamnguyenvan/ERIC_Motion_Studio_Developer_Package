@@ -16,6 +16,17 @@ from eric_motion_studio.infrastructure.formats import (
     PoseSerializer,
     SchemaValidationError,
 )
+from eric_motion_studio.infrastructure.migration import (
+    MigratedUserFile,
+    migrate_legacy_user_files,
+)
+from eric_motion_studio.infrastructure.motion_library import (
+    ApprovedMotion,
+    MotionLibrary,
+    MotionLibraryEntry,
+    MotionOrigin,
+    MotionStatus,
+)
 
 __all__ = [
     "ANIMATION_SCHEMA",
@@ -24,12 +35,19 @@ __all__ = [
     "GESTURE_SCHEMA_VERSION",
     "POSE_SCHEMA",
     "AnimationRepository",
+    "ApprovedMotion",
     "AnimationSerializer",
     "BrainOSExportRepository",
     "BrainOSSerializer",
     "GestureRepository",
+    "MotionLibrary",
+    "MotionLibraryEntry",
+    "MotionOrigin",
+    "MotionStatus",
+    "MigratedUserFile",
     "GestureSerializer",
     "PoseRepository",
     "PoseSerializer",
     "SchemaValidationError",
+    "migrate_legacy_user_files",
 ]

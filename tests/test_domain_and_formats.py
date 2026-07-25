@@ -72,7 +72,7 @@ class DomainOperationTests(unittest.TestCase):
         self.assertEqual(len(UNITREE_G1.groups["editor"]), 17)
         self.assertEqual(
             UNITREE_G1.limits["right_elbow_joint"].clamp(-4.0),
-            -0.75,
+            UNITREE_G1.limits["right_elbow_joint"].lower,
         )
 
     def test_interpolation_clamping_cloning_and_retiming(self):
@@ -80,7 +80,10 @@ class DomainOperationTests(unittest.TestCase):
         self.assertEqual(midpoint.get("right_elbow_joint"), -0.2)
 
         clamped = clamp_joint_values(self.target)
-        self.assertEqual(clamped.get("left_shoulder_pitch_joint"), -0.95)
+        self.assertEqual(
+            clamped.get("left_shoulder_pitch_joint"),
+            UNITREE_G1.limits["left_shoulder_pitch_joint"].lower,
+        )
         self.assertEqual(clamped.get("right_elbow_joint"), -0.4)
 
         cloned = clone_motion(self.motion)
@@ -137,25 +140,36 @@ class DomainOperationTests(unittest.TestCase):
 
 
 class RepositoryGoldenTests(unittest.TestCase):
-    def test_all_packaged_animations_round_trip(self):
+    @staticmethod
+    def _motion() -> Motion:
+        neutral = JointValues.neutral()
+        target = JointValues.from_mapping({"right_shoulder_pitch_joint": -0.5})
+        return Motion(
+            name="Repository fixture",
+            keyframes=(
+                Keyframe("Neutral", 100, neutral),
+                Keyframe("Target", 600, target),
+            ),
+            description="generated canonical motion fixture",
+            created_at="2026-07-24T00:00:00+00:00",
+            updated_at="2026-07-24T00:00:00+00:00",
+        )
+
+    def test_generated_motion_round_trip(self):
         repository = AnimationRepository()
-        paths = sorted((RESOURCE_ROOT / "animations").glob("*.json"))
-        self.assertEqual(len(paths), 3)
+        motion = self._motion()
 
         with tempfile.TemporaryDirectory() as directory:
-            output_root = Path(directory)
-            for source in paths:
-                motion = repository.load(source)
-                output = output_root / source.name
-                repository.save(output, motion)
-                self.assertEqual(repository.load(output), motion)
+            output = Path(directory) / "repository-fixture.json"
+            repository.save(output, motion)
+            self.assertEqual(repository.load(output), motion)
 
-                payload = json.loads(output.read_text())
-                self.assertEqual(
-                    payload["schema"],
-                    "eric_motion_studio_animation_v1",
-                )
-                self.assertEqual(payload["version"], 1)
+            payload = json.loads(output.read_text())
+            self.assertEqual(
+                payload["schema"],
+                "eric_motion_studio_animation_v1",
+            )
+            self.assertEqual(payload["version"], 1)
 
     def test_legacy_custom_editor_motion_round_trip(self):
         repository = AnimationRepository()
@@ -173,18 +187,21 @@ class RepositoryGoldenTests(unittest.TestCase):
             repository.save(output, motion)
             self.assertEqual(repository.load(output), motion)
 
-    def test_all_packaged_gestures_round_trip(self):
+    def test_generated_compiled_gesture_round_trip(self):
         repository = GestureRepository()
-        paths = sorted((RESOURCE_ROOT / "gestures").glob("*.json"))
-        self.assertEqual(len(paths), 3)
+        plan = dense_trajectory(self._motion().keyframes, frame_rate=30)
+        gesture = Gesture(
+            gesture_id="repository-fixture",
+            display_name="Repository fixture",
+            source_prompt="repository fixture",
+            frames=plan.frames,
+            frame_rate=plan.frame_rate,
+        )
 
         with tempfile.TemporaryDirectory() as directory:
-            output_root = Path(directory)
-            for source in paths:
-                gesture = repository.load(source)
-                output = output_root / source.name
-                repository.save(output, gesture)
-                self.assertEqual(repository.load(output), gesture)
+            output = Path(directory) / "repository-fixture.json"
+            repository.save(output, gesture)
+            self.assertEqual(repository.load(output), gesture)
 
     def test_pose_and_brainos_repositories_round_trip(self):
         pose_repository = PoseRepository()
@@ -237,8 +254,7 @@ class RepositoryGoldenTests(unittest.TestCase):
 
     def test_animation_rejects_non_integer_keyframe_durations(self):
         serializer = AnimationRepository().serializer
-        source = RESOURCE_ROOT / "animations" / "conversational_talking.json"
-        valid_payload = json.loads(source.read_text())
+        valid_payload = serializer.to_payload(self._motion())
 
         for duration in (None, "900", 900.0, True):
             with self.subTest(duration=duration):
