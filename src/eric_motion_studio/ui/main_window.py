@@ -293,7 +293,7 @@ class MotionStudioWindow(QMainWindow):
                 loop=loop,
             )
         )
-        self.keyframe_widget.selectionChanged.connect(self.documents.select_keyframe)
+        self.keyframe_widget.selectionChanged.connect(self._select_keyframe)
         self.keyframe_widget.addRequested.connect(self._add_keyframe)
         self.keyframe_widget.captureRequested.connect(
             lambda: self.documents.capture_selected(self.joint_widget.current_joints())
@@ -344,6 +344,7 @@ class MotionStudioWindow(QMainWindow):
             state.selected_keyframe,
         )
         self.joint_widget.set_motion_editable(state.editable)
+        self.joint_widget.set_editor_active(True, "keyframe")
         self.pose_widget.set_motion_editable(state.editable)
         selected = state.motion.keyframes[state.selected_keyframe]
         self.joint_widget.set_joints(selected.joints)
@@ -523,6 +524,13 @@ class MotionStudioWindow(QMainWindow):
     def _add_keyframe(self) -> None:
         self.documents.add_keyframe(self.joint_widget.current_joints())
 
+    def _select_keyframe(self, index: int) -> None:
+        if index < 0:
+            self.joint_widget.set_editor_active(False)
+            return
+        self.documents.select_keyframe(index)
+        self.joint_widget.set_editor_active(True, "keyframe")
+
     def _return_preview_to_neutral(self) -> None:
         if self.playback.preview_pose(JointValues.neutral(self.joint_widget.profile)):
             self.status_panel.set_message("Preview returned to neutral")
@@ -544,6 +552,7 @@ class MotionStudioWindow(QMainWindow):
         if self.playback.state.playing or self.playback.state.paused:
             self.playback.stop()
         self.joint_widget.set_joints(pose.joints, respect_locks=True)
+        self.joint_widget.set_editor_active(True, "pose preview")
         if not self.playback.preview_pose(self.joint_widget.current_joints()):
             return
         self._active_pose_entry_id = entry_id

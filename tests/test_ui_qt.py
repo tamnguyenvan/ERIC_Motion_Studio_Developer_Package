@@ -204,6 +204,18 @@ class QtCriticalFlowTests(unittest.TestCase):
             )
         )
 
+    def test_joint_editor_empty_state_preserves_panel_space(self):
+        editor = self.window.joint_widget
+        height = editor.editor_stack.sizeHint().height()
+        editor.set_editor_active(False)
+        self.application.processEvents()
+        self.assertEqual(editor.editor_stack.currentIndex(), 1)
+        self.assertFalse(editor.reset_button.isEnabled())
+        self.assertFalse(editor.spin_boxes["right_shoulder_pitch_joint"].isEnabled())
+        self.assertGreaterEqual(editor.editor_stack.sizeHint().height(), height)
+        editor.set_editor_active(True, "keyframe")
+        self.assertEqual(editor.editor_stack.currentIndex(), 0)
+
     def test_pose_preview_neutral_and_file_import_export(self):
         spin = self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"]
         spin.setValue(-0.35)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from PySide6.QtCore import QSignalBlocker, Signal
+from PySide6.QtCore import QSignalBlocker, Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QDoubleSpinBox,
@@ -10,8 +10,10 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
+    QLabel,
     QPushButton,
     QScrollArea,
+    QStackedWidget,
     QToolButton,
     QVBoxLayout,
     QWidget,
@@ -39,6 +41,8 @@ class JointEditorWidget(QGroupBox):
         self.spin_boxes: dict[str, QDoubleSpinBox] = {}
         self.reset_buttons: dict[str, QToolButton] = {}
         self.lock_checkboxes: dict[str, QCheckBox] = {}
+        self._motion_editable = True
+        self._editor_active = True
         self.reset_button = QPushButton("RESET ALL TO NEUTRAL")
         self.reset_button.setObjectName("resetJointDefaultsButton")
         self.reset_button.clicked.connect(self.reset_defaults)
@@ -75,7 +79,16 @@ class JointEditorWidget(QGroupBox):
         scroll.setWidgetResizable(True)
         scroll.setWidget(content)
 
+        self.editor_stack = QStackedWidget()
+        self.editor_stack.setObjectName("jointEditorContentStack")
+        self.empty_state = QLabel("Select a keyframe or pose to edit")
+        self.empty_state.setObjectName("jointEditorEmptyState")
+        self.empty_state.setAlignment(Qt.AlignCenter)
+        self.editor_stack.addWidget(scroll)
+        self.editor_stack.addWidget(self.empty_state)
+
         lock_group = QGroupBox("Joint Locks")
+        self.lock_group = lock_group
         lock_layout = QGridLayout(lock_group)
         lock_specs = (
             ("LOCK LEGS", self.profile.groups.get("legs", ())),
@@ -120,7 +133,7 @@ class JointEditorWidget(QGroupBox):
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.reset_button)
-        layout.addWidget(scroll)
+        layout.addWidget(self.editor_stack, 1)
         layout.addWidget(lock_group)
         layout.addLayout(preset_layout)
         self._update_lock_widgets()
@@ -165,7 +178,7 @@ class JointEditorWidget(QGroupBox):
     def _update_lock_widgets(self) -> None:
         locked = self._locked_joints()
         for name, spin in self.spin_boxes.items():
-            enabled = name not in locked
+            enabled = self._editor_active and name not in locked
             spin.setEnabled(enabled)
             self.reset_buttons[name].setEnabled(enabled)
 
@@ -178,7 +191,28 @@ class JointEditorWidget(QGroupBox):
         del blockers
 
     def set_motion_editable(self, editable: bool) -> None:
-        self.add_neutral_button.setEnabled(editable)
+        self._motion_editable = editable
+        self._update_controls()
+
+    def set_editor_active(self, active: bool, context: str = "") -> None:
+        self._editor_active = active
+        self.editor_stack.setCurrentIndex(0 if active else 1)
+        self.empty_state.setText(
+            "Select a keyframe or pose to edit"
+            if not context
+            else f"Select a keyframe or pose to edit\n({context})"
+        )
+        self._update_controls()
+
+    def _update_controls(self) -> None:
+        active = self._editor_active
+        self.reset_button.setEnabled(active)
+        self.lock_group.setEnabled(active)
+        self.return_preview_button.setEnabled(active)
+        self.add_neutral_button.setEnabled(active and self._motion_editable)
+        self.mirror_arms_button.setEnabled(active)
+        self.mirror_legs_button.setEnabled(active)
+        self._update_lock_widgets()
 
     def reset_defaults(self) -> None:
         """Restore the model's neutral pose and publish it as the preview pose."""
