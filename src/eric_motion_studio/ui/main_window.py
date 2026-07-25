@@ -144,6 +144,7 @@ class MotionStudioWindow(QMainWindow):
     def _create_actions(self) -> None:
         file_menu = self.menuBar().addMenu("&File")
         edit_menu = self.menuBar().addMenu("&Edit")
+        playback_menu = self.menuBar().addMenu("&Playback")
 
         self.new_action = QAction("&New", self)
         self.new_action.setObjectName("newMotionAction")
@@ -182,6 +183,12 @@ class MotionStudioWindow(QMainWindow):
         self.add_keyframe_action = QAction("Add &Keyframe", self)
         self.add_keyframe_action.setObjectName("addKeyframeAction")
         self.add_keyframe_action.setShortcut(QKeySequence("Ctrl+K"))
+        self.duplicate_keyframe_action = QAction("&Duplicate Keyframe", self)
+        self.duplicate_keyframe_action.setObjectName("duplicateKeyframeAction")
+        self.duplicate_keyframe_action.setShortcut(QKeySequence("Ctrl+D"))
+        self.preview_keyframe_action = QAction("Preview Selected Keyframe", self)
+        self.preview_keyframe_action.setObjectName("previewKeyframeAction")
+        self.preview_keyframe_action.setShortcut(QKeySequence("Ctrl+Return"))
         self.play_action = QAction("&Play", self)
         self.play_action.setObjectName("playAction")
         self.play_action.setShortcut(QKeySequence(Qt.Key_Space))
@@ -190,9 +197,17 @@ class MotionStudioWindow(QMainWindow):
             self.undo_action,
             self.redo_action,
             self.add_keyframe_action,
+            self.duplicate_keyframe_action,
+            self.preview_keyframe_action,
             self.play_action,
         ):
             edit_menu.addAction(action)
+        self.play_from_start_action = QAction("Play from &Start", self)
+        self.play_from_start_action.setObjectName("playFromStartAction")
+        self.play_from_selected_action = QAction("Play from &Selected Keyframe", self)
+        self.play_from_selected_action.setObjectName("playFromSelectedKeyframeAction")
+        playback_menu.addAction(self.play_from_start_action)
+        playback_menu.addAction(self.play_from_selected_action)
 
     def _connect_signals(self) -> None:
         self.new_action.triggered.connect(self._new_document)
@@ -204,7 +219,11 @@ class MotionStudioWindow(QMainWindow):
         self.undo_action.triggered.connect(self.documents.undo)
         self.redo_action.triggered.connect(self.documents.redo)
         self.add_keyframe_action.triggered.connect(self._add_keyframe)
+        self.duplicate_keyframe_action.triggered.connect(self.documents.duplicate_selected)
+        self.preview_keyframe_action.triggered.connect(self._preview_selected)
         self.play_action.triggered.connect(self._play)
+        self.play_from_start_action.triggered.connect(self._play_from_start)
+        self.play_from_selected_action.triggered.connect(self._play_from_selected)
 
         self.metadata_widget.metadataChanged.connect(
             lambda name, description, loop: self.documents.set_metadata(
@@ -218,6 +237,9 @@ class MotionStudioWindow(QMainWindow):
         self.keyframe_widget.captureRequested.connect(
             lambda: self.documents.capture_selected(self.joint_widget.current_joints())
         )
+        self.keyframe_widget.renameRequested.connect(self._rename_keyframe)
+        self.keyframe_widget.duplicateRequested.connect(self.documents.duplicate_selected)
+        self.keyframe_widget.previewRequested.connect(self._preview_selected)
         self.keyframe_widget.deleteRequested.connect(self.documents.delete_selected)
         self.keyframe_widget.moveRequested.connect(self.documents.move_selected)
         self.keyframe_widget.durationChanged.connect(self.documents.set_keyframe_duration)
@@ -228,6 +250,8 @@ class MotionStudioWindow(QMainWindow):
         self.gesture_widget.gestureSelected.connect(self._select_gesture)
 
         self.playback_widget.playRequested.connect(self._play)
+        self.playback_widget.playFromStartRequested.connect(self._play_from_start)
+        self.playback_widget.playFromSelectedRequested.connect(self._play_from_selected)
         self.playback_widget.pauseRequested.connect(self._pause)
         self.playback_widget.stopRequested.connect(self._stop)
         self.playback_widget.speedChanged.connect(self.playback.set_speed)
@@ -305,9 +329,28 @@ class MotionStudioWindow(QMainWindow):
     def _add_keyframe(self) -> None:
         self.documents.add_keyframe(self.joint_widget.current_joints())
 
+    def _rename_keyframe(self, index: int, name: str) -> None:
+        if index != self.documents.state.selected_keyframe:
+            self.documents.select_keyframe(index)
+        self.documents.rename_selected(name)
+
+    def _preview_selected(self) -> None:
+        index = self.documents.state.selected_keyframe
+        if self.playback.preview_keyframe(index):
+            self.status_panel.set_message("Selected keyframe applied to preview")
+
     def _play(self) -> None:
         if self.playback.play():
             self.status_panel.set_message("Playback started")
+
+    def _play_from_start(self) -> None:
+        if self.playback.play_from_start():
+            self.status_panel.set_message("Playback started from beginning")
+
+    def _play_from_selected(self) -> None:
+        index = self.documents.state.selected_keyframe
+        if self.playback.play_from_keyframe(index):
+            self.status_panel.set_message("Playback started from selected keyframe")
 
     def _pause(self) -> None:
         self.playback.pause()

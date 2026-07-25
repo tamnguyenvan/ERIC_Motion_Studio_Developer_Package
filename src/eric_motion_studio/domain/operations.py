@@ -145,6 +145,14 @@ def append_keyframe(motion: Motion, frame: Keyframe) -> Motion:
     return replace(motion, keyframes=(*motion.keyframes, clone_keyframe(frame)))
 
 
+def insert_keyframe(motion: Motion, index: int, frame: Keyframe) -> Motion:
+    if not 0 <= index <= len(motion.keyframes):
+        raise IndexError("Keyframe insertion index out of range")
+    frames = list(motion.keyframes)
+    frames.insert(index, clone_keyframe(frame))
+    return replace(motion, keyframes=tuple(frames))
+
+
 def replace_keyframe(motion: Motion, index: int, frame: Keyframe) -> Motion:
     if not 0 <= index < len(motion.keyframes):
         raise IndexError("Keyframe index out of range")

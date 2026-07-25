@@ -4,6 +4,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 # ruff: noqa: E402
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -74,6 +75,7 @@ class QtCriticalFlowTests(unittest.TestCase):
             playback=NullPlaybackOutput(),
             dialogs=self.dialogs,
         )
+        self.services = services
         self.window = MotionStudioWindow(settings, services)
         self.window.show()
         self.application.processEvents()
@@ -134,6 +136,47 @@ class QtCriticalFlowTests(unittest.TestCase):
 
         self.assertEqual(self.window.documents.state.motion.description, "abc")
         self.assertEqual(self.window.documents.state.undo_depth, 1)
+
+    def test_keyframe_rename_duplicate_preview_and_playback_actions(self):
+        item = self.window.keyframe_widget.keyframe_list.item(0)
+        with patch(
+            "eric_motion_studio.ui.widgets.keyframe_editor.QInputDialog.getText",
+            return_value=("Renamed by double click", True),
+        ):
+            self.window.keyframe_widget.keyframe_list.itemDoubleClicked.emit(item)
+        self.application.processEvents()
+        self.assertEqual(
+            self.window.documents.state.motion.keyframes[0].name,
+            "Renamed by double click",
+        )
+
+        self.window.keyframe_widget.renameRequested.emit(0, "Rest")
+        self.application.processEvents()
+        self.assertEqual(self.window.documents.state.motion.keyframes[0].name, "Rest")
+
+        QTest.mouseClick(
+            self.window.keyframe_widget.duplicate_button,
+            Qt.LeftButton,
+        )
+        self.application.processEvents()
+        self.assertEqual(self.window.keyframe_widget.keyframe_list.count(), 2)
+        self.assertEqual(self.window.documents.state.selected_keyframe, 1)
+
+        QTest.mouseClick(self.window.keyframe_widget.preview_button, Qt.LeftButton)
+        self.application.processEvents()
+        self.assertIsNotNone(self.services.playback.last_frame)
+        self.assertIn("Selected keyframe applied", self.window.status_panel.status_label.text())
+
+        QTest.mouseClick(self.window.playback_widget.start_button, Qt.LeftButton)
+        self.application.processEvents()
+        self.assertTrue(self.window.playback.state.playing)
+        QTest.mouseClick(self.window.playback_widget.stop_button, Qt.LeftButton)
+        self.application.processEvents()
+
+        QTest.mouseClick(self.window.playback_widget.selected_button, Qt.LeftButton)
+        self.application.processEvents()
+        self.assertTrue(self.window.playback.state.playing)
+        self.assertIn("selected keyframe", self.window.status_panel.status_label.text())
 
     def test_gesture_playback_save_and_export_flows(self):
         self.window.gesture_widget.prompt_edit.setText("wave with your left hand")

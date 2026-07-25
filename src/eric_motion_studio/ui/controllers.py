@@ -13,6 +13,7 @@ from eric_motion_studio.domain import (
     PlaybackPlan,
     append_keyframe,
     dense_trajectory,
+    insert_keyframe,
     remove_keyframe,
     replace_keyframe,
 )
@@ -204,6 +205,40 @@ class DocumentController:
         )
         self._replace_motion(updated, status=f"Keyframe captured: {current.name}")
 
+    def rename_selected(self, name: str) -> None:
+        clean_name = name.strip()
+        if not clean_name:
+            self.report_status("Keyframe name must not be empty")
+            return
+        index = self._state.selected_keyframe
+        current = self._state.motion.keyframes[index]
+        if clean_name == current.name:
+            return
+        updated = replace_keyframe(
+            self._state.motion,
+            index,
+            replace(current, name=clean_name),
+        )
+        self._replace_motion(updated, status=f"Keyframe renamed: {clean_name}")
+
+    def duplicate_selected(self) -> None:
+        index = self._state.selected_keyframe
+        current = self._state.motion.keyframes[index]
+        base_name = f"{current.name} Copy"
+        names = {frame.name for frame in self._state.motion.keyframes}
+        name = base_name
+        suffix = 2
+        while name in names:
+            name = f"{base_name} {suffix}"
+            suffix += 1
+        duplicate = replace(current, name=name)
+        updated = insert_keyframe(self._state.motion, index + 1, duplicate)
+        self._replace_motion(
+            updated,
+            selected_keyframe=index + 1,
+            status=f"Keyframe duplicated: {name}",
+        )
+
     def set_keyframe_duration(self, duration_ms: int) -> None:
         index = self._state.selected_keyframe
         current = self._state.motion.keyframes[index]
@@ -349,6 +384,7 @@ class PlaybackController:
     def __init__(self, output: PlaybackOutput) -> None:
         self.output = output
         self._plan: PlaybackPlan | None = None
+        self._keyframe_frame_indices: tuple[int, ...] = ()
         self._loop = False
         self._elapsed = 0.0
         self._state = PlaybackViewState()
@@ -378,6 +414,12 @@ class PlaybackController:
 
     def set_motion(self, motion: Motion) -> None:
         self._plan = dense_trajectory(motion.keyframes)
+        frame_indices = [0]
+        current = 0
+        for frame in motion.keyframes[1:]:
+            current += max(1, round((frame.duration_ms / 1000.0) * self._plan.frame_rate))
+            frame_indices.append(min(current, len(self._plan.frames) - 1))
+        self._keyframe_frame_indices = tuple(frame_indices)
         self._loop = motion.loop
         self._elapsed = 0.0
         self._state = PlaybackViewState(
@@ -390,10 +432,28 @@ class PlaybackController:
         if self._plan is None:
             return False
         try:
-            if self._state.frame_index >= len(self._plan.frames) - 1:
-                if not self.seek(0):
-                    return False
-            elif self._state.frame_index == 0:
+            if self._state.frame_index >= len(self._plan.frames) - 1 and not self.seek(0):
+                return False
+            return self._start_playback()
+        except Exception as error:
+            self._report_output_error(error)
+            return False
+
+    def play_from_start(self) -> bool:
+        if self._plan is None or not self.seek(0):
+            return False
+        return self._start_playback()
+
+    def play_from_keyframe(self, keyframe_index: int) -> bool:
+        if not self.seek_keyframe(keyframe_index):
+            return False
+        return self._start_playback()
+
+    def _start_playback(self) -> bool:
+        if self._plan is None:
+            return False
+        try:
+            if self._state.frame_index == 0:
                 self.output.apply_frame(self._plan.frames[0])
         except Exception as error:
             self._report_output_error(error)
@@ -441,6 +501,18 @@ class PlaybackController:
             self._report_output_error(error)
             return False
         self._state = replace(self._state, frame_index=index)
+        self._publish()
+        return True
+
+    def seek_keyframe(self, keyframe_index: int) -> bool:
+        if not 0 <= keyframe_index < len(self._keyframe_frame_indices):
+            return False
+        return self.seek(self._keyframe_frame_indices[keyframe_index])
+
+    def preview_keyframe(self, keyframe_index: int) -> bool:
+        if not self.seek_keyframe(keyframe_index):
+            return False
+        self._state = replace(self._state, playing=False, paused=False)
         self._publish()
         return True
 

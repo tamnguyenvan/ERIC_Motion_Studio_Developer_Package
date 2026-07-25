@@ -191,6 +191,27 @@ class DocumentControllerTests(unittest.TestCase):
         self.assertEqual(exports.exports, [(path, generated)])
         self.assertIn("BrainOS local export created", self.statuses[-1])
 
+    def test_rename_duplicate_and_undo_keyframes(self):
+        self.controller.add_keyframe(
+            JointValues.from_mapping({"right_shoulder_pitch_joint": -0.5}),
+            name="Raised",
+        )
+        self.controller.rename_selected("Raised High")
+        self.assertEqual(self.controller.state.motion.keyframes[1].name, "Raised High")
+
+        self.controller.duplicate_selected()
+        self.assertEqual(self.controller.state.selected_keyframe, 2)
+        self.assertEqual(self.controller.state.motion.keyframes[2].name, "Raised High Copy")
+        self.assertEqual(
+            self.controller.state.motion.keyframes[2].joints,
+            self.controller.state.motion.keyframes[1].joints,
+        )
+
+        self.controller.undo()
+        self.assertEqual(len(self.controller.state.motion.keyframes), 2)
+        self.controller.redo()
+        self.assertEqual(len(self.controller.state.motion.keyframes), 3)
+
 
 class PlaybackControllerTests(unittest.TestCase):
     def test_play_pause_seek_stop_and_completion(self):
@@ -233,6 +254,20 @@ class PlaybackControllerTests(unittest.TestCase):
 
         self.assertTrue(controller.state.playing)
         self.assertEqual(controller.state.frame_index, 0)
+        self.assertEqual(output.frames[-1].timestamp, 0.0)
+
+    def test_preview_and_playback_from_keyframes(self):
+        output = FakePlaybackOutput()
+        controller = PlaybackController(output)
+        controller.set_motion(two_frame_motion())
+
+        self.assertTrue(controller.preview_keyframe(1))
+        self.assertEqual(output.frames[-1].timestamp, 0.3)
+        self.assertFalse(controller.state.playing)
+        self.assertTrue(controller.play_from_keyframe(1))
+        self.assertTrue(controller.state.playing)
+        controller.stop()
+        self.assertTrue(controller.play_from_start())
         self.assertEqual(output.frames[-1].timestamp, 0.0)
 
 
