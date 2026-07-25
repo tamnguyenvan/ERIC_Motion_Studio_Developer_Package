@@ -11,14 +11,13 @@ from eric_motion_studio.domain.values import (
     MIN_KEYFRAME_DURATION_MS,
 )
 from eric_motion_studio.gestures.definitions import GestureDefinition
-from eric_motion_studio.gestures.normalization import normalize_text
+from eric_motion_studio.gestures.language import SemanticCommand
 from eric_motion_studio.gestures.slots import (
     Direction,
     GestureSlots,
     Intensity,
     Side,
     Speed,
-    extract_slots,
 )
 from eric_motion_studio.gestures.stages import StageLibrary
 
@@ -30,6 +29,7 @@ class GenerationRequest:
     command: str
     definition: GestureDefinition
     slots: GestureSlots
+    semantic: SemanticCommand
     stages: StageLibrary
 
 
@@ -267,8 +267,10 @@ class HandToChestGenerator:
             request.stages.pose("chest_right"),
             request.slots.side,
         )
-        normalized = normalize_text(request.command)
-        if "extend" in normalized or "outward" in normalized:
+        if any(
+            clause.canonical_id in {"extend_arm", "present_object"}
+            for clause in request.semantic.clauses
+        ):
             extension = request.stages.pose("extend_right")
             if request.slots.side is Side.RIGHT:
                 extension = _mirror_pose(extension)
@@ -293,20 +295,14 @@ class HandToChestGenerator:
 class StructuredFullBodyGenerator:
     def generate(self, request: GenerationRequest) -> Motion:
         neutral = request.stages.pose("neutral")
-        clauses = request.slots.sequence or (normalize_text(request.command),)
         frames = [Keyframe("structured neutral", 100, neutral)]
-        for index, clause in enumerate(clauses, start=1):
-            words = set(normalize_text(clause).split())
-            scored = [
-                (len(words.intersection(pattern.terms)), pattern)
-                for pattern in request.stages.clause_patterns
-            ]
-            score, pattern = max(scored, key=lambda item: item[0])
-            if score == 0:
+        for index, clause in enumerate(request.semantic.clauses, start=1):
+            pose_id, side_aware = _semantic_pose(clause)
+            if pose_id is None:
                 continue
-            pose = request.stages.pose(pattern.pose_id)
-            clause_slots = extract_slots(clause)
-            pose = _side_pose(pose, clause_slots.side or request.slots.side)
+            pose = request.stages.pose(pose_id)
+            if side_aware:
+                pose = _side_pose(pose, clause.slots.side or request.slots.side)
             pose = _scale_pose(pose, request.slots)
             frames.append(
                 Keyframe(
@@ -344,6 +340,22 @@ class StructuredFullBodyGenerator:
         return _motion(request, frames)
 
 
+def _semantic_pose(clause: SemanticCommand) -> tuple[str | None, bool]:
+    poses = {
+        "raise_arm": ("raise_right", True),
+        "lower_arm": ("lower_right", True),
+        "extend_arm": ("extend_right", True),
+        "wave": ("wave_right", True),
+        "point": ("point_right", True),
+        "hand_to_chest": ("chest_right", True),
+        "arms_open": ("open_both", False),
+        "scratch_head": ("scratch_right", True),
+        "thinking_hand_on_chin": ("thinking_right", True),
+        "present_object": ("present_both", False),
+    }
+    return poses.get(clause.canonical_id, (None, False))
+
+
 class NeutralGenerator:
     def generate(self, request: GenerationRequest) -> Motion:
         return _motion(
@@ -369,9 +381,58 @@ def default_generator_registry() -> GeneratorRegistry:
     )
     registry.register("raise_arm", ArmGenerator("raise_right"))
     registry.register("lower_arm", ArmGenerator("lower_right"))
+    registry.register("extend_arm", ArmGenerator("extend_right"))
+    registry.register(
+        "point",
+        StageSequenceGenerator("point", side_aware=True),
+    )
+    registry.register(
+        "stop_gesture",
+        StageSequenceGenerator("stop_gesture", side_aware=True),
+    )
+    registry.register(
+        "thumbs_up",
+        StageSequenceGenerator("thumbs_up", side_aware=True),
+    )
+    registry.register(
+        "thumbs_down",
+        StageSequenceGenerator("thumbs_down", side_aware=True),
+    )
     registry.register(
         "both_arm_motion",
         StageSequenceGenerator("both_arm_motion"),
+    )
+    registry.register(
+        "arms_open",
+        StageSequenceGenerator("arms_open"),
+    )
+    registry.register(
+        "clap",
+        StageSequenceGenerator("clap"),
+    )
+    registry.register(
+        "cross_arms",
+        StageSequenceGenerator("cross_arms"),
+    )
+    registry.register(
+        "hands_on_hips",
+        StageSequenceGenerator("hands_on_hips"),
+    )
+    registry.register(
+        "shrug",
+        StageSequenceGenerator("shrug"),
+    )
+    registry.register(
+        "celebrate",
+        StageSequenceGenerator("celebrate"),
+    )
+    registry.register(
+        "present_object",
+        StageSequenceGenerator("present_object"),
+    )
+    registry.register(
+        "idle_pose",
+        StageSequenceGenerator("idle_pose"),
     )
     registry.register("hand_to_chest", HandToChestGenerator())
     registry.register(
@@ -379,5 +440,6 @@ def default_generator_registry() -> GeneratorRegistry:
         StageSequenceGenerator("welcome_presentation", direction_aware=True),
     )
     registry.register("structured_full_body", StructuredFullBodyGenerator())
+    registry.register("wave_goodbye", WaveGenerator())
     registry.register("neutral_reset", NeutralGenerator())
     return registry

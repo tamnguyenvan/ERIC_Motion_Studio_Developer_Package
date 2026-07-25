@@ -16,9 +16,11 @@ from eric_motion_studio.gestures import (
     DefinitionValidationError,
     Direction,
     GestureCompiler,
+    GestureLexicon,
     GestureRegistry,
     GestureResolver,
     Intensity,
+    LexiconValidationError,
     ResolutionStatus,
     Side,
     SlotName,
@@ -32,6 +34,7 @@ from eric_motion_studio.gestures.validators import validate_compiled_motion
 ROOT = Path(__file__).resolve().parents[1]
 DEFINITIONS_PATH = RESOURCE_ROOT / "gesture_definitions" / "builtins.json"
 STAGES_PATH = RESOURCE_ROOT / "gesture_stages" / "builtin_stages.json"
+LEXICON_PATH = RESOURCE_ROOT / "gesture_lexicon" / "builtins.json"
 
 LEGACY_COMMANDS = {
     "talking_idle": (
@@ -47,12 +50,14 @@ LEGACY_COMMANDS = {
         "wave with your right hand",
         "wave with your left hand",
     ),
-    "raise_arm": ("raise left arm", "raise right arm"),
-    "lower_arm": ("lower left arm", "lower right arm"),
-    "both_arm_motion": (
-        "raise both hands",
-        "open both arms as if introducing a speaker, pause, then relax",
+    "raise_arm": (
+        "raise left arm",
+        "raise right arm",
+        "lift left hand",
+        "lift right hand",
     ),
+    "lower_arm": ("lower left arm", "lower right arm"),
+    "both_arm_motion": ("open both arms as if introducing a speaker, pause, then relax",),
     "hand_to_chest": (
         (
             "place the right hand firmly on the centre of the chest "
@@ -84,6 +89,39 @@ LEGACY_COMMANDS = {
         "looking thoughtful",
     ),
     "neutral_reset": ("return to neutral", "neutral"),
+}
+
+REQUESTED_COMMANDS = {
+    "raise_arm": (
+        "raise left hand",
+        "raise right hand",
+        "lift left hand",
+        "lift right hand",
+        "raise both hands",
+    ),
+    "lower_arm": ("lower left hand", "lower right hand", "lower both hands"),
+    "wave": ("wave left hand", "wave right hand"),
+    "point": ("point left", "point right"),
+    "stop_gesture": ("stop gesture",),
+    "thumbs_up": ("thumbs up",),
+    "thumbs_down": ("thumbs down",),
+    "clap": ("clap",),
+    "arms_open": ("arms open", "arms out"),
+    "cross_arms": ("cross arms",),
+    "hands_on_hips": ("hands on hips",),
+    "shrug": ("shrug",),
+    "thinking_hand_on_chin": (
+        "hand on chin",
+        "think",
+        "thinking",
+        "thinking pose",
+    ),
+    "scratch_head": ("scratch head",),
+    "celebrate": ("celebrate", "cheer"),
+    "welcome_presentation": ("welcome",),
+    "wave_goodbye": ("wave goodbye",),
+    "present_object": ("present object",),
+    "idle_pose": ("idle pose",),
 }
 
 
@@ -127,6 +165,110 @@ class GestureDefinitionTests(unittest.TestCase):
                     second = compiler.compile(alias)
                     self.assertTrue(first.succeeded, first)
                     self.assertEqual(first, second)
+
+    def test_requested_gesture_catalog_compiles_and_validates(self):
+        compiler = GestureCompiler.default()
+
+        for canonical_id, commands in REQUESTED_COMMANDS.items():
+            for command in commands:
+                with self.subTest(canonical_id=canonical_id, command=command):
+                    result = compiler.compile(command)
+                    self.assertTrue(result.succeeded, result)
+                    self.assertEqual(
+                        result.resolution.definition.canonical_id,
+                        canonical_id,
+                    )
+                    self.assertTrue(result.validation.passed)
+
+    def test_compositional_synonym_cross_product(self):
+        compiler = GestureCompiler.default()
+
+        for verb in ("raise", "lift", "elevate"):
+            for side in (Side.LEFT, Side.RIGHT):
+                for effector in ("hand", "arm"):
+                    command = f"please {verb} your {side.value} {effector} slowly"
+                    with self.subTest(command=command):
+                        result = compiler.compile(command)
+                        self.assertTrue(result.succeeded, result)
+                        self.assertEqual(
+                            result.resolution.definition.canonical_id,
+                            "raise_arm",
+                        )
+                        self.assertEqual(result.resolution.slots.side, side)
+                        self.assertEqual(result.resolution.slots.speed, Speed.SLOW)
+
+    def test_both_side_is_composed_without_full_phrase_aliases(self):
+        compiler = GestureCompiler.default()
+
+        for command, canonical_id in (
+            ("elevate both arms", "raise_arm"),
+            ("bring down both hands", "lower_arm"),
+            ("quickly wave with both hands", "wave"),
+        ):
+            with self.subTest(command=command):
+                result = compiler.compile(command)
+                self.assertTrue(result.succeeded, result)
+                self.assertEqual(result.resolution.definition.canonical_id, canonical_id)
+                self.assertEqual(result.resolution.slots.side, Side.BOTH)
+
+    def test_conflicting_actions_are_not_guessed(self):
+        result = GestureCompiler.default().compile("raise and lower the left hand")
+
+        self.assertEqual(result.resolution.status, ResolutionStatus.AMBIGUOUS)
+        self.assertEqual(result.resolution.candidates, ("lower_arm", "raise_arm"))
+
+    def test_polite_fillers_do_not_require_duplicate_idiom_aliases(self):
+        compiler = GestureCompiler.default()
+
+        for command, canonical_id in (
+            ("could you put your hands on your hips please", "hands_on_hips"),
+            ("please give me a thumbs up", "thumbs_up"),
+            ("could you think please", "thinking_hand_on_chin"),
+            ("would you wave goodbye please", "wave_goodbye"),
+        ):
+            with self.subTest(command=command):
+                result = compiler.compile(command)
+                self.assertTrue(result.succeeded, result)
+                self.assertEqual(result.resolution.definition.canonical_id, canonical_id)
+
+    def test_lexicon_synonym_can_be_added_without_parser_code(self):
+        lexicon_payload = json.loads(LEXICON_PATH.read_text())
+        lexicon_payload["actions"]["raise"].append("hoist")
+        lexicon = GestureLexicon.from_payload(lexicon_payload)
+        compiler = GestureCompiler(
+            self.registry,
+            StageLibrary.from_path(STAGES_PATH),
+            default_generator_registry(),
+            lexicon,
+        )
+
+        result = compiler.compile("hoist the left hand")
+
+        self.assertTrue(result.succeeded, result)
+        self.assertEqual(result.resolution.definition.canonical_id, "raise_arm")
+        self.assertEqual(result.resolution.slots.side, Side.LEFT)
+
+    def test_lexicon_rejects_collisions_and_unknown_rule_terms(self):
+        collision = json.loads(LEXICON_PATH.read_text())
+        collision["actions"]["lower"].append("raise")
+        with self.assertRaises(LexiconValidationError):
+            GestureLexicon.from_payload(collision)
+
+        invalid_rule = json.loads(LEXICON_PATH.read_text())
+        invalid_rule["rules"][0]["actions"] = ["missing"]
+        with self.assertRaises(LexiconValidationError):
+            GestureLexicon.from_payload(invalid_rule)
+
+        unknown_gesture = json.loads(LEXICON_PATH.read_text())
+        unknown_gesture["rules"][0]["canonical_id"] = "missing"
+        lexicon = GestureLexicon.from_payload(unknown_gesture)
+        with self.assertRaises(LexiconValidationError):
+            GestureCompiler(
+                self.registry,
+                StageLibrary.from_path(STAGES_PATH),
+                default_generator_registry(),
+                lexicon,
+            )
 
     def test_validator_pipeline_reports_each_safety_category(self):
         compiler = GestureCompiler.default()
@@ -300,6 +442,10 @@ class ResolverAndSlotTests(unittest.TestCase):
             result.resolution.definition.canonical_id,
             "structured_full_body",
         )
+        self.assertEqual(
+            tuple(clause.canonical_id for clause in result.resolution.semantic.clauses),
+            ("raise_arm", "extend_arm", "neutral_reset"),
+        )
         self.assertGreaterEqual(len(result.motion.keyframes), 4)
         metrics = result.validation.metrics_mapping
         self.assertGreater(metrics["left_arm_amplitude_rad"], 0.1)
@@ -316,6 +462,21 @@ class ResolverAndSlotTests(unittest.TestCase):
             result.resolution.definition.canonical_id,
             "structured_full_body",
         )
+
+    def test_parallel_hand_to_chest_action_is_typed_before_generation(self):
+        result = GestureCompiler.default().compile(
+            "place the left hand on the chest while extending the right arm outward"
+        )
+
+        self.assertTrue(result.succeeded, result)
+        self.assertEqual(result.resolution.definition.canonical_id, "hand_to_chest")
+        self.assertEqual(
+            tuple(clause.canonical_id for clause in result.resolution.semantic.clauses),
+            ("hand_to_chest", "extend_arm"),
+        )
+        active = result.motion.keyframes[1].joints
+        self.assertNotEqual(active.get("left_shoulder_pitch_joint"), 0.0)
+        self.assertNotEqual(active.get("right_shoulder_pitch_joint"), 0.0)
 
     def test_presentation_honors_sweep_direction(self):
         compiler = GestureCompiler.default()

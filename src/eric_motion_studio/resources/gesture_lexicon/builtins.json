@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "actions": {
+    "raise": ["raise", "lift", "elevate"],
+    "lower": ["lower", "drop", "bring down"],
+    "wave": ["wave"],
+    "point": ["point"],
+    "extend": ["extend", "extending", "reach", "reaching"],
+    "place": ["place", "put"],
+    "open": ["open", "spread"],
+    "scratch": ["scratch"],
+    "rub": ["rub", "touch"]
+  },
+  "effectors": {
+    "arm": ["arm", "arms", "hand", "hands"],
+    "chest": ["chest"],
+    "head": ["head", "temple"],
+    "chin": ["chin"],
+    "object": ["object", "item"]
+  },
+  "rules": [
+    {
+      "canonical_id": "raise_arm",
+      "actions": ["raise"],
+      "effectors": ["arm"]
+    },
+    {
+      "canonical_id": "lower_arm",
+      "actions": ["lower"],
+      "effectors": ["arm"]
+    },
+    {
+      "canonical_id": "wave",
+      "actions": ["wave"],
+      "effectors": ["arm"],
+      "effector_optional": true
+    },
+    {
+      "canonical_id": "point",
+      "actions": ["point"],
+      "effectors": ["arm"],
+      "effector_optional": true
+    },
+    {
+      "canonical_id": "extend_arm",
+      "actions": ["extend"],
+      "effectors": ["arm"]
+    },
+    {
+      "canonical_id": "hand_to_chest",
+      "actions": ["place"],
+      "effectors": ["chest"]
+    },
+    {
+      "canonical_id": "arms_open",
+      "actions": ["open"],
+      "effectors": ["arm"]
+    },
+    {
+      "canonical_id": "scratch_head",
+      "actions": ["scratch"],
+      "effectors": ["head"]
+    },
+    {
+      "canonical_id": "thinking_hand_on_chin",
+      "actions": ["rub", "place"],
+      "effectors": ["chin"]
+    },
+    {
+      "canonical_id": "present_object",
+      "actions": ["extend"],
+      "effectors": ["object"]
+    }
+  ]
+}

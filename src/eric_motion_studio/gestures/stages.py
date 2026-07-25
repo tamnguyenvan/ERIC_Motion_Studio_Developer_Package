@@ -26,22 +26,14 @@ class Stage:
     duration_ms: int
 
 
-@dataclass(frozen=True, slots=True)
-class ClausePattern:
-    terms: tuple[str, ...]
-    pose_id: str
-
-
 class StageLibrary:
     def __init__(
         self,
         poses: Mapping[str, JointValues],
         sequences: Mapping[str, tuple[Stage, ...]],
-        clause_patterns: tuple[ClausePattern, ...],
     ) -> None:
         self.poses = dict(poses)
         self.sequences = dict(sequences)
-        self.clause_patterns = clause_patterns
 
     @classmethod
     def from_path(
@@ -94,11 +86,7 @@ class StageLibrary:
             )
             sequences[sequence_id] = stages
 
-        raw_patterns = payload.get("clause_patterns")
-        if not isinstance(raw_patterns, list) or not raw_patterns:
-            raise StageValidationError("clause_patterns must be a non-empty array")
-        patterns = tuple(_pattern_from_payload(raw_pattern, poses) for raw_pattern in raw_patterns)
-        return cls(poses, sequences, patterns)
+        return cls(poses, sequences)
 
     def pose(self, pose_id: str) -> JointValues:
         try:
@@ -131,22 +119,3 @@ def _stage_from_payload(
     ):
         raise StageValidationError(f"sequence {sequence_id!r} contains an invalid duration")
     return Stage(pose_id, duration)
-
-
-def _pattern_from_payload(
-    raw_pattern: object,
-    poses: Mapping[str, JointValues],
-) -> ClausePattern:
-    if not isinstance(raw_pattern, dict):
-        raise StageValidationError("clause patterns must be objects")
-    terms = raw_pattern.get("terms")
-    pose_id = raw_pattern.get("pose")
-    if (
-        not isinstance(terms, list)
-        or not terms
-        or any(not isinstance(term, str) or not term for term in terms)
-    ):
-        raise StageValidationError("clause pattern terms are invalid")
-    if not isinstance(pose_id, str) or pose_id not in poses:
-        raise StageValidationError("clause pattern references an unknown pose")
-    return ClausePattern(tuple(terms), pose_id)

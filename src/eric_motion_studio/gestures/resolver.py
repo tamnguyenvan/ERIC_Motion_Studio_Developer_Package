@@ -1,13 +1,18 @@
-"""Definition-driven gesture resolution."""
+"""Definition-driven deterministic gesture resolution."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
 
+from eric_motion_studio.config import RESOURCE_ROOT
 from eric_motion_studio.gestures.definitions import (
     GestureDefinition,
     GestureRegistry,
+)
+from eric_motion_studio.gestures.language import (
+    GestureLexicon,
+    SemanticCommand,
 )
 from eric_motion_studio.gestures.normalization import (
     best_phrase_match,
@@ -33,6 +38,7 @@ class ResolutionResult:
     normalized_command: str
     definition: GestureDefinition | None = None
     slots: GestureSlots | None = None
+    semantic: SemanticCommand | None = None
     candidates: tuple[str, ...] = ()
     message: str = ""
 
@@ -41,9 +47,24 @@ class ResolutionResult:
         return self.status is ResolutionStatus.SUCCESS
 
 
+@dataclass(frozen=True, slots=True)
+class _Candidate:
+    canonical_id: str
+    score: int
+    exact: bool
+    slots: GestureSlots
+
+
 class GestureResolver:
-    def __init__(self, registry: GestureRegistry) -> None:
+    def __init__(
+        self,
+        registry: GestureRegistry,
+        lexicon: GestureLexicon | None = None,
+    ) -> None:
         self.registry = registry
+        self.lexicon = lexicon or GestureLexicon.from_path(
+            RESOURCE_ROOT / "gesture_lexicon" / "builtins.json"
+        )
 
     def resolve(self, command: str) -> ResolutionResult:
         normalized = normalize_text(command)
@@ -62,51 +83,160 @@ class GestureResolver:
                 message=str(error),
             )
 
-        matches = []
-        for definition in self.registry.definitions:
-            match = best_phrase_match(command, definition.aliases)
-            if match is not None:
-                matches.append((definition, match))
-
-        exact_matches = [(definition, match) for definition, match in matches if match.exact]
-        if exact_matches:
-            matches = exact_matches
-        elif _has_multiple_movement_clauses(slots.sequence):
+        candidates = self._candidates(command, slots)
+        exact = tuple(candidate for candidate in candidates if candidate.exact)
+        semantic_clauses = self._semantic_clauses(slots.sequence)
+        if exact:
+            candidates = exact
+        elif len(semantic_clauses) >= 2:
             try:
-                structured = self.registry.get("structured_full_body")
+                definition = self.registry.get("structured_full_body")
             except KeyError:
-                structured = None
-            if structured is not None:
-                structured_match = best_phrase_match(
-                    "structured full body motion",
-                    structured.aliases,
+                definition = None
+            if definition is not None:
+                return self._complete(
+                    normalized,
+                    definition,
+                    slots,
+                    SemanticCommand(
+                        canonical_id=definition.canonical_id,
+                        slots=slots,
+                        clauses=semantic_clauses,
+                    ),
                 )
-                matches = [(structured, structured_match)]
+        else:
+            grammar_ids = tuple(
+                sorted(
+                    {
+                        match.canonical_id
+                        for match in self.lexicon.match(command, slots)
+                        if self._has_definition(match.canonical_id)
+                    }
+                )
+            )
+            if len(grammar_ids) > 1:
+                return ResolutionResult(
+                    status=ResolutionStatus.AMBIGUOUS,
+                    normalized_command=normalized,
+                    slots=slots,
+                    candidates=grammar_ids,
+                    message="Command contains multiple gestures without a sequence separator",
+                )
 
-        if not matches:
+        if not candidates:
             return ResolutionResult(
                 status=ResolutionStatus.UNSUPPORTED,
                 normalized_command=normalized,
                 slots=slots,
-                message="No gesture definition matched the command",
+                message="No deterministic grammar or gesture phrase matched the command",
             )
 
-        best_score = max(match.score for _, match in matches if match is not None)
-        candidates = tuple(
-            definition
-            for definition, match in matches
-            if match is not None and match.score == best_score
-        )
-        if len(candidates) > 1:
+        best_score = max(candidate.score for candidate in candidates)
+        best = tuple(candidate for candidate in candidates if candidate.score == best_score)
+        canonical_ids = tuple(sorted({candidate.canonical_id for candidate in best}))
+        if len(canonical_ids) > 1:
             return ResolutionResult(
                 status=ResolutionStatus.AMBIGUOUS,
                 normalized_command=normalized,
                 slots=slots,
-                candidates=tuple(sorted(definition.canonical_id for definition in candidates)),
+                candidates=canonical_ids,
                 message="Multiple gesture definitions matched equally",
             )
 
-        definition = candidates[0]
+        selected = next(
+            candidate for candidate in best if candidate.canonical_id == canonical_ids[0]
+        )
+        definition = self.registry.get(selected.canonical_id)
+        semantic = SemanticCommand(
+            canonical_id=definition.canonical_id,
+            slots=selected.slots,
+            clauses=semantic_clauses,
+        )
+        return self._complete(normalized, definition, selected.slots, semantic)
+
+    def _has_definition(self, canonical_id: str) -> bool:
+        try:
+            self.registry.get(canonical_id)
+        except KeyError:
+            return False
+        return True
+
+    def _candidates(
+        self,
+        command: str,
+        slots: GestureSlots,
+    ) -> tuple[_Candidate, ...]:
+        candidates: dict[tuple[str, bool], _Candidate] = {}
+        for definition in self.registry.definitions:
+            match = best_phrase_match(command, definition.aliases)
+            if match is None:
+                continue
+            score = match.score if match.exact else 6_000 + match.score
+            candidate = _Candidate(
+                canonical_id=definition.canonical_id,
+                score=score,
+                exact=match.exact,
+                slots=slots,
+            )
+            candidates[(candidate.canonical_id, candidate.exact)] = candidate
+        for match in self.lexicon.match(command, slots):
+            try:
+                self.registry.get(match.canonical_id)
+            except KeyError:
+                continue
+            candidate = _Candidate(
+                canonical_id=match.canonical_id,
+                score=match.score,
+                exact=False,
+                slots=match.slots,
+            )
+            key = (candidate.canonical_id, False)
+            previous = candidates.get(key)
+            if previous is None or candidate.score > previous.score:
+                candidates[key] = candidate
+            elif candidate.slots.provided > previous.slots.provided:
+                candidates[key] = _Candidate(
+                    canonical_id=previous.canonical_id,
+                    score=previous.score,
+                    exact=previous.exact,
+                    slots=candidate.slots,
+                )
+        return tuple(candidates.values())
+
+    def _semantic_clauses(
+        self,
+        sequence: tuple[str, ...],
+    ) -> tuple[SemanticCommand, ...]:
+        clauses: list[SemanticCommand] = []
+        for clause in sequence:
+            try:
+                slots = extract_slots(clause)
+            except SlotExtractionError:
+                continue
+            candidates = self._candidates(clause, slots)
+            if not candidates:
+                continue
+            best_score = max(candidate.score for candidate in candidates)
+            best = tuple(candidate for candidate in candidates if candidate.score == best_score)
+            canonical_ids = {candidate.canonical_id for candidate in best}
+            if len(canonical_ids) != 1:
+                continue
+            candidate = best[0]
+            clauses.append(
+                SemanticCommand(
+                    canonical_id=candidate.canonical_id,
+                    slots=candidate.slots,
+                )
+            )
+        return tuple(clauses)
+
+    def _complete(
+        self,
+        normalized: str,
+        definition: GestureDefinition,
+        slots: GestureSlots,
+        semantic: SemanticCommand,
+    ) -> ResolutionResult:
         unsupported_slots = slots.provided - definition.supported_slots
         if unsupported_slots:
             names = ", ".join(sorted(slot.value for slot in unsupported_slots))
@@ -115,6 +245,7 @@ class GestureResolver:
                 normalized_command=normalized,
                 definition=definition,
                 slots=slots,
+                semantic=semantic,
                 candidates=(definition.canonical_id,),
                 message=f"Gesture {definition.canonical_id!r} does not support: {names}",
             )
@@ -126,15 +257,22 @@ class GestureResolver:
                 normalized_command=normalized,
                 definition=definition,
                 slots=slots,
+                semantic=semantic,
                 candidates=(definition.canonical_id,),
                 message=f"Gesture defaults are invalid: {error}",
             )
+        resolved_semantic = SemanticCommand(
+            canonical_id=semantic.canonical_id,
+            slots=resolved_slots,
+            clauses=semantic.clauses,
+        )
         if definition.constraints.requires_neutral_return and not resolved_slots.neutral_return:
             return ResolutionResult(
                 status=ResolutionStatus.INVALID_SLOT,
                 normalized_command=normalized,
                 definition=definition,
                 slots=resolved_slots,
+                semantic=resolved_semantic,
                 candidates=(definition.canonical_id,),
                 message=f"Gesture {definition.canonical_id!r} must return to neutral",
             )
@@ -143,24 +281,6 @@ class GestureResolver:
             normalized_command=normalized,
             definition=definition,
             slots=resolved_slots,
+            semantic=resolved_semantic,
             candidates=(definition.canonical_id,),
         )
-
-
-def _has_multiple_movement_clauses(sequence: tuple[str, ...]) -> bool:
-    movement_terms = {
-        "raise",
-        "lift",
-        "lower",
-        "extend",
-        "open",
-        "wave",
-        "sweep",
-        "rotate",
-        "turn",
-        "scratch",
-        "rub",
-        "place",
-        "bend",
-    }
-    return sum(bool(set(clause.split()).intersection(movement_terms)) for clause in sequence) >= 2

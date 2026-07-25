@@ -168,6 +168,9 @@ def extract_slots(command: str) -> GestureSlots:
             Direction.OUTWARD: ("outward", "outwards"),
             Direction.INWARD: ("inward", "inwards"),
         }
+        if re.search(r"\bthumbs?\s+(?:up|down)\b", text):
+            direction_terms.pop(Direction.UP)
+            direction_terms.pop(Direction.DOWN)
         words = set(text.split())
         matches = [
             candidate for candidate, terms in direction_terms.items() if words.intersection(terms)

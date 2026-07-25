@@ -13,11 +13,7 @@
       ],
       "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
       "generator_id": "talking_idle",
-      "defaults": {
-        "speed": "normal",
-        "intensity": "normal",
-        "neutral_return": true
-      },
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
       "tags": ["presentation", "idle", "full-body"],
       "constraints": {
         "min_amplitude_rad": 0.04,
@@ -29,11 +25,7 @@
     },
     {
       "canonical_id": "wave",
-      "aliases": [
-        "wave",
-        "wave with your right hand",
-        "wave with your left hand"
-      ],
+      "aliases": ["wave", "wave with your right hand", "wave with your left hand"],
       "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
       "generator_id": "wave",
       "defaults": {
@@ -52,9 +44,38 @@
       }
     },
     {
-      "canonical_id": "raise_arm",
-      "aliases": ["raise left arm", "raise right arm", "lift left hand", "lift right hand"],
+      "canonical_id": "wave_goodbye",
+      "aliases": ["wave goodbye", "goodbye wave", "wave bye"],
       "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "wave_goodbye",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["farewell", "arm"],
+      "constraints": {
+        "min_amplitude_rad": 0.22,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "raise_arm",
+      "aliases": [
+        "raise arm",
+        "lift arm",
+        "raise left arm",
+        "raise right arm",
+        "raise left hand",
+        "raise right hand",
+        "lift left hand",
+        "lift right hand"
+      ],
+      "supported_slots": ["side", "direction", "speed", "intensity", "hold", "neutral_return"],
       "generator_id": "raise_arm",
       "defaults": {
         "side": "right",
@@ -73,8 +94,15 @@
     },
     {
       "canonical_id": "lower_arm",
-      "aliases": ["lower left arm", "lower right arm", "lower left hand", "lower right hand"],
-      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "aliases": [
+        "lower arm",
+        "bring arm down",
+        "lower left arm",
+        "lower right arm",
+        "lower left hand",
+        "lower right hand"
+      ],
+      "supported_slots": ["side", "direction", "speed", "intensity", "hold", "neutral_return"],
       "generator_id": "lower_arm",
       "defaults": {
         "side": "right",
@@ -92,19 +120,114 @@
       }
     },
     {
-      "canonical_id": "both_arm_motion",
-      "aliases": [
-        "raise both hands",
-        "open both arms as if introducing a speaker, pause, then relax"
-      ],
-      "supported_slots": ["side", "speed", "intensity", "hold", "sequence", "neutral_return"],
-      "generator_id": "both_arm_motion",
+      "canonical_id": "extend_arm",
+      "aliases": ["extend arm", "reach outward"],
+      "supported_slots": ["side", "direction", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "extend_arm",
       "defaults": {
+        "side": "right",
+        "direction": "outward",
         "speed": "normal",
         "intensity": "normal",
         "neutral_return": true
       },
-      "tags": ["presentation", "both-arms"],
+      "tags": ["arm", "directional"],
+      "constraints": {
+        "min_amplitude_rad": 0.15,
+        "max_duration_seconds": 6.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "point",
+      "aliases": ["point"],
+      "supported_slots": ["side", "direction", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "point",
+      "defaults": {
+        "side": "right",
+        "direction": "forward",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["arm", "directional", "symbolic"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 6.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "stop_gesture",
+      "aliases": ["stop gesture", "show stop", "stop sign"],
+      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "stop_gesture",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["arm", "symbolic"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 6.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "thumbs_up",
+      "aliases": ["thumbs up", "give a thumbs up", "approval gesture"],
+      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "thumbs_up",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["arm", "symbolic", "approval"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 6.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "thumbs_down",
+      "aliases": ["thumbs down", "give a thumbs down", "disapproval gesture"],
+      "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "thumbs_down",
+      "defaults": {
+        "side": "right",
+        "speed": "normal",
+        "intensity": "normal",
+        "neutral_return": true
+      },
+      "tags": ["arm", "symbolic", "disapproval"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 6.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "both_arm_motion",
+      "aliases": ["open both arms as if introducing a speaker, pause, then relax"],
+      "supported_slots": ["side", "speed", "intensity", "hold", "sequence", "neutral_return"],
+      "generator_id": "both_arm_motion",
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
+      "tags": ["presentation", "both-arms", "compatibility"],
       "constraints": {
         "min_amplitude_rad": 0.2,
         "max_duration_seconds": 8.0,
@@ -114,8 +237,84 @@
       }
     },
     {
+      "canonical_id": "arms_open",
+      "aliases": ["arms open", "arms out", "open arms", "spread your arms"],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "arms_open",
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
+      "tags": ["both-arms", "presentation"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 7.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "clap",
+      "aliases": ["clap", "clap hands", "applaud"],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "clap",
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
+      "tags": ["both-arms", "symbolic"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": false
+      }
+    },
+    {
+      "canonical_id": "cross_arms",
+      "aliases": ["cross arms", "arms crossed", "fold arms"],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "cross_arms",
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
+      "tags": ["both-arms", "pose"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 7.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": false
+      }
+    },
+    {
+      "canonical_id": "hands_on_hips",
+      "aliases": ["hands on hips", "put hands on hips", "akimbo"],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "hands_on_hips",
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
+      "tags": ["both-arms", "pose"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 7.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": false
+      }
+    },
+    {
+      "canonical_id": "shrug",
+      "aliases": ["shrug", "shrug shoulders", "I do not know gesture"],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "shrug",
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
+      "tags": ["both-arms", "expressive"],
+      "constraints": {
+        "min_amplitude_rad": 0.15,
+        "max_duration_seconds": 7.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
       "canonical_id": "hand_to_chest",
       "aliases": [
+        "hand on chest",
         "place the right hand firmly on the centre of the chest while the left arm hangs by the side",
         "place the left hand on the chest while extending the right arm outward"
       ],
@@ -139,6 +338,8 @@
     {
       "canonical_id": "welcome_presentation",
       "aliases": [
+        "welcome",
+        "welcome the audience",
         "welcome the audience with both hands",
         "raise both hands to chest height with open palms. sweep both arms in a wide horizontal arc from the far left side of the body to the far right while rotating the torso to follow the movement. pause. return to neutral"
       ],
@@ -183,6 +384,8 @@
       "canonical_id": "thinking_hand_on_chin",
       "aliases": [
         "hand on chin",
+        "think",
+        "thinking",
         "thinking pose",
         "thoughtful pose",
         "rub chin",
@@ -200,6 +403,51 @@
       "tags": ["thinking", "chin", "arm"],
       "constraints": {
         "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "celebrate",
+      "aliases": ["celebrate", "cheer", "celebration gesture", "victory pose"],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "celebrate",
+      "defaults": {"speed": "normal", "intensity": "strong", "neutral_return": true},
+      "tags": ["both-arms", "expressive", "celebration"],
+      "constraints": {
+        "min_amplitude_rad": 0.25,
+        "max_duration_seconds": 9.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "present_object",
+      "aliases": ["present object", "show object", "offer object", "present an item"],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "present_object",
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
+      "tags": ["both-arms", "presentation"],
+      "constraints": {
+        "min_amplitude_rad": 0.2,
+        "max_duration_seconds": 8.0,
+        "requires_neutral_return": true,
+        "balance_required": true,
+        "collision_check": true
+      }
+    },
+    {
+      "canonical_id": "idle_pose",
+      "aliases": ["idle pose", "stand idle", "relaxed idle", "rest pose"],
+      "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
+      "generator_id": "idle_pose",
+      "defaults": {"speed": "normal", "intensity": "subtle", "neutral_return": true},
+      "tags": ["idle", "full-body"],
+      "constraints": {
+        "min_amplitude_rad": 0.04,
         "max_duration_seconds": 8.0,
         "requires_neutral_return": true,
         "balance_required": true,
@@ -226,11 +474,7 @@
       "aliases": ["full body motion", "structured full body motion"],
       "supported_slots": ["side", "direction", "speed", "intensity", "hold", "sequence", "neutral_return"],
       "generator_id": "structured_full_body",
-      "defaults": {
-        "speed": "normal",
-        "intensity": "normal",
-        "neutral_return": true
-      },
+      "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
       "tags": ["compound", "full-body"],
       "constraints": {
         "min_amplitude_rad": 0.15,

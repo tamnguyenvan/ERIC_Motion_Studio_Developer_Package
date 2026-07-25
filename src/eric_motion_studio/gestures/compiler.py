@@ -13,6 +13,7 @@ from eric_motion_studio.gestures.generators import (
     GeneratorRegistry,
     default_generator_registry,
 )
+from eric_motion_studio.gestures.language import GestureLexicon
 from eric_motion_studio.gestures.resolver import (
     GestureResolver,
     ResolutionResult,
@@ -48,17 +49,25 @@ class GestureCompiler:
         registry: GestureRegistry,
         stages: StageLibrary,
         generators: GeneratorRegistry,
+        lexicon: GestureLexicon | None = None,
     ) -> None:
         self.registry = registry
-        self.resolver = GestureResolver(registry)
+        active_lexicon = lexicon or GestureLexicon.from_path(
+            RESOURCE_ROOT / "gesture_lexicon" / "builtins.json"
+        )
+        active_lexicon.validate_canonical_ids(
+            frozenset(definition.canonical_id for definition in registry.definitions)
+        )
+        self.resolver = GestureResolver(registry, active_lexicon)
         self.stages = stages
         self.generators = generators
 
     @classmethod
     def default(cls, resource_root: Path = RESOURCE_ROOT) -> GestureCompiler:
         registry = GestureRegistry.from_directory(resource_root / "gesture_definitions")
+        lexicon = GestureLexicon.from_path(resource_root / "gesture_lexicon" / "builtins.json")
         stages = StageLibrary.from_path(resource_root / "gesture_stages" / "builtin_stages.json")
-        return cls(registry, stages, default_generator_registry())
+        return cls(registry, stages, default_generator_registry(), lexicon)
 
     def compile(self, command: str) -> CompilationResult:
         resolution = self.resolver.resolve(command)
@@ -66,6 +75,7 @@ class GestureCompiler:
             return CompilationResult(resolution=resolution)
         assert resolution.definition is not None
         assert resolution.slots is not None
+        assert resolution.semantic is not None
         try:
             generator = self.generators.get(resolution.definition.generator_id)
             motion = generator.generate(
@@ -73,6 +83,7 @@ class GestureCompiler:
                     command=command,
                     definition=resolution.definition,
                     slots=resolution.slots,
+                    semantic=resolution.semantic,
                     stages=self.stages,
                 )
             )

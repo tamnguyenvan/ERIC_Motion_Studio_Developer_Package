@@ -99,10 +99,12 @@ def run_self_test(settings: Settings, *, stream: TextIO) -> bool:
         settings.model_path,
         resource_root / "models" / "g1" / "g1_29dof.xml",
         resource_root / "gesture_definitions" / "builtins.json",
+        resource_root / "gesture_lexicon" / "builtins.json",
         resource_root / "gesture_stages" / "builtin_stages.json",
         resource_root / "schemas" / "animation-v1.schema.json",
         resource_root / "schemas" / "brainos-motion-v1.schema.json",
         resource_root / "schemas" / "gesture-v1.schema.json",
+        resource_root / "schemas" / "gesture-lexicon-v1.schema.json",
     )
     missing = [path for path in required_paths if not path.is_file()]
     if missing or len(animation_paths) != 3 or len(gesture_paths) != 3:

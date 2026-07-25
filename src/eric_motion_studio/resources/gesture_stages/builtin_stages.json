@@ -91,6 +91,103 @@
       "right_shoulder_pitch_joint": -0.48,
       "right_shoulder_roll_joint": -0.5,
       "right_elbow_joint": -0.25
+    },
+    "point_right": {
+      "right_shoulder_pitch_joint": -0.58,
+      "right_shoulder_roll_joint": -0.16,
+      "right_shoulder_yaw_joint": 0.08,
+      "right_elbow_joint": -0.14,
+      "right_wrist_pitch_joint": -0.08
+    },
+    "stop_right": {
+      "right_shoulder_pitch_joint": -0.62,
+      "right_shoulder_roll_joint": -0.2,
+      "right_elbow_joint": -0.48,
+      "right_wrist_pitch_joint": 0.2
+    },
+    "thumbs_up_right": {
+      "right_shoulder_pitch_joint": -0.38,
+      "right_shoulder_roll_joint": -0.14,
+      "right_elbow_joint": -0.65,
+      "right_wrist_pitch_joint": 0.12
+    },
+    "thumbs_down_right": {
+      "right_shoulder_pitch_joint": -0.38,
+      "right_shoulder_roll_joint": -0.14,
+      "right_elbow_joint": -0.65,
+      "right_wrist_pitch_joint": -0.22
+    },
+    "clap_open": {
+      "left_shoulder_pitch_joint": -0.46,
+      "left_shoulder_roll_joint": 0.24,
+      "left_elbow_joint": 0.48,
+      "right_shoulder_pitch_joint": -0.46,
+      "right_shoulder_roll_joint": -0.24,
+      "right_elbow_joint": -0.48
+    },
+    "clap_closed": {
+      "left_shoulder_pitch_joint": -0.5,
+      "left_shoulder_roll_joint": -0.08,
+      "left_elbow_joint": 0.68,
+      "right_shoulder_pitch_joint": -0.5,
+      "right_shoulder_roll_joint": 0.08,
+      "right_elbow_joint": -0.68
+    },
+    "cross_both": {
+      "left_shoulder_pitch_joint": -0.55,
+      "left_shoulder_roll_joint": -0.18,
+      "left_shoulder_yaw_joint": 0.34,
+      "left_elbow_joint": 0.65,
+      "right_shoulder_pitch_joint": -0.55,
+      "right_shoulder_roll_joint": 0.18,
+      "right_shoulder_yaw_joint": -0.34,
+      "right_elbow_joint": -0.65
+    },
+    "hips_both": {
+      "left_shoulder_pitch_joint": -0.44,
+      "left_shoulder_roll_joint": -0.2,
+      "left_shoulder_yaw_joint": -0.2,
+      "left_elbow_joint": 0.58,
+      "right_shoulder_pitch_joint": -0.44,
+      "right_shoulder_roll_joint": 0.2,
+      "right_shoulder_yaw_joint": 0.2,
+      "right_elbow_joint": -0.58
+    },
+    "shrug_both": {
+      "left_shoulder_pitch_joint": -0.22,
+      "left_shoulder_roll_joint": 0.38,
+      "left_elbow_joint": 0.2,
+      "right_shoulder_pitch_joint": -0.22,
+      "right_shoulder_roll_joint": -0.38,
+      "right_elbow_joint": -0.2
+    },
+    "celebrate_both": {
+      "waist_yaw_joint": 0.08,
+      "left_shoulder_pitch_joint": -0.9,
+      "left_shoulder_roll_joint": 0.25,
+      "left_elbow_joint": 0.2,
+      "right_shoulder_pitch_joint": -0.9,
+      "right_shoulder_roll_joint": -0.25,
+      "right_elbow_joint": -0.2
+    },
+    "present_both": {
+      "left_shoulder_pitch_joint": -0.5,
+      "left_shoulder_roll_joint": 0.18,
+      "left_elbow_joint": 0.34,
+      "left_wrist_pitch_joint": -0.12,
+      "right_shoulder_pitch_joint": -0.5,
+      "right_shoulder_roll_joint": -0.18,
+      "right_elbow_joint": -0.34,
+      "right_wrist_pitch_joint": -0.12
+    },
+    "idle_relaxed": {
+      "waist_yaw_joint": 0.02,
+      "left_shoulder_pitch_joint": -0.09,
+      "left_shoulder_roll_joint": 0.06,
+      "left_elbow_joint": 0.08,
+      "right_shoulder_pitch_joint": -0.1,
+      "right_shoulder_roll_joint": -0.06,
+      "right_elbow_joint": -0.08
     }
   },
   "sequences": {
@@ -129,15 +226,84 @@
       {"pose": "welcome_right", "duration_ms": 1000},
       {"pose": "welcome_right", "duration_ms": 500},
       {"pose": "neutral", "duration_ms": 800}
+    ],
+    "point": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "point_right", "duration_ms": 700},
+      {"pose": "point_right", "duration_ms": 600},
+      {"pose": "neutral", "duration_ms": 650}
+    ],
+    "stop_gesture": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "stop_right", "duration_ms": 700},
+      {"pose": "stop_right", "duration_ms": 700},
+      {"pose": "neutral", "duration_ms": 650}
+    ],
+    "thumbs_up": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "thumbs_up_right", "duration_ms": 650},
+      {"pose": "thumbs_up_right", "duration_ms": 700},
+      {"pose": "neutral", "duration_ms": 650}
+    ],
+    "thumbs_down": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "thumbs_down_right", "duration_ms": 650},
+      {"pose": "thumbs_down_right", "duration_ms": 700},
+      {"pose": "neutral", "duration_ms": 650}
+    ],
+    "arms_open": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "open_both", "duration_ms": 800},
+      {"pose": "open_both", "duration_ms": 700},
+      {"pose": "neutral", "duration_ms": 700}
+    ],
+    "clap": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "clap_open", "duration_ms": 500},
+      {"pose": "clap_closed", "duration_ms": 260},
+      {"pose": "clap_open", "duration_ms": 260},
+      {"pose": "clap_closed", "duration_ms": 260},
+      {"pose": "clap_open", "duration_ms": 260},
+      {"pose": "clap_closed", "duration_ms": 260},
+      {"pose": "neutral", "duration_ms": 700}
+    ],
+    "cross_arms": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "cross_both", "duration_ms": 800},
+      {"pose": "cross_both", "duration_ms": 800},
+      {"pose": "neutral", "duration_ms": 700}
+    ],
+    "hands_on_hips": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "hips_both", "duration_ms": 800},
+      {"pose": "hips_both", "duration_ms": 800},
+      {"pose": "neutral", "duration_ms": 700}
+    ],
+    "shrug": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "shrug_both", "duration_ms": 500},
+      {"pose": "neutral", "duration_ms": 450},
+      {"pose": "shrug_both", "duration_ms": 500},
+      {"pose": "neutral", "duration_ms": 650}
+    ],
+    "celebrate": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "celebrate_both", "duration_ms": 650},
+      {"pose": "open_both", "duration_ms": 450},
+      {"pose": "celebrate_both", "duration_ms": 550},
+      {"pose": "neutral", "duration_ms": 750}
+    ],
+    "present_object": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "present_both", "duration_ms": 800},
+      {"pose": "present_both", "duration_ms": 900},
+      {"pose": "neutral", "duration_ms": 700}
+    ],
+    "idle_pose": [
+      {"pose": "neutral", "duration_ms": 100},
+      {"pose": "idle_relaxed", "duration_ms": 900},
+      {"pose": "idle_relaxed", "duration_ms": 1100},
+      {"pose": "neutral", "duration_ms": 800}
     ]
-  },
-  "clause_patterns": [
-    {"terms": ["raise", "lift"], "pose": "raise_right"},
-    {"terms": ["lower"], "pose": "lower_right"},
-    {"terms": ["chest"], "pose": "chest_right"},
-    {"terms": ["open", "extend", "outward"], "pose": "extend_right"},
-    {"terms": ["welcome", "sweep"], "pose": "open_both"},
-    {"terms": ["think", "chin"], "pose": "thinking_right"},
-    {"terms": ["scratch", "temple"], "pose": "scratch_right"}
-  ]
+  }
 }
