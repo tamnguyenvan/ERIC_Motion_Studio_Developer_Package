@@ -10,13 +10,13 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QScrollArea,
-    QStyle,
     QToolButton,
     QVBoxLayout,
     QWidget,
 )
 
 from eric_motion_studio.domain import UNITREE_G1, JointValues, ModelProfile
+from eric_motion_studio.ui.icons import load_icon
 
 
 class JointEditorWidget(QGroupBox):
@@ -57,7 +57,8 @@ class JointEditorWidget(QGroupBox):
             reset.setObjectName(f"resetJointButton_{name}")
             reset.setAutoRaise(True)
             reset.setFixedSize(24, 24)
-            reset.setIcon(self.style().standardIcon(QStyle.SP_DialogResetButton))
+            reset.setIcon(load_icon("reset_joint.png"))
+            reset.setText("↺")
             reset.setToolTip(f"Reset {name.replace('_joint', '').replace('_', ' ')} to default")
             reset.clicked.connect(lambda _checked=False, joint=name: self.reset_joint(joint))
             row = QWidget()

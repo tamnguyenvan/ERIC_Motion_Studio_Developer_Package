@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QPushButton,
     QSpinBox,
-    QStyle,
     QToolButton,
     QVBoxLayout,
 )
@@ -23,6 +22,7 @@ from eric_motion_studio.domain.values import (
     MAX_KEYFRAME_DURATION_MS,
     MIN_KEYFRAME_DURATION_MS,
 )
+from eric_motion_studio.ui.icons import load_icon
 
 
 class KeyframeEditorWidget(QGroupBox):
@@ -54,25 +54,30 @@ class KeyframeEditorWidget(QGroupBox):
 
         self.add_button = QToolButton()
         self.add_button.setObjectName("addKeyframeButton")
-        self.add_button.setIcon(self.style().standardIcon(QStyle.SP_FileDialogNewFolder))
+        self.add_button.setIcon(load_icon("add_keyframe.png"))
+        self.add_button.setText("+")
         self.add_button.setToolTip("Add keyframe")
         self.capture_button = QPushButton("CAPTURE")
         self.capture_button.setObjectName("captureKeyframeButton")
         self.delete_button = QToolButton()
         self.delete_button.setObjectName("deleteKeyframeButton")
-        self.delete_button.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
+        self.delete_button.setIcon(load_icon("delete_keyframe.png"))
+        self.delete_button.setText("×")
         self.delete_button.setToolTip("Delete selected keyframe")
         self.up_button = QToolButton()
         self.up_button.setObjectName("moveKeyframeUpButton")
-        self.up_button.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
+        self.up_button.setIcon(load_icon("move_up.png"))
+        self.up_button.setText("↑")
         self.up_button.setToolTip("Move selected keyframe up")
         self.down_button = QToolButton()
         self.down_button.setObjectName("moveKeyframeDownButton")
-        self.down_button.setIcon(self.style().standardIcon(QStyle.SP_ArrowDown))
+        self.down_button.setIcon(load_icon("move_down.png"))
+        self.down_button.setText("↓")
         self.down_button.setToolTip("Move selected keyframe down")
         self.duplicate_button = QToolButton()
         self.duplicate_button.setObjectName("duplicateKeyframeButton")
-        self.duplicate_button.setIcon(self.style().standardIcon(QStyle.SP_FileDialogContentsView))
+        self.duplicate_button.setIcon(load_icon("duplicate_keyframe.png"))
+        self.duplicate_button.setText("⧉")
         self.duplicate_button.setToolTip("Duplicate selected keyframe")
         self.preview_button = QPushButton("PREVIEW")
         self.preview_button.setObjectName("previewKeyframeButton")
