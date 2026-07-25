@@ -84,6 +84,7 @@ class KeyframeEditorWidget(QGroupBox):
 
         buttons = QGridLayout()
         toolbar = QHBoxLayout()
+        toolbar.setAlignment(Qt.AlignLeft)
         for button in (
             self.add_button,
             self.delete_button,
