@@ -144,6 +144,18 @@ class MotionStudioWindow(QMainWindow):
         self.playback.subscribe(self._render_playback)
         self.playback.subscribe_status(self.status_panel.set_message)
         self.status_panel.set_message("Ready")
+        self._start_viewer_on_startup()
+
+    def _start_viewer_on_startup(self) -> None:
+        start = getattr(self.services.playback, "start", None)
+        if start is None:
+            return
+        try:
+            start()
+        except Exception as error:
+            self.status_panel.set_message(f"Viewer startup failed: {error}")
+            return
+        self.status_panel.set_message("Viewer started")
 
     def _create_actions(self) -> None:
         file_menu = self.menuBar().addMenu("&File")

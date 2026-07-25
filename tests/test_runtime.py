@@ -195,6 +195,21 @@ class ViewerProcessTests(unittest.TestCase):
             with self.assertRaisesRegex(ViewerProcessError, "code 3"):
                 output.apply_frame(frame)
 
+    def test_playback_start_writes_neutral_and_starts_viewer(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state_store = ViewerStateStore(Path(directory) / "pose.json")
+            process = FakeProcess()
+            manager = ViewerProcessManager(
+                self.settings,
+                launcher=lambda _command: process,
+            )
+            output = ViewerPlaybackOutput(state_store, manager)
+
+            output.start()
+
+            self.assertEqual(manager.status, ViewerProcessStatus.RUNNING)
+            self.assertEqual(state_store.read().joints, JointValues.neutral())
+
     def test_playback_controller_reports_viewer_failure(self):
         class FailingOutput:
             def apply_frame(self, _frame):

@@ -165,6 +165,11 @@ class ViewerPlaybackOutput:
         self.state_store = state_store
         self.process = process
 
+    def start(self) -> None:
+        """Start the external viewer with a neutral pose on application launch."""
+        self.state_store.write(JointValues.neutral(self.state_store.profile))
+        self.process.start()
+
     def apply_frame(self, frame: TrajectoryFrame) -> None:
         if self.process.status is ViewerProcessStatus.STOPPED:
             self.state_store.write(frame.joints)

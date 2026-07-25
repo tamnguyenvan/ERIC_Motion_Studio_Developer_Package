@@ -43,6 +43,8 @@ class MotionExportService(Protocol):
 
 
 class PlaybackOutput(Protocol):
+    def start(self) -> None: ...
+
     def apply_frame(self, frame: TrajectoryFrame) -> None: ...
 
     def reset(self) -> None: ...
@@ -113,6 +115,9 @@ class NullPlaybackOutput:
 
     def apply_frame(self, frame: TrajectoryFrame) -> None:
         self.last_frame = frame
+
+    def start(self) -> None:
+        return
 
     def reset(self) -> None:
         self.last_frame = None
