@@ -92,11 +92,11 @@ class KeyframeEditorWidget(QGroupBox):
             self.duplicate_button,
         ):
             toolbar.addWidget(button)
-        toolbar.addWidget(self.capture_button)
         buttons.addLayout(toolbar, 0, 0, 1, 3)
-        buttons.addWidget(self.preview_button, 1, 0, 1, 3)
-        buttons.addWidget(QLabel("Duration"), 2, 0)
-        buttons.addWidget(self.duration_spin, 2, 1, 1, 2)
+        buttons.addWidget(self.capture_button, 1, 0, 1, 3)
+        buttons.addWidget(self.preview_button, 2, 0, 1, 3)
+        buttons.addWidget(QLabel("Duration"), 3, 0)
+        buttons.addWidget(self.duration_spin, 3, 1, 1, 2)
 
         presets = QHBoxLayout()
         for label, preset in (
