@@ -79,7 +79,9 @@ def audit_command(
 def audit_all_commands(*, stream: TextIO) -> bool:
     compiler = GestureCompiler.default()
     prompts = tuple(
-        alias for definition in compiler.registry.definitions for alias in definition.aliases
+        command
+        for definition in compiler.registry.definitions
+        for command in (*definition.aliases, *definition.triggers)
     )
     results = tuple(audit_command(prompt, compiler=compiler, stream=stream) for prompt in prompts)
     passed = all(results)
@@ -89,6 +91,55 @@ def audit_all_commands(*, stream: TextIO) -> bool:
         f"ALL_COMMANDS_AUDITED total={len(prompts)} status={status}",
     )
     return passed
+
+
+def audit_all_gestures_in_mujoco(
+    settings: Settings,
+    *,
+    stream: TextIO,
+) -> bool:
+    """Compile every gesture and apply its dense trajectory to the MuJoCo model."""
+    compiler = GestureCompiler.default(settings.resource_root)
+    adapter = MujocoAdapter(settings.model_path)
+    all_passed = True
+    applied_frames = 0
+    for definition in compiler.registry.definitions:
+        prompt = definition.aliases[0]
+        result = compiler.compile(prompt)
+        if not result.succeeded or result.motion is None:
+            _write(
+                stream,
+                f"MUJOCO_GESTURE_AUDIT_RESULT action={definition.canonical_id} "
+                "frames=0 status=FAIL reason=compilation",
+            )
+            all_passed = False
+            continue
+        trajectory = dense_trajectory(result.motion.keyframes)
+        try:
+            for sequence, frame in enumerate(trajectory.frames, start=1):
+                adapter.apply_pose(frame.joints, sequence=sequence)
+        except Exception as error:
+            _write(
+                stream,
+                f"MUJOCO_GESTURE_AUDIT_RESULT action={definition.canonical_id} "
+                f"frames={len(trajectory.frames)} status=FAIL reason={error}",
+            )
+            all_passed = False
+            continue
+        applied_frames += len(trajectory.frames)
+        _write(
+            stream,
+            f"MUJOCO_GESTURE_AUDIT_RESULT action={definition.canonical_id} "
+            f"frames={len(trajectory.frames)} status=PASS",
+        )
+    status = "PASS" if all_passed else "FAIL"
+    _write(
+        stream,
+        "MUJOCO_ALL_GESTURES_AUDITED "
+        f"gestures={len(compiler.registry.definitions)} "
+        f"frames={applied_frames} status={status}",
+    )
+    return all_passed
 
 
 def run_self_test(settings: Settings, *, stream: TextIO) -> bool:

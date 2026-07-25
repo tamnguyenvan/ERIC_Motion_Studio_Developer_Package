@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from enum import StrEnum
 
 from eric_motion_studio.config import RESOURCE_ROOT
@@ -40,6 +41,7 @@ class ResolutionResult:
     slots: GestureSlots | None = None
     semantic: SemanticCommand | None = None
     candidates: tuple[str, ...] = ()
+    suggestions: tuple[str, ...] = ()
     message: str = ""
 
     @property
@@ -124,11 +126,19 @@ class GestureResolver:
                 )
 
         if not candidates:
+            suggestions = self._suggestions(command)
+            message = "No deterministic grammar or gesture phrase matched the command"
+            if suggestions:
+                labels = ", ".join(
+                    self.registry.get(identifier).aliases[0] for identifier in suggestions
+                )
+                message = f"{message}. Did you mean: {labels}?"
             return ResolutionResult(
                 status=ResolutionStatus.UNSUPPORTED,
                 normalized_command=normalized,
                 slots=slots,
-                message="No deterministic grammar or gesture phrase matched the command",
+                suggestions=suggestions,
+                message=message,
             )
 
         best_score = max(candidate.score for candidate in candidates)
@@ -168,7 +178,10 @@ class GestureResolver:
     ) -> tuple[_Candidate, ...]:
         candidates: dict[tuple[str, bool], _Candidate] = {}
         for definition in self.registry.definitions:
-            match = best_phrase_match(command, definition.aliases)
+            match = best_phrase_match(
+                command,
+                (*definition.aliases, *definition.triggers),
+            )
             if match is None:
                 continue
             score = match.score if match.exact else 6_000 + match.score
@@ -202,6 +215,34 @@ class GestureResolver:
                     slots=candidate.slots,
                 )
         return tuple(candidates.values())
+
+    def _suggestions(self, command: str, *, limit: int = 3) -> tuple[str, ...]:
+        normalized = normalize_text(command)
+        if not normalized:
+            return ()
+        command_tokens = frozenset(normalized.split())
+        scored: list[tuple[float, str]] = []
+        for definition in self.registry.definitions:
+            best = 0.0
+            for phrase in (*definition.aliases, *definition.triggers):
+                normalized_phrase = normalize_text(phrase)
+                phrase_tokens = frozenset(normalized_phrase.split())
+                character_score = SequenceMatcher(
+                    None,
+                    normalized,
+                    normalized_phrase,
+                ).ratio()
+                token_score = (
+                    len(command_tokens.intersection(phrase_tokens))
+                    / len(command_tokens.union(phrase_tokens))
+                    if command_tokens and phrase_tokens
+                    else 0.0
+                )
+                best = max(best, character_score, token_score)
+            if best >= 0.6:
+                scored.append((best, definition.canonical_id))
+        scored.sort(key=lambda item: (-item[0], item[1]))
+        return tuple(identifier for _score, identifier in scored[:limit])
 
     def _semantic_clauses(
         self,

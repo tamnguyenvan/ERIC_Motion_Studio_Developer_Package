@@ -3,13 +3,20 @@
   "actions": {
     "raise": ["raise", "lift", "elevate"],
     "lower": ["lower", "drop", "bring down"],
-    "wave": ["wave"],
-    "point": ["point"],
+    "wave": ["wave", "waving"],
+    "point": ["point", "pointing"],
     "extend": ["extend", "extending", "reach", "reaching"],
     "place": ["place", "put"],
     "open": ["open", "spread"],
     "scratch": ["scratch"],
-    "rub": ["rub", "touch"]
+    "rub": ["rub", "touch"],
+    "stop": ["stop", "halt"],
+    "clap": ["clap", "clapping", "applaud", "applauding"],
+    "shrug": ["shrug", "shrugging"],
+    "think": ["think", "thinking", "ponder", "pondering"],
+    "celebrate": ["celebrate", "celebrating", "cheer", "cheering"],
+    "idle": ["idle", "rest", "relax", "standby"],
+    "welcome": ["welcome", "greet", "greeting"]
   },
   "effectors": {
     "arm": ["arm", "arms", "hand", "hands"],
@@ -70,6 +77,48 @@
       "canonical_id": "present_object",
       "actions": ["extend"],
       "effectors": ["object"]
+    },
+    {
+      "canonical_id": "stop_gesture",
+      "actions": ["stop"],
+      "effectors": [],
+      "effector_optional": true
+    },
+    {
+      "canonical_id": "clap",
+      "actions": ["clap"],
+      "effectors": [],
+      "effector_optional": true
+    },
+    {
+      "canonical_id": "shrug",
+      "actions": ["shrug"],
+      "effectors": [],
+      "effector_optional": true
+    },
+    {
+      "canonical_id": "thinking_hand_on_chin",
+      "actions": ["think"],
+      "effectors": [],
+      "effector_optional": true
+    },
+    {
+      "canonical_id": "celebrate",
+      "actions": ["celebrate"],
+      "effectors": [],
+      "effector_optional": true
+    },
+    {
+      "canonical_id": "idle_pose",
+      "actions": ["idle"],
+      "effectors": [],
+      "effector_optional": true
+    },
+    {
+      "canonical_id": "welcome_presentation",
+      "actions": ["welcome"],
+      "effectors": [],
+      "effector_optional": true
     }
   ]
 }

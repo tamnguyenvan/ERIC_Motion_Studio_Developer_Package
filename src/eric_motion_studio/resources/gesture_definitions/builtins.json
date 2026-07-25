@@ -11,6 +11,7 @@
         "presentation talking motion",
         "happy talking motion"
       ],
+      "triggers": ["talk naturally", "speaking gesture"],
       "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
       "generator_id": "talking_idle",
       "defaults": {"speed": "normal", "intensity": "normal", "neutral_return": true},
@@ -46,6 +47,7 @@
     {
       "canonical_id": "wave_goodbye",
       "aliases": ["wave goodbye", "goodbye wave", "wave bye"],
+      "triggers": ["goodbye", "bye", "farewell"],
       "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
       "generator_id": "wave_goodbye",
       "defaults": {
@@ -164,6 +166,7 @@
     {
       "canonical_id": "stop_gesture",
       "aliases": ["stop gesture", "show stop", "stop sign"],
+      "triggers": ["stop", "halt"],
       "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
       "generator_id": "stop_gesture",
       "defaults": {
@@ -392,6 +395,7 @@
         "thinking with hand on chin",
         "looking thoughtful"
       ],
+      "triggers": ["ponder", "pondering"],
       "supported_slots": ["side", "speed", "intensity", "hold", "neutral_return"],
       "generator_id": "thinking_hand_on_chin",
       "defaults": {
@@ -442,6 +446,7 @@
     {
       "canonical_id": "idle_pose",
       "aliases": ["idle pose", "stand idle", "relaxed idle", "rest pose"],
+      "triggers": ["idle", "rest", "relax", "standby"],
       "supported_slots": ["speed", "intensity", "hold", "neutral_return"],
       "generator_id": "idle_pose",
       "defaults": {"speed": "normal", "intensity": "subtle", "neutral_return": true},

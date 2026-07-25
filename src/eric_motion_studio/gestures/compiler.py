@@ -83,6 +83,7 @@ class GestureCompiler:
                         "normalized": resolution.normalized_command,
                         "status": resolution.status.value,
                         "candidates": resolution.candidates,
+                        "suggestions": resolution.suggestions,
                         "reason": resolution.message,
                     }
                 },

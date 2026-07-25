@@ -111,6 +111,11 @@ The supported console scripts are `eric-motion-studio` and
 `eric-motion-studio-viewer`. The active package never imports from or writes to
 `codebase/`.
 
+## Gesture command documentation
+
+- [Gesture command framework](docs/gesture-command-framework.md)
+- [Client requirements delivery](docs/client-requirements-delivery.md)
+
 ## Documentation
 
 - [Architecture](docs/architecture.md)

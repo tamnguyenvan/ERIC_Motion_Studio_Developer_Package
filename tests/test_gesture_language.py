@@ -115,13 +115,14 @@ REQUESTED_COMMANDS = {
         "think",
         "thinking",
         "thinking pose",
+        "ponder",
     ),
     "scratch_head": ("scratch head",),
     "celebrate": ("celebrate", "cheer"),
     "welcome_presentation": ("welcome",),
     "wave_goodbye": ("wave goodbye",),
     "present_object": ("present object",),
-    "idle_pose": ("idle pose",),
+    "idle_pose": ("idle", "idle pose", "rest", "standby"),
 }
 
 
@@ -156,15 +157,55 @@ class GestureDefinitionTests(unittest.TestCase):
             ResolutionStatus.UNSUPPORTED,
         )
 
-    def test_all_definition_aliases_are_deterministic(self):
+    def test_all_definition_commands_are_deterministic(self):
         compiler = GestureCompiler.default()
         for definition in compiler.registry.definitions:
-            for alias in definition.aliases:
-                with self.subTest(definition=definition.canonical_id, alias=alias):
-                    first = compiler.compile(alias)
-                    second = compiler.compile(alias)
+            for command in (*definition.aliases, *definition.triggers):
+                with self.subTest(definition=definition.canonical_id, command=command):
+                    first = compiler.compile(command)
+                    second = compiler.compile(command)
                     self.assertTrue(first.succeeded, first)
                     self.assertEqual(first, second)
+
+    def test_short_trigger_and_specific_phrase_precedence(self):
+        compiler = GestureCompiler.default()
+
+        idle = compiler.compile("idle")
+        talking = compiler.compile("talking idle")
+
+        self.assertTrue(idle.succeeded, idle)
+        self.assertEqual(idle.resolution.definition.canonical_id, "idle_pose")
+        self.assertTrue(talking.succeeded, talking)
+        self.assertEqual(talking.resolution.definition.canonical_id, "talking_idle")
+
+    def test_morphological_and_concept_vocabulary(self):
+        compiler = GestureCompiler.default()
+        commands = {
+            "waving left hand": "wave",
+            "pointing right": "point",
+            "clapping": "clap",
+            "shrugging": "shrug",
+            "pondering": "thinking_hand_on_chin",
+            "celebrating": "celebrate",
+            "standby": "idle_pose",
+            "farewell": "wave_goodbye",
+            "greeting": "welcome_presentation",
+            "halt": "stop_gesture",
+        }
+
+        for command, canonical_id in commands.items():
+            with self.subTest(command=command):
+                result = compiler.compile(command)
+                self.assertTrue(result.succeeded, result)
+                self.assertEqual(result.resolution.definition.canonical_id, canonical_id)
+
+    def test_fuzzy_matching_suggests_but_does_not_execute(self):
+        result = GestureCompiler.default().compile("idel")
+
+        self.assertFalse(result.succeeded)
+        self.assertEqual(result.resolution.status, ResolutionStatus.UNSUPPORTED)
+        self.assertEqual(result.resolution.suggestions[0], "idle_pose")
+        self.assertIn("Did you mean: idle pose?", result.resolution.message)
 
     def test_requested_gesture_catalog_compiles_and_validates(self):
         compiler = GestureCompiler.default()
@@ -346,6 +387,26 @@ class GestureDefinitionTests(unittest.TestCase):
         self.assertTrue(result.succeeded, result)
         self.assertEqual(result.resolution.definition.canonical_id, "wave")
 
+    def test_short_trigger_can_be_added_using_definition_data_only(self):
+        payload = copy.deepcopy(self.payload)
+        idle = next(
+            definition
+            for definition in payload["definitions"]
+            if definition["canonical_id"] == "idle_pose"
+        )
+        idle["triggers"].append("wait")
+        registry = GestureRegistry.from_payload(payload)
+        compiler = GestureCompiler(
+            registry,
+            StageLibrary.from_path(STAGES_PATH),
+            default_generator_registry(),
+        )
+
+        result = compiler.compile("wait")
+
+        self.assertTrue(result.succeeded, result)
+        self.assertEqual(result.resolution.definition.canonical_id, "idle_pose")
+
     def test_malformed_definition_is_rejected(self):
         payload = copy.deepcopy(self.payload)
         del payload["definitions"][0]["generator_id"]
@@ -356,6 +417,16 @@ class GestureDefinitionTests(unittest.TestCase):
         invalid_default["definitions"][0]["defaults"]["side"] = "diagonal"
         with self.assertRaises(DefinitionValidationError):
             GestureRegistry.from_payload(invalid_default)
+
+        duplicate_trigger = copy.deepcopy(self.payload)
+        idle = next(
+            definition
+            for definition in duplicate_trigger["definitions"]
+            if definition["canonical_id"] == "idle_pose"
+        )
+        idle["triggers"].append("idle")
+        with self.assertRaises(DefinitionValidationError):
+            GestureRegistry.from_payload(duplicate_trigger)
 
     def test_reusable_stage_data_is_validated(self):
         payload = json.loads(STAGES_PATH.read_text())

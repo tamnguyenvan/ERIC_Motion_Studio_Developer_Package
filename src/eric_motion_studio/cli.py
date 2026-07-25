@@ -12,6 +12,7 @@ from eric_motion_studio.application import run_application
 from eric_motion_studio.config import Settings
 from eric_motion_studio.diagnostics import (
     audit_all_commands,
+    audit_all_gestures_in_mujoco,
     audit_command,
     run_self_test,
 )
@@ -45,6 +46,11 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="PROMPT",
         help="compile and validate one gesture command",
     )
+    modes.add_argument(
+        "--audit-mujoco-gestures",
+        action="store_true",
+        help="compile every gesture and apply every dense frame in MuJoCo",
+    )
     parser.add_argument("--model-path", type=Path)
     parser.add_argument("--data-dir", type=Path)
     parser.add_argument("--export-dir", type=Path)
@@ -70,6 +76,8 @@ def main(arguments: Sequence[str] | None = None) -> int:
         return 0 if audit_command(args.audit_command, stream=sys.stdout) else 1
     if args.audit_commands:
         return 0 if audit_all_commands(stream=sys.stdout) else 1
+    if args.audit_mujoco_gestures:
+        return 0 if audit_all_gestures_in_mujoco(settings, stream=sys.stdout) else 1
     if args.self_test:
         return 0 if run_self_test(settings, stream=sys.stdout) else 1
 

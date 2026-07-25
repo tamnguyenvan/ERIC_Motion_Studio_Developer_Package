@@ -90,6 +90,7 @@ class GestureDefinition:
     defaults: tuple[tuple[str, object], ...]
     tags: tuple[str, ...]
     constraints: GestureConstraints
+    triggers: tuple[str, ...] = ()
 
     @classmethod
     def from_payload(cls, raw_payload: object) -> GestureDefinition:
@@ -113,6 +114,22 @@ class GestureDefinition:
         if len(set(normalized_aliases)) != len(normalized_aliases):
             raise DefinitionValidationError(
                 f"definition {canonical_id!r} contains duplicate aliases"
+            )
+
+        raw_triggers = raw_payload.get("triggers", [])
+        if not isinstance(raw_triggers, list) or any(
+            not isinstance(trigger, str) or not trigger.strip() for trigger in raw_triggers
+        ):
+            raise DefinitionValidationError("triggers must contain non-empty strings")
+        normalized_triggers = [normalize_text(trigger) for trigger in raw_triggers]
+        if len(set(normalized_triggers)) != len(normalized_triggers):
+            raise DefinitionValidationError(
+                f"definition {canonical_id!r} contains duplicate triggers"
+            )
+        overlap = set(normalized_aliases).intersection(normalized_triggers)
+        if overlap:
+            raise DefinitionValidationError(
+                f"definition {canonical_id!r} repeats commands across aliases and triggers"
             )
 
         raw_slots = raw_payload.get("supported_slots")
@@ -144,6 +161,7 @@ class GestureDefinition:
         return cls(
             canonical_id=canonical_id,
             aliases=tuple(raw_aliases),
+            triggers=tuple(raw_triggers),
             supported_slots=slots,
             generator_id=generator_id,
             defaults=tuple(raw_defaults.items()),
