@@ -7,12 +7,13 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Protocol
 
-from eric_motion_studio.domain import Motion, Pose, TrajectoryFrame
+from eric_motion_studio.domain import JointValues, Motion, Pose, TrajectoryFrame
 from eric_motion_studio.gestures import CompilationResult, GestureCompiler
 from eric_motion_studio.infrastructure import (
     AnimationRepository,
     BrainOSExportRepository,
     MotionLibraryEntry,
+    PoseLibraryEntry,
     PoseRepository,
 )
 
@@ -49,6 +50,24 @@ class MotionLibraryService(Protocol):
     def delete(self, entry_id: str) -> Path: ...
 
 
+class PoseLibraryService(Protocol):
+    def entries(self) -> tuple[PoseLibraryEntry, ...]: ...
+
+    def search(self, query: str) -> tuple[PoseLibraryEntry, ...]: ...
+
+    def load(self, entry_id: str) -> tuple[Pose, Path | None]: ...
+
+    def create(self, joints: JointValues, name: str) -> tuple[Pose, Path]: ...
+
+    def update(self, entry_id: str, joints: JointValues) -> tuple[Pose, Path]: ...
+
+    def rename(self, entry_id: str, name: str) -> tuple[Pose, Path]: ...
+
+    def duplicate(self, entry_id: str) -> tuple[Pose, Path]: ...
+
+    def delete(self, entry_id: str) -> Path: ...
+
+
 class GestureAuthoringService(Protocol):
     def compile(self, prompt: str) -> CompilationResult: ...
 
@@ -81,6 +100,8 @@ class DialogService(Protocol):
     def confirm_unsaved(self, motion_name: str) -> UnsavedDecision: ...
 
     def confirm_delete_motion(self, motion_name: str) -> bool: ...
+
+    def confirm_delete_pose(self, pose_name: str) -> bool: ...
 
     def show_error(self, title: str, message: str) -> None: ...
 
@@ -152,3 +173,4 @@ class ApplicationServices:
     dialogs: DialogService
     poses: PoseStore | None = None
     library: MotionLibraryService | None = None
+    pose_library: PoseLibraryService | None = None

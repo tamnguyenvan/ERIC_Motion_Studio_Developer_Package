@@ -84,5 +84,15 @@ class QtDialogService(DialogService):
         )
         return result == QMessageBox.Yes
 
+    def confirm_delete_pose(self, pose_name: str) -> bool:
+        result = QMessageBox.question(
+            self.parent,
+            "Delete pose",
+            f"Delete {pose_name} from My Poses?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        return result == QMessageBox.Yes
+
     def show_error(self, title: str, message: str) -> None:
         QMessageBox.critical(self.parent, title, message)

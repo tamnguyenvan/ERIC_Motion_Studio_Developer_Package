@@ -101,6 +101,11 @@ commands. Type a natural-language gesture command and press Enter to activate
 its generated motion. Playback derives dense frames automatically; there is no
 Open, Compile/Apply, or approval workflow.
 
+The **Poses** tab provides instant local search across reusable built-in and
+custom poses. Clicking a result applies it to the joint editor and MuJoCo
+preview without changing the current keyframe. Capture or Add Keyframe commits
+the pose to a motion. See [Pose Library](docs/pose-library.md).
+
 Override paths with these CLI options or matching environment variables:
 
 - `--model-path` / `ERIC_MOTION_STUDIO_MODEL_PATH`

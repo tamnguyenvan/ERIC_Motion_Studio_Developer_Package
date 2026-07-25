@@ -18,7 +18,11 @@ from PySide6.QtWidgets import (
 from eric_motion_studio.config import Settings
 from eric_motion_studio.domain import JointValues, Pose
 from eric_motion_studio.gestures import GestureCompiler
-from eric_motion_studio.infrastructure import MotionLibrary, migrate_legacy_user_files
+from eric_motion_studio.infrastructure import (
+    MotionLibrary,
+    PoseLibrary,
+    migrate_legacy_user_files,
+)
 from eric_motion_studio.runtime import (
     ViewerPlaybackOutput,
     ViewerProcessManager,
@@ -48,6 +52,7 @@ from eric_motion_studio.ui.widgets import (
     KeyframeEditorWidget,
     MotionMetadataWidget,
     PlaybackControlsWidget,
+    PoseLibraryWidget,
     StatusPanel,
 )
 
@@ -86,6 +91,11 @@ def default_services(
             settings.motions_dir,
             gesture_service.compiler,
         ),
+        pose_library=PoseLibrary(
+            settings.poses_dir,
+            settings.resource_root / "pose_definitions" / "builtins.json",
+            settings.resource_root / "gesture_stages" / "builtin_stages.json",
+        ),
     )
 
 
@@ -107,6 +117,11 @@ class MotionStudioWindow(QMainWindow):
             settings.motions_dir,
             compiler,
         )
+        self.pose_library = self.services.pose_library or PoseLibrary(
+            settings.poses_dir,
+            settings.resource_root / "pose_definitions" / "builtins.json",
+            settings.resource_root / "gesture_stages" / "builtin_stages.json",
+        )
         self.documents = DocumentController(self.services.motions)
         self.gesture_authoring = GestureAuthoringController(
             self.services.gestures,
@@ -116,6 +131,7 @@ class MotionStudioWindow(QMainWindow):
         self.playback = PlaybackController(self.services.playback)
         self._rendered_motion = None
         self._active_library_entry_id: str | None = None
+        self._active_pose_entry_id: str | None = None
 
         self.setObjectName("motionStudioMainWindow")
         self.setWindowTitle("ERIC Motion Studio")
@@ -124,6 +140,8 @@ class MotionStudioWindow(QMainWindow):
         self.metadata_widget = MotionMetadataWidget()
         self.gesture_widget = GestureLibraryWidget()
         self.gesture_widget.set_entries(self.library.entries())
+        self.pose_widget = PoseLibraryWidget()
+        self.pose_widget.set_results(self.pose_library.entries())
         self.joint_widget = JointEditorWidget()
         self.keyframe_widget = KeyframeEditorWidget()
         self.playback_widget = PlaybackControlsWidget()
@@ -133,6 +151,7 @@ class MotionStudioWindow(QMainWindow):
         tabs.setObjectName("authoringTabs")
         tabs.addTab(self.keyframe_widget, "Keyframes")
         tabs.addTab(self.gesture_widget, "Gestures")
+        tabs.addTab(self.pose_widget, "Poses")
         splitter = QSplitter(Qt.Horizontal)
         splitter.setObjectName("editorSplitter")
         splitter.addWidget(tabs)
@@ -193,6 +212,10 @@ class MotionStudioWindow(QMainWindow):
         self.export_action = QAction("&Export local BrainOS package…", self)
         self.export_action.setObjectName("exportMotionAction")
         self.export_action.setShortcut(QKeySequence("Ctrl+E"))
+        self.import_pose_action = QAction("&Import Pose…", self)
+        self.import_pose_action.setObjectName("importPoseAction")
+        self.export_pose_action = QAction("Export Current &Pose…", self)
+        self.export_pose_action.setObjectName("exportPoseAction")
         self.quit_action = QAction("&Quit", self)
         self.quit_action.setShortcut(QKeySequence.Quit)
 
@@ -202,6 +225,8 @@ class MotionStudioWindow(QMainWindow):
             self.save_action,
             self.save_as_action,
             self.export_action,
+            self.import_pose_action,
+            self.export_pose_action,
             self.quit_action,
         ):
             file_menu.addAction(action)
@@ -247,6 +272,10 @@ class MotionStudioWindow(QMainWindow):
         self.save_action.triggered.connect(self._save_document)
         self.save_as_action.triggered.connect(lambda: self._save_document(force_path=True))
         self.export_action.triggered.connect(self._export_document)
+        self.import_pose_action.triggered.connect(self._load_pose)
+        self.export_pose_action.triggered.connect(
+            lambda: self._save_pose(self.joint_widget.current_joints())
+        )
         self.quit_action.triggered.connect(self.close)
         self.undo_action.triggered.connect(self.documents.undo)
         self.redo_action.triggered.connect(self.documents.redo)
@@ -281,13 +310,19 @@ class MotionStudioWindow(QMainWindow):
         )
         self.joint_widget.returnPreviewNeutralRequested.connect(self._return_preview_to_neutral)
         self.joint_widget.addNeutralKeyframeRequested.connect(self.documents.add_neutral_keyframe)
-        self.joint_widget.savePoseRequested.connect(self._save_pose)
-        self.joint_widget.loadPoseRequested.connect(self._load_pose)
         self.gesture_widget.commandRequested.connect(self._activate_gesture_command)
         self.gesture_widget.activationRequested.connect(self._activate_library_motion)
         self.gesture_widget.duplicateRequested.connect(self._duplicate_library_motion)
         self.gesture_widget.deleteRequested.connect(self._delete_library_motion)
         self.gesture_widget.refreshRequested.connect(self._refresh_library)
+        self.pose_widget.searchRequested.connect(self._search_poses)
+        self.pose_widget.previewRequested.connect(self._preview_library_pose)
+        self.pose_widget.createRequested.connect(self._create_library_pose)
+        self.pose_widget.updateRequested.connect(self._update_library_pose)
+        self.pose_widget.duplicateRequested.connect(self._duplicate_library_pose)
+        self.pose_widget.renameRequested.connect(self._rename_library_pose)
+        self.pose_widget.deleteRequested.connect(self._delete_library_pose)
+        self.pose_widget.refreshRequested.connect(self._refresh_pose_library)
 
         self.playback_widget.playRequested.connect(self._play)
         self.playback_widget.playFromStartRequested.connect(self._play_from_start)
@@ -490,6 +525,96 @@ class MotionStudioWindow(QMainWindow):
         if self.playback.preview_pose(JointValues.neutral(self.joint_widget.profile)):
             self.status_panel.set_message("Preview returned to neutral")
 
+    def _search_poses(self, query: str) -> None:
+        self.pose_widget.set_results(self.pose_library.search(query))
+
+    def _refresh_pose_library(self) -> None:
+        self.pose_widget.set_results(self.pose_library.search(self.pose_widget.query))
+        if self._active_pose_entry_id is not None:
+            self.pose_widget.select_entry(self._active_pose_entry_id)
+
+    def _preview_library_pose(self, entry_id: str) -> None:
+        try:
+            pose, _path = self.pose_library.load(entry_id)
+        except Exception as error:
+            self.services.dialogs.show_error("Preview pose failed", str(error))
+            return
+        if self.playback.state.playing or self.playback.state.paused:
+            self.playback.stop()
+        self.joint_widget.set_joints(pose.joints, respect_locks=True)
+        if not self.playback.preview_pose(self.joint_widget.current_joints()):
+            return
+        self._active_pose_entry_id = entry_id
+        self.pose_widget.select_entry(entry_id)
+        metadata = dict(pose.metadata)
+        name = str(metadata.get("pose_name") or "Pose")
+        self.status_panel.set_message(f"Pose applied to preview: {name}")
+
+    def _create_library_pose(self, name: str) -> None:
+        try:
+            _pose, path = self.pose_library.create(
+                self.joint_widget.current_joints(),
+                name,
+            )
+        except Exception as error:
+            self.services.dialogs.show_error("Save custom pose failed", str(error))
+            return
+        self._active_pose_entry_id = f"user:{path.name}"
+        self.pose_widget.search_edit.clear()
+        self._refresh_pose_library()
+        self.status_panel.set_message(f"Custom pose saved: {path.name}")
+
+    def _update_library_pose(self, entry_id: str) -> None:
+        try:
+            _pose, path = self.pose_library.update(
+                entry_id,
+                self.joint_widget.current_joints(),
+            )
+        except Exception as error:
+            self.services.dialogs.show_error("Update custom pose failed", str(error))
+            return
+        self._active_pose_entry_id = entry_id
+        self._refresh_pose_library()
+        self.status_panel.set_message(f"Custom pose updated: {path.name}")
+
+    def _duplicate_library_pose(self, entry_id: str) -> None:
+        try:
+            _pose, path = self.pose_library.duplicate(entry_id)
+        except Exception as error:
+            self.services.dialogs.show_error("Duplicate pose failed", str(error))
+            return
+        self._active_pose_entry_id = f"user:{path.name}"
+        self.pose_widget.search_edit.clear()
+        self._refresh_pose_library()
+        self._preview_library_pose(self._active_pose_entry_id)
+
+    def _rename_library_pose(self, entry_id: str, name: str) -> None:
+        try:
+            _pose, path = self.pose_library.rename(entry_id, name)
+        except Exception as error:
+            self.services.dialogs.show_error("Rename pose failed", str(error))
+            return
+        self._active_pose_entry_id = entry_id
+        self._refresh_pose_library()
+        self.status_panel.set_message(f"Custom pose renamed: {path.name}")
+
+    def _delete_library_pose(self, entry_id: str) -> None:
+        entry = next(
+            (item for item in self.pose_library.entries() if item.entry_id == entry_id),
+            None,
+        )
+        if entry is None or not self.services.dialogs.confirm_delete_pose(entry.display_name):
+            return
+        try:
+            deleted = self.pose_library.delete(entry_id)
+        except Exception as error:
+            self.services.dialogs.show_error("Delete pose failed", str(error))
+            return
+        if self._active_pose_entry_id == entry_id:
+            self._active_pose_entry_id = None
+        self._refresh_pose_library()
+        self.status_panel.set_message(f"Custom pose deleted: {deleted.name}")
+
     def _save_pose(self, joints: JointValues) -> None:
         path = self.services.dialogs.select_save_pose("pose")
         if path is None:
@@ -511,6 +636,8 @@ class MotionStudioWindow(QMainWindow):
         except Exception as error:
             self.services.dialogs.show_error("Load pose failed", str(error))
             return
+        self._active_pose_entry_id = None
+        self.pose_widget.clear_selection()
         self.joint_widget.jointsChanged.emit(self.joint_widget.current_joints())
         self.status_panel.set_message(f"Pose loaded: {path.name}")
 

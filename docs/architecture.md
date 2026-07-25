@@ -24,6 +24,8 @@ The Motion Library is layered:
 gesture definitions + stages -> generated read-only built-ins
 user data/motions/            -> editable custom motions
 playback/export               -> derived trajectories generated on demand
+pose definitions + stages     -> searchable read-only built-in poses
+user data/poses/              -> searchable editable custom poses
 ```
 
 Built-ins and user motions appear in one UI library, but package resources
@@ -38,6 +40,12 @@ changes, stops active playback, loads the motion at its first keyframe, and
 updates the MuJoCo preview. Built-ins activate in read-only mode. Natural-language
 commands use the same switch path and produce a temporary editable motion; the
 parser and compiler remain internal services rather than separate UI actions.
+
+Pose selection is intentionally separate from motion selection. It stops active
+playback and changes only the joint/MuJoCo preview. Capturing that preview
+creates a keyframe snapshot. Built-in pose metadata references canonical stage
+joint maps, while custom pose files contain their own joint snapshot and search
+metadata.
 
 Supported entry points are declared in `pyproject.toml`:
 

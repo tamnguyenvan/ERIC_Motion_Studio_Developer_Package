@@ -27,8 +27,6 @@ class JointEditorWidget(QGroupBox):
     jointsChanged = Signal(object)
     returnPreviewNeutralRequested = Signal()
     addNeutralKeyframeRequested = Signal()
-    savePoseRequested = Signal(object)
-    loadPoseRequested = Signal()
 
     def __init__(
         self,
@@ -108,10 +106,6 @@ class JointEditorWidget(QGroupBox):
         self.copy_pose_button.setObjectName("copyCurrentPoseButton")
         self.apply_pose_button = QPushButton("APPLY POSE")
         self.apply_pose_button.setObjectName("applyCopiedPoseButton")
-        self.save_pose_button = QPushButton("SAVE POSE")
-        self.save_pose_button.setObjectName("savePoseButton")
-        self.load_pose_button = QPushButton("LOAD POSE")
-        self.load_pose_button.setObjectName("loadPoseButton")
         self.mirror_arms_button = QPushButton("MIRROR ARMS")
         self.mirror_arms_button.setObjectName("mirrorArmsButton")
         self.mirror_legs_button = QPushButton("MIRROR LEGS")
@@ -121,8 +115,6 @@ class JointEditorWidget(QGroupBox):
             self.add_neutral_button,
             self.copy_pose_button,
             self.apply_pose_button,
-            self.save_pose_button,
-            self.load_pose_button,
             self.mirror_arms_button,
             self.mirror_legs_button,
         )
@@ -132,10 +124,6 @@ class JointEditorWidget(QGroupBox):
         self.add_neutral_button.clicked.connect(self.addNeutralKeyframeRequested)
         self.copy_pose_button.clicked.connect(self.copy_current_pose)
         self.apply_pose_button.clicked.connect(self.apply_copied_pose)
-        self.save_pose_button.clicked.connect(
-            lambda: self.savePoseRequested.emit(self.current_joints())
-        )
-        self.load_pose_button.clicked.connect(self.loadPoseRequested)
         self.mirror_arms_button.clicked.connect(self.mirror_arms)
         self.mirror_legs_button.clicked.connect(self.mirror_legs)
 

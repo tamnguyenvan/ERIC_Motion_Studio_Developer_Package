@@ -25,6 +25,12 @@ from eric_motion_studio.infrastructure.motion_library import (
     MotionLibraryEntry,
     MotionOrigin,
 )
+from eric_motion_studio.infrastructure.pose_library import (
+    PoseLibrary,
+    PoseLibraryEntry,
+    PoseLibraryError,
+    PoseOrigin,
+)
 
 __all__ = [
     "ANIMATION_SCHEMA",
@@ -44,6 +50,10 @@ __all__ = [
     "GestureSerializer",
     "PoseRepository",
     "PoseSerializer",
+    "PoseLibrary",
+    "PoseLibraryEntry",
+    "PoseLibraryError",
+    "PoseOrigin",
     "SchemaValidationError",
     "migrate_legacy_user_files",
 ]

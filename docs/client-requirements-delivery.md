@@ -115,3 +115,21 @@ backups/motion-library/pre-change-source-1f517a5.tar.gz
 See [gesture-command-framework.md](gesture-command-framework.md) for the data
 formats, resolution order, extension workflow, safety policy, and verification
 commands.
+
+## Searchable Pose Library
+
+The application also provides a local Pose Library with 22 read-only built-ins,
+custom pose persistence, ranked name/alias/tag/body-region search, bounded typo
+matching, click-to-preview behavior, and custom Save, Update, Duplicate, Rename,
+and Delete operations. It does not use an AI model or network service.
+
+Built-ins reuse canonical joint maps from `gesture_stages/builtin_stages.json`;
+search metadata is maintained separately in
+`pose_definitions/builtins.json`. Existing Pose V1 files remain compatible.
+
+See [pose-library.md](pose-library.md) for the user workflow and extension
+instructions. Pre-change files are archived at:
+
+```text
+backups/pose-library/pre-change-source-dc7c77c.tar.gz
+```

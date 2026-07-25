@@ -101,6 +101,8 @@ class PackageSkeletonTests(unittest.TestCase):
             "gesture_definitions/builtins.json",
             "gesture_lexicon/builtins.json",
             "gesture_stages/builtin_stages.json",
+            "pose_definitions/builtins.json",
+            "schemas/pose-library-v1.schema.json",
         ):
             self.assertTrue((settings.resource_root / relative).is_file(), relative)
         self.assertEqual(

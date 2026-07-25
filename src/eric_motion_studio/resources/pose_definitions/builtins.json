@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "poses": [
+    {
+      "id": "neutral",
+      "name": "Neutral",
+      "source_pose": "neutral",
+      "description": "Balanced neutral standing pose",
+      "aliases": ["reset pose", "default pose", "standing neutral"],
+      "tags": ["neutral", "idle", "reset"],
+      "body_regions": ["full body"]
+    },
+    {
+      "id": "idle_relaxed",
+      "name": "Relaxed Idle",
+      "source_pose": "idle_relaxed",
+      "description": "Subtle relaxed standing pose",
+      "aliases": ["idle", "rest pose", "standby", "relaxed stance"],
+      "tags": ["idle", "relaxed", "rest"],
+      "body_regions": ["full body"]
+    },
+    {
+      "id": "thinking_chin",
+      "name": "Thinking — Hand on Chin",
+      "source_pose": "thinking_chin_settle",
+      "description": "Thoughtful pose with the right hand resting near the chin",
+      "aliases": ["thinking pose", "thoughtful", "pondering", "hand on chin", "chin"],
+      "tags": ["thinking", "thoughtful", "expressive"],
+      "body_regions": ["right arm", "waist"]
+    },
+    {
+      "id": "scratch_head",
+      "name": "Scratch Head",
+      "source_pose": "scratch_hand_to_temple",
+      "description": "Right hand raised to the side of the head",
+      "aliases": ["hand to temple", "head scratch", "confused pose"],
+      "tags": ["thinking", "confused", "expressive"],
+      "body_regions": ["right arm", "waist"]
+    },
+    {
+      "id": "raise_right_hand",
+      "name": "Raise Right Hand",
+      "source_pose": "raise_right",
+      "description": "Right hand raised",
+      "aliases": ["right hand up", "lift right arm", "raised right arm"],
+      "tags": ["raise", "hand", "arm"],
+      "body_regions": ["right arm"]
+    },
+    {
+      "id": "raise_left_hand",
+      "name": "Raise Left Hand",
+      "source_pose": "raise_right",
+      "mirror_arms": true,
+      "description": "Left hand raised",
+      "aliases": ["left hand up", "lift left arm", "raised left arm"],
+      "tags": ["raise", "hand", "arm"],
+      "body_regions": ["left arm"]
+    },
+    {
+      "id": "wave_right",
+      "name": "Right Wave Pose",
+      "source_pose": "wave_right",
+      "description": "Right arm held in a wave position",
+      "aliases": ["wave right hand", "right greeting", "right hand wave"],
+      "tags": ["wave", "greeting", "hand"],
+      "body_regions": ["right arm"]
+    },
+    {
+      "id": "wave_left",
+      "name": "Left Wave Pose",
+      "source_pose": "wave_right",
+      "mirror_arms": true,
+      "description": "Left arm held in a wave position",
+      "aliases": ["wave left hand", "left greeting", "left hand wave"],
+      "tags": ["wave", "greeting", "hand"],
+      "body_regions": ["left arm"]
+    },
+    {
+      "id": "arms_open",
+      "name": "Arms Open",
+      "source_pose": "open_both",
+      "description": "Both arms opened outward",
+      "aliases": ["open arms", "arms out", "welcoming stance"],
+      "tags": ["open", "welcome", "presentation"],
+      "body_regions": ["both arms"]
+    },
+    {
+      "id": "hands_on_hips",
+      "name": "Hands on Hips",
+      "source_pose": "hips_both",
+      "description": "Both hands positioned at the hips",
+      "aliases": ["akimbo", "power pose", "hands at waist"],
+      "tags": ["confident", "akimbo", "hips"],
+      "body_regions": ["both arms"]
+    },
+    {
+      "id": "cross_arms",
+      "name": "Crossed Arms",
+      "source_pose": "cross_both",
+      "description": "Both arms crossed in front of the body",
+      "aliases": ["cross arms", "folded arms", "arms crossed"],
+      "tags": ["crossed", "closed", "arms"],
+      "body_regions": ["both arms"]
+    },
+    {
+      "id": "shrug",
+      "name": "Shrug",
+      "source_pose": "shrug_both",
+      "description": "Both shoulders and hands raised in a shrug",
+      "aliases": ["I do not know", "uncertain pose", "shrug shoulders"],
+      "tags": ["uncertain", "question", "expressive"],
+      "body_regions": ["both arms"]
+    },
+    {
+      "id": "stop_right",
+      "name": "Stop — Right Hand",
+      "source_pose": "stop_right",
+      "description": "Right hand held up in a stop pose",
+      "aliases": ["stop gesture", "halt", "right palm out"],
+      "tags": ["stop", "halt", "palm"],
+      "body_regions": ["right arm"]
+    },
+    {
+      "id": "stop_left",
+      "name": "Stop — Left Hand",
+      "source_pose": "stop_right",
+      "mirror_arms": true,
+      "description": "Left hand held up in a stop pose",
+      "aliases": ["left stop gesture", "left palm out"],
+      "tags": ["stop", "halt", "palm"],
+      "body_regions": ["left arm"]
+    },
+    {
+      "id": "thumbs_up",
+      "name": "Thumbs Up",
+      "source_pose": "thumbs_up_right",
+      "description": "Right-arm approval pose",
+      "aliases": ["approval", "positive", "like"],
+      "tags": ["approval", "positive", "thumb"],
+      "body_regions": ["right arm"]
+    },
+    {
+      "id": "thumbs_down",
+      "name": "Thumbs Down",
+      "source_pose": "thumbs_down_right",
+      "description": "Right-arm disapproval pose",
+      "aliases": ["disapproval", "negative", "dislike"],
+      "tags": ["disapproval", "negative", "thumb"],
+      "body_regions": ["right arm"]
+    },
+    {
+      "id": "present_object",
+      "name": "Present Object",
+      "source_pose": "present_both",
+      "description": "Both hands positioned to present an object",
+      "aliases": ["show object", "offer object", "presentation pose"],
+      "tags": ["present", "show", "offer"],
+      "body_regions": ["both arms"]
+    },
+    {
+      "id": "point_right",
+      "name": "Point Right",
+      "source_pose": "point_right",
+      "description": "Right arm extended in a pointing pose",
+      "aliases": ["right point", "indicate right"],
+      "tags": ["point", "direction"],
+      "body_regions": ["right arm"]
+    },
+    {
+      "id": "point_left",
+      "name": "Point Left",
+      "source_pose": "point_right",
+      "mirror_arms": true,
+      "description": "Left arm extended in a pointing pose",
+      "aliases": ["left point", "indicate left"],
+      "tags": ["point", "direction"],
+      "body_regions": ["left arm"]
+    },
+    {
+      "id": "hand_on_chest",
+      "name": "Right Hand on Chest",
+      "source_pose": "chest_right",
+      "description": "Right hand positioned over the chest",
+      "aliases": ["hand to heart", "sincere pose", "chest hand"],
+      "tags": ["sincere", "heart", "expressive"],
+      "body_regions": ["right arm"]
+    },
+    {
+      "id": "celebrate",
+      "name": "Celebrate",
+      "source_pose": "celebrate_both",
+      "description": "Both arms raised in celebration",
+      "aliases": ["cheer", "victory pose", "happy pose"],
+      "tags": ["celebrate", "victory", "happy"],
+      "body_regions": ["both arms", "waist"]
+    },
+    {
+      "id": "conversational_open_palms",
+      "name": "Conversational Open Palms",
+      "source_pose": "talk_open_palms",
+      "description": "Relaxed open-palms speaking pose",
+      "aliases": ["talking pose", "speaking pose", "open palms"],
+      "tags": ["talking", "conversation", "presentation"],
+      "body_regions": ["both arms", "waist"]
+    }
+  ]
+}

@@ -50,6 +50,7 @@ def _resource_violations() -> list[str]:
         "gesture_definitions/builtins.json",
         "gesture_lexicon/builtins.json",
         "gesture_stages/builtin_stages.json",
+        "pose_definitions/builtins.json",
     ):
         if not (SOURCE_ROOT / "resources" / relative).is_file():
             violations.append(f"missing canonical motion source: {relative}")

@@ -309,7 +309,7 @@ class RepositoryGoldenTests(unittest.TestCase):
 
     def test_json_schema_documents_are_versioned_and_valid_json(self):
         schema_paths = sorted((RESOURCE_ROOT / "schemas").glob("*.schema.json"))
-        self.assertEqual(len(schema_paths), 6)
+        self.assertEqual(len(schema_paths), 7)
         identifiers = {json.loads(path.read_text())["$id"] for path in schema_paths}
         self.assertEqual(len(identifiers), len(schema_paths))
         self.assertTrue(all("v1" in identifier for identifier in identifiers))

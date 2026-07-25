@@ -15,6 +15,32 @@
     "simulation_only": {
       "type": "boolean"
     },
+    "pose_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "pose_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pose_description": {
+      "type": "string"
+    },
+    "pose_aliases": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "pose_tags": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "pose_body_regions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "library_origin": {
+      "enum": ["builtin", "user"]
+    },
     "joint_offsets_rad": {
       "type": "object",
       "additionalProperties": {

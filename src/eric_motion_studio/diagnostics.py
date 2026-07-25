@@ -13,6 +13,7 @@ from eric_motion_studio.infrastructure import (
     AnimationRepository,
     BrainOSExportRepository,
     GestureRepository,
+    PoseLibrary,
 )
 from eric_motion_studio.runtime import MujocoAdapter, ViewerStateStore
 from eric_motion_studio.ui.controllers import PlaybackController
@@ -150,10 +151,12 @@ def run_self_test(settings: Settings, *, stream: TextIO) -> bool:
         resource_root / "gesture_definitions" / "builtins.json",
         resource_root / "gesture_lexicon" / "builtins.json",
         resource_root / "gesture_stages" / "builtin_stages.json",
+        resource_root / "pose_definitions" / "builtins.json",
         resource_root / "schemas" / "animation-v1.schema.json",
         resource_root / "schemas" / "brainos-motion-v1.schema.json",
         resource_root / "schemas" / "gesture-v1.schema.json",
         resource_root / "schemas" / "gesture-lexicon-v1.schema.json",
+        resource_root / "schemas" / "pose-library-v1.schema.json",
     )
     missing = [path for path in required_paths if not path.is_file()]
     if missing:
@@ -165,7 +168,21 @@ def run_self_test(settings: Settings, *, stream: TextIO) -> bool:
         return False
     _write(
         stream,
-        "RESOURCE_LAYOUT_TEST_OK canonical_sources=definitions,lexicon,stages",
+        "RESOURCE_LAYOUT_TEST_OK canonical_sources=definitions,lexicon,stages,poses",
+    )
+
+    pose_library = PoseLibrary(
+        settings.poses_dir,
+        resource_root / "pose_definitions" / "builtins.json",
+        resource_root / "gesture_stages" / "builtin_stages.json",
+    )
+    pose_matches = pose_library.search("thoughtful hand on chin")
+    if not pose_matches or pose_matches[0].entry_id != "builtin:thinking_chin":
+        _write(stream, "POSE_LIBRARY_REGRESSION_FAILED")
+        return False
+    _write(
+        stream,
+        f"POSE_LIBRARY_REGRESSION_OK builtins={len(pose_library.entries())}",
     )
 
     compiler = GestureCompiler.default(resource_root)

@@ -19,10 +19,15 @@ compiled/  legacy or internal derived Gesture JSON
 exports/   BrainOS/export artifacts
 ```
 
-Users manage only Motion files in the library. Playback and export derive dense
-trajectories automatically; no approval or manual compiled-artifact step is
-required. The `compiled/` directory remains reserved for migrated legacy files
-and internal compatibility.
+The Motion Library manages editable Motion files. Playback and export derive
+dense trajectories automatically; no approval or manual compiled-artifact step
+is required. The `compiled/` directory remains reserved for migrated legacy
+files and internal compatibility.
+
+Pose V1 files may include `pose_id`, `pose_name`, `pose_description`,
+`pose_aliases`, `pose_tags`, `pose_body_regions`, and `library_origin`.
+These optional fields power local Pose Library search while preserving
+compatibility with older pose files that only contain joint offsets.
 
 The historical animation schema remains readable and is the current on-disk
 representation of `Motion`. “Animation” is retained only as a compatibility

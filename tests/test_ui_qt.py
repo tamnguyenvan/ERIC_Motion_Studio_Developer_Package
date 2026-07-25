@@ -56,6 +56,9 @@ class FakeDialogs:
     def confirm_delete_motion(self, _motion_name: str) -> bool:
         return True
 
+    def confirm_delete_pose(self, _pose_name: str) -> bool:
+        return True
+
     def show_error(self, title: str, message: str) -> None:
         self.errors.append((title, message))
 
@@ -201,7 +204,7 @@ class QtCriticalFlowTests(unittest.TestCase):
             )
         )
 
-    def test_pose_copy_apply_preview_neutral_and_save_load(self):
+    def test_pose_copy_apply_preview_neutral_and_file_import_export(self):
         spin = self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"]
         spin.setValue(-0.35)
         QTest.mouseClick(self.window.joint_widget.copy_pose_button, Qt.LeftButton)
@@ -209,12 +212,14 @@ class QtCriticalFlowTests(unittest.TestCase):
         QTest.mouseClick(self.window.joint_widget.apply_pose_button, Qt.LeftButton)
         self.assertAlmostEqual(spin.value(), -0.35)
 
-        QTest.mouseClick(self.window.joint_widget.save_pose_button, Qt.LeftButton)
+        self.window.export_pose_action.trigger()
         self.dialogs.pose_open_path = self.dialogs.pose_path
         spin.setValue(0.2)
-        QTest.mouseClick(self.window.joint_widget.load_pose_button, Qt.LeftButton)
+        self.window.import_pose_action.trigger()
         self.application.processEvents()
         self.assertAlmostEqual(spin.value(), -0.35)
+        self.assertFalse(hasattr(self.window.joint_widget, "save_pose_button"))
+        self.assertFalse(hasattr(self.window.joint_widget, "load_pose_button"))
 
         QTest.mouseClick(
             self.window.joint_widget.return_preview_button,
@@ -224,6 +229,52 @@ class QtCriticalFlowTests(unittest.TestCase):
             self.services.playback.last_frame.joints.get("right_shoulder_pitch_joint"),
             0.0,
         )
+
+    def test_pose_search_click_preview_and_custom_management(self):
+        QTest.mouseClick(self.window.playback_widget.play_button, Qt.LeftButton)
+        self.assertTrue(self.window.playback.state.playing)
+
+        self.window.pose_widget.search_edit.setText("thoughtful")
+        self.application.processEvents()
+        self.assertGreater(self.window.pose_widget.pose_list.count(), 0)
+        self.window.pose_widget.pose_list.setCurrentRow(0)
+        self.application.processEvents()
+
+        self.assertFalse(self.window.playback.state.playing)
+        self.assertEqual(
+            self.window._active_pose_entry_id,
+            "builtin:thinking_chin",
+        )
+        self.assertLess(
+            self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"].value(),
+            -0.5,
+        )
+
+        self.window._create_library_pose("My Thoughtful Pose")
+        custom_entry_id = self.window._active_pose_entry_id
+        self.assertTrue(custom_entry_id.startswith("user:"))
+        custom = next(
+            entry
+            for entry in self.window.pose_library.entries()
+            if entry.entry_id == custom_entry_id
+        )
+        self.assertTrue(custom.path.is_file())
+
+        shoulder = self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"]
+        shoulder.setValue(-0.4)
+        self.window._update_library_pose(custom_entry_id)
+        updated, _path = self.window.pose_library.load(custom_entry_id)
+        self.assertAlmostEqual(
+            updated.joints.get("right_shoulder_pitch_joint"),
+            -0.4,
+        )
+
+        self.window._rename_library_pose(custom_entry_id, "Renamed Pose")
+        renamed, _path = self.window.pose_library.load(custom_entry_id)
+        self.assertEqual(dict(renamed.metadata)["pose_name"], "Renamed Pose")
+
+        self.window._delete_library_pose(custom_entry_id)
+        self.assertFalse(custom.path.exists())
 
     def test_click_switches_playback_to_read_only_builtin_then_duplicate_edits(self):
         entries = self.window.library.entries()
