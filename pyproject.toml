@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "eric-motion-studio"
 version = "0.1.0"
 description = "Simulation-only motion authoring tools for ERIC"
-readme = { file = "README_FOR_DEVELOPER.txt", content-type = "text/plain" }
+readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dependencies = [
     "absl-py==2.5.0",
