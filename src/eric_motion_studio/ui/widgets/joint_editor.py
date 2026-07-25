@@ -5,8 +5,11 @@ from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QFormLayout,
     QGroupBox,
+    QHBoxLayout,
     QPushButton,
     QScrollArea,
+    QStyle,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -26,6 +29,7 @@ class JointEditorWidget(QGroupBox):
         self.setObjectName("jointEditorPanel")
         self.profile = profile
         self.spin_boxes: dict[str, QDoubleSpinBox] = {}
+        self.reset_buttons: dict[str, QToolButton] = {}
         self.reset_button = QPushButton("RESET DEFAULTS")
         self.reset_button.setObjectName("resetJointDefaultsButton")
         self.reset_button.clicked.connect(self.reset_defaults)
@@ -41,8 +45,21 @@ class JointEditorWidget(QGroupBox):
             spin.setRange(limit.lower, limit.upper)
             spin.setSuffix(" rad")
             spin.valueChanged.connect(self._emit_joints)
-            form.addRow(name.replace("_joint", "").replace("_", " "), spin)
+            reset = QToolButton()
+            reset.setObjectName(f"resetJointButton_{name}")
+            reset.setAutoRaise(True)
+            reset.setFixedSize(24, 24)
+            reset.setIcon(self.style().standardIcon(QStyle.SP_DialogResetButton))
+            reset.setToolTip(f"Reset {name.replace('_joint', '').replace('_', ' ')} to default")
+            reset.clicked.connect(lambda _checked=False, joint=name: self.reset_joint(joint))
+            row = QWidget()
+            row_layout = QHBoxLayout(row)
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            row_layout.addWidget(spin, 1)
+            row_layout.addWidget(reset)
+            form.addRow(name.replace("_joint", "").replace("_", " "), row)
             self.spin_boxes[name] = spin
+            self.reset_buttons[name] = reset
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -69,4 +86,14 @@ class JointEditorWidget(QGroupBox):
     def reset_defaults(self) -> None:
         """Restore the model's neutral pose and publish it as the preview pose."""
         self.set_joints(JointValues.neutral(self.profile))
+        self.jointsChanged.emit(self.current_joints())
+
+    def reset_joint(self, name: str) -> None:
+        """Restore one joint to its neutral/default value."""
+        try:
+            spin = self.spin_boxes[name]
+        except KeyError as error:
+            raise KeyError(f"Unknown joint: {name}") from error
+        with QSignalBlocker(spin):
+            spin.setValue(0.0)
         self.jointsChanged.emit(self.current_joints())

@@ -154,6 +154,21 @@ class QtCriticalFlowTests(unittest.TestCase):
             "Pose preview updated",
         )
 
+    def test_joint_editor_resets_one_joint_with_icon_button(self):
+        shoulder = self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"]
+        elbow = self.window.joint_widget.spin_boxes["right_elbow_joint"]
+        shoulder.setValue(-0.5)
+        elbow.setValue(-0.4)
+
+        QTest.mouseClick(
+            self.window.joint_widget.reset_buttons["right_shoulder_pitch_joint"],
+            Qt.LeftButton,
+        )
+        self.application.processEvents()
+
+        self.assertEqual(shoulder.value(), 0.0)
+        self.assertEqual(elbow.value(), -0.4)
+
     def test_keyframe_rename_duplicate_preview_and_playback_actions(self):
         item = self.window.keyframe_widget.keyframe_list.item(0)
         with patch(
