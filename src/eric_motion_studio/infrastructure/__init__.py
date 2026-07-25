@@ -21,11 +21,9 @@ from eric_motion_studio.infrastructure.migration import (
     migrate_legacy_user_files,
 )
 from eric_motion_studio.infrastructure.motion_library import (
-    ApprovedMotion,
     MotionLibrary,
     MotionLibraryEntry,
     MotionOrigin,
-    MotionStatus,
 )
 
 __all__ = [
@@ -35,7 +33,6 @@ __all__ = [
     "GESTURE_SCHEMA_VERSION",
     "POSE_SCHEMA",
     "AnimationRepository",
-    "ApprovedMotion",
     "AnimationSerializer",
     "BrainOSExportRepository",
     "BrainOSSerializer",
@@ -43,7 +40,6 @@ __all__ = [
     "MotionLibrary",
     "MotionLibraryEntry",
     "MotionOrigin",
-    "MotionStatus",
     "MigratedUserFile",
     "GestureSerializer",
     "PoseRepository",

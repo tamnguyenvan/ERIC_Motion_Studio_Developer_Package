@@ -84,7 +84,6 @@ def default_services(
         poses=RepositoryPoseStore(),
         library=MotionLibrary(
             settings.motions_dir,
-            settings.compiled_dir,
             gesture_service.compiler,
         ),
     )
@@ -106,7 +105,6 @@ class MotionStudioWindow(QMainWindow):
         )
         self.library = self.services.library or MotionLibrary(
             settings.motions_dir,
-            settings.compiled_dir,
             compiler,
         )
         self.documents = DocumentController(self.services.motions)
@@ -293,8 +291,7 @@ class MotionStudioWindow(QMainWindow):
         self.gesture_widget.compileRequested.connect(self.gesture_authoring.compile_and_apply)
         self.gesture_widget.gestureSelected.connect(self._select_gesture)
         self.gesture_widget.motionLoadRequested.connect(self._load_library_motion)
-        self.gesture_widget.saveToLibraryRequested.connect(self._save_to_library)
-        self.gesture_widget.approveRequested.connect(self._approve_motion)
+        self.gesture_widget.duplicateRequested.connect(self._duplicate_library_motion)
         self.gesture_widget.deleteRequested.connect(self._delete_library_motion)
         self.gesture_widget.refreshRequested.connect(self._refresh_library)
 
@@ -352,8 +349,22 @@ class MotionStudioWindow(QMainWindow):
         return self.documents.resolve_unsaved(decision, save_path)
 
     def _new_document(self) -> None:
-        if self._ensure_safe_to_replace():
-            self.documents.new_document()
+        if not self._ensure_safe_to_replace():
+            return
+        self.documents.new_document()
+        try:
+            motion, path = self.library.create(self.documents.state.motion)
+        except Exception as error:
+            self.services.dialogs.show_error("Create motion failed", str(error))
+            return
+        self.documents.load_library_motion(
+            motion,
+            path=path,
+            editable_copy=False,
+        )
+        self._refresh_library()
+        self.gesture_widget.select_entry(f"user:{path.name}")
+        self.status_panel.set_message(f"Custom motion created: {path.name}")
 
     def _open_document(self) -> None:
         if not self._ensure_safe_to_replace():
@@ -377,6 +388,13 @@ class MotionStudioWindow(QMainWindow):
         self.gesture_widget.set_entries(self.library.entries())
 
     def _load_library_motion(self, entry_id: str) -> None:
+        entry = next(
+            (item for item in self.library.entries() if item.entry_id == entry_id),
+            None,
+        )
+        if entry is not None and not entry.editable:
+            self._duplicate_library_motion(entry_id)
+            return
         if not self._ensure_safe_to_replace():
             return
         try:
@@ -390,37 +408,22 @@ class MotionStudioWindow(QMainWindow):
             editable_copy=path is None,
         )
 
-    def _save_to_library(self) -> None:
-        state = self.documents.state
-        path = state.path if state.path is not None else None
-        try:
-            target = self.library.save(state.motion, path)
-            stored, stored_path = self.library.load(f"user:{target.name}")
-            self.documents.load_library_motion(
-                stored,
-                path=stored_path,
-                editable_copy=False,
-            )
-        except Exception as error:
-            self.services.dialogs.show_error("Save to library failed", str(error))
+    def _duplicate_library_motion(self, entry_id: str) -> None:
+        if not self._ensure_safe_to_replace():
             return
-        self._refresh_library()
-        self.status_panel.set_message(f"Motion saved to library: {target.name}")
-
-    def _approve_motion(self) -> None:
-        state = self.documents.state
         try:
-            approved = self.library.approve(state.motion, state.path)
-            self.documents.load_library_motion(
-                approved.motion,
-                path=approved.motion_path,
-                editable_copy=False,
-            )
+            motion, path = self.library.duplicate(entry_id)
         except Exception as error:
-            self.services.dialogs.show_error("Approve motion failed", str(error))
+            self.services.dialogs.show_error("Duplicate motion failed", str(error))
             return
+        self.documents.load_library_motion(
+            motion,
+            path=path,
+            editable_copy=False,
+        )
         self._refresh_library()
-        self.status_panel.set_message(f"Motion approved: {approved.artifact_path.name}")
+        self.gesture_widget.select_entry(f"user:{path.name}")
+        self.status_panel.set_message(f"Custom motion created: {path.name}")
 
     def _delete_library_motion(self, entry_id: str) -> None:
         entry = next(

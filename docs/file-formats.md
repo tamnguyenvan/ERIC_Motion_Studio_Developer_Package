@@ -15,9 +15,14 @@ directory:
 ```text
 motions/   canonical editable Motion JSON
 poses/     single-pose JSON
-compiled/  derived dense Gesture JSON
+compiled/  legacy or internal derived Gesture JSON
 exports/   BrainOS/export artifacts
 ```
+
+Users manage only Motion files in the library. Playback and export derive dense
+trajectories automatically; no approval or manual compiled-artifact step is
+required. The `compiled/` directory remains reserved for migrated legacy files
+and internal compatibility.
 
 The historical animation schema remains readable and is the current on-disk
 representation of `Motion`. “Animation” is retained only as a compatibility

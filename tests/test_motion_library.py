@@ -2,15 +2,14 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 from eric_motion_studio.gestures import GestureCompiler
 from eric_motion_studio.infrastructure import (
     AnimationRepository,
-    GestureRepository,
     MotionLibrary,
     MotionOrigin,
-    MotionStatus,
     migrate_legacy_user_files,
 )
 
@@ -21,48 +20,62 @@ class MotionLibraryTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.library = MotionLibrary(
             self.root / "motions",
-            self.root / "compiled",
             GestureCompiler.default(),
         )
 
     def tearDown(self):
         self.temporary.cleanup()
 
-    def test_builtin_and_user_motions_share_one_library(self):
+    def test_duplicate_adds_an_editable_custom_motion_immediately(self):
         builtins = self.library.entries()
         self.assertEqual(len(builtins), 25)
         self.assertTrue(all(entry.origin is MotionOrigin.BUILTIN for entry in builtins))
         idle_entry = next(entry for entry in builtins if entry.canonical_id == "idle_pose")
 
-        motion, path = self.library.load(idle_entry.entry_id)
+        builtin, builtin_path = self.library.load(idle_entry.entry_id)
+        custom, custom_path = self.library.duplicate(idle_entry.entry_id)
 
-        self.assertIsNone(path)
-        self.assertEqual(dict(motion.metadata)["library_status"], "draft")
-        stored_path = self.library.save(motion)
+        self.assertIsNone(builtin_path)
+        self.assertEqual(dict(builtin.metadata)["library_origin"], "builtin")
+        self.assertTrue(custom_path.is_file())
+        self.assertEqual(custom.name, f"{builtin.name} Copy")
+        self.assertEqual(dict(custom.metadata)["library_origin"], "user")
+        self.assertNotIn("library_status", dict(custom.metadata))
         entries = self.library.entries()
-        custom = next(entry for entry in entries if entry.path == stored_path)
-        self.assertEqual(custom.origin, MotionOrigin.USER)
-        self.assertEqual(custom.status, MotionStatus.DRAFT)
+        custom_entry = next(entry for entry in entries if entry.path == custom_path)
+        self.assertEqual(custom_entry.origin, MotionOrigin.USER)
+        self.assertTrue(custom_entry.editable)
 
-    def test_approval_persists_source_and_compiled_artifact(self):
+    def test_duplicate_names_are_unique_and_custom_motion_can_be_deleted(self):
+        idle = next(entry for entry in self.library.entries() if entry.canonical_id == "idle_pose")
+        first, first_path = self.library.duplicate(idle.entry_id)
+        first_entry = next(entry for entry in self.library.entries() if entry.path == first_path)
+        second, second_path = self.library.duplicate(first_entry.entry_id)
+
+        self.assertEqual(second.name, f"{first.name.removesuffix(' Copy')} Copy 2")
+        self.assertNotEqual(first_path, second_path)
+        self.assertFalse(hasattr(self.library, "approve"))
+
+        second_entry = next(entry for entry in self.library.entries() if entry.path == second_path)
+        deleted = self.library.delete(second_entry.entry_id)
+        self.assertEqual(deleted, second_path)
+        self.assertFalse(deleted.exists())
+
+    def test_create_adds_motion_and_discards_legacy_approval_metadata(self):
         idle = next(entry for entry in self.library.entries() if entry.canonical_id == "idle_pose")
         motion, _path = self.library.load(idle.entry_id)
-
-        approved = self.library.approve(motion)
-
-        self.assertTrue(approved.motion_path.is_file())
-        self.assertTrue(approved.artifact_path.is_file())
-        artifact = GestureRepository().load(approved.artifact_path)
-        self.assertEqual(artifact.display_name, approved.motion.name)
-        self.assertEqual(dict(approved.motion.metadata)["library_status"], "approved")
-        custom = next(
-            entry for entry in self.library.entries() if entry.path == approved.motion_path
+        legacy = replace(
+            motion,
+            metadata=(*motion.metadata, ("library_status", "approved")),
         )
-        self.assertEqual(custom.status, MotionStatus.APPROVED)
 
-        deleted = self.library.delete(custom.entry_id)
-        self.assertEqual(deleted, approved.motion_path)
-        self.assertFalse(deleted.exists())
+        stored, path = self.library.create(legacy)
+        loaded, loaded_path = self.library.load(f"user:{path.name}")
+
+        self.assertEqual(loaded_path, path)
+        self.assertEqual(loaded.name, stored.name)
+        self.assertEqual(len(loaded.keyframes), len(stored.keyframes))
+        self.assertNotIn("library_status", dict(loaded.metadata))
 
     def test_legacy_flat_motion_is_copied_non_destructively(self):
         idle = next(entry for entry in self.library.entries() if entry.canonical_id == "idle_pose")

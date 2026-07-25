@@ -11,7 +11,6 @@ from eric_motion_studio.domain import Motion, Pose, TrajectoryFrame
 from eric_motion_studio.gestures import CompilationResult, GestureCompiler
 from eric_motion_studio.infrastructure import (
     AnimationRepository,
-    ApprovedMotion,
     BrainOSExportRepository,
     MotionLibraryEntry,
     PoseRepository,
@@ -43,7 +42,9 @@ class MotionLibraryService(Protocol):
 
     def save(self, motion: Motion, path: Path | None = None) -> Path: ...
 
-    def approve(self, motion: Motion, path: Path | None = None) -> ApprovedMotion: ...
+    def create(self, motion: Motion) -> tuple[Motion, Path]: ...
+
+    def duplicate(self, entry_id: str) -> tuple[Motion, Path]: ...
 
     def delete(self, entry_id: str) -> Path: ...
 

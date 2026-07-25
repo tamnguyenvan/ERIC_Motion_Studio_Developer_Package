@@ -7,17 +7,14 @@ from dataclasses import dataclass, replace
 from enum import StrEnum
 from pathlib import Path
 
-from eric_motion_studio.domain import Gesture, Motion, dense_trajectory
+from eric_motion_studio.domain import Motion
 from eric_motion_studio.gestures import GestureCompiler
-from eric_motion_studio.infrastructure.formats import (
-    AnimationRepository,
-    GestureRepository,
-)
+from eric_motion_studio.infrastructure.formats import AnimationRepository
 
 LIBRARY_ORIGIN_KEY = "library_origin"
-LIBRARY_STATUS_KEY = "library_status"
 LIBRARY_COMMAND_KEY = "library_command"
 LIBRARY_CANONICAL_ID_KEY = "library_canonical_id"
+_LEGACY_LIBRARY_STATUS_KEY = "library_status"
 
 
 class MotionOrigin(StrEnum):
@@ -25,28 +22,15 @@ class MotionOrigin(StrEnum):
     USER = "user"
 
 
-class MotionStatus(StrEnum):
-    DRAFT = "draft"
-    APPROVED = "approved"
-
-
 @dataclass(frozen=True, slots=True)
 class MotionLibraryEntry:
     entry_id: str
     display_name: str
     origin: MotionOrigin
-    status: MotionStatus
     editable: bool
     path: Path | None = None
     canonical_id: str | None = None
     command: str = ""
-
-
-@dataclass(frozen=True, slots=True)
-class ApprovedMotion:
-    motion: Motion
-    motion_path: Path
-    artifact_path: Path
 
 
 def motion_slug(value: str) -> str:
@@ -56,6 +40,7 @@ def motion_slug(value: str) -> str:
 
 def _metadata(motion: Motion, **updates: object) -> tuple[tuple[str, object], ...]:
     values = dict(motion.metadata)
+    values.pop(_LEGACY_LIBRARY_STATUS_KEY, None)
     values.update(updates)
     return tuple(sorted(values.items()))
 
@@ -64,17 +49,13 @@ class MotionLibrary:
     def __init__(
         self,
         motions_dir: Path,
-        compiled_dir: Path,
         compiler: GestureCompiler,
         *,
         motions: AnimationRepository | None = None,
-        gestures: GestureRepository | None = None,
     ) -> None:
         self.motions_dir = Path(motions_dir)
-        self.compiled_dir = Path(compiled_dir)
         self.compiler = compiler
         self.motions = motions or AnimationRepository()
-        self.gestures = gestures or GestureRepository()
 
     def entries(self) -> tuple[MotionLibraryEntry, ...]:
         builtins = tuple(
@@ -82,7 +63,6 @@ class MotionLibrary:
                 entry_id=f"builtin:{definition.canonical_id}",
                 display_name=definition.canonical_id.replace("_", " ").title(),
                 origin=MotionOrigin.BUILTIN,
-                status=MotionStatus.APPROVED,
                 editable=False,
                 canonical_id=definition.canonical_id,
                 command=definition.aliases[0],
@@ -96,18 +76,11 @@ class MotionLibrary:
             except (OSError, ValueError):
                 continue
             metadata = dict(motion.metadata)
-            try:
-                status = MotionStatus(
-                    str(metadata.get(LIBRARY_STATUS_KEY, MotionStatus.DRAFT.value))
-                )
-            except ValueError:
-                status = MotionStatus.DRAFT
             users.append(
                 MotionLibraryEntry(
                     entry_id=f"user:{path.name}",
                     display_name=motion.name,
                     origin=MotionOrigin.USER,
-                    status=status,
                     editable=True,
                     path=path,
                     command=str(metadata.get(LIBRARY_COMMAND_KEY, "")),
@@ -128,8 +101,7 @@ class MotionLibrary:
                 metadata=_metadata(
                     result.motion,
                     **{
-                        LIBRARY_ORIGIN_KEY: MotionOrigin.USER.value,
-                        LIBRARY_STATUS_KEY: MotionStatus.DRAFT.value,
+                        LIBRARY_ORIGIN_KEY: MotionOrigin.BUILTIN.value,
                         LIBRARY_COMMAND_KEY: definition.aliases[0],
                         LIBRARY_CANONICAL_ID_KEY: canonical_id,
                     },
@@ -140,7 +112,7 @@ class MotionLibrary:
         return self.motions.load(path), path
 
     def save(self, motion: Motion, path: Path | None = None) -> Path:
-        target = path or self.motions_dir / f"{motion_slug(motion.name)}.json"
+        target = path or self._available_path(motion.name)
         if target.parent != self.motions_dir:
             target = self.motions_dir / target.name
         stored = replace(
@@ -149,49 +121,37 @@ class MotionLibrary:
                 motion,
                 **{
                     LIBRARY_ORIGIN_KEY: MotionOrigin.USER.value,
-                    LIBRARY_STATUS_KEY: dict(motion.metadata).get(
-                        LIBRARY_STATUS_KEY,
-                        MotionStatus.DRAFT.value,
-                    ),
                 },
             ),
         )
         self.motions.save(target, stored)
         return target
 
-    def approve(self, motion: Motion, path: Path | None = None) -> ApprovedMotion:
-        approved = replace(
+    def create(self, motion: Motion) -> tuple[Motion, Path]:
+        name = self._available_name(motion.name)
+        stored = replace(
             motion,
+            name=name,
             metadata=_metadata(
                 motion,
-                **{
-                    LIBRARY_ORIGIN_KEY: MotionOrigin.USER.value,
-                    LIBRARY_STATUS_KEY: MotionStatus.APPROVED.value,
-                },
+                **{LIBRARY_ORIGIN_KEY: MotionOrigin.USER.value},
             ),
         )
-        motion_path = self.save(approved, path)
-        trajectory = dense_trajectory(approved.keyframes)
-        metadata = dict(approved.metadata)
-        gesture_id = motion_slug(approved.name).replace("-", "_")
-        artifact = Gesture(
-            gesture_id=gesture_id,
-            display_name=approved.name,
-            source_prompt=str(metadata.get(LIBRARY_COMMAND_KEY, approved.description)),
-            frames=trajectory.frames,
-            frame_rate=trajectory.frame_rate,
-            motion_type="loopable" if approved.loop else "one_shot",
-            loopable=approved.loop,
-            interruptible=True,
-            return_to_neutral=True,
-            tags=("approved", "user"),
-            robot_model=approved.model_ref,
-            simulation_only=approved.simulation_only,
-            metadata=(("source_motion", motion_path.name),),
+        path = self.save(stored)
+        return stored, path
+
+    def duplicate(self, entry_id: str) -> tuple[Motion, Path]:
+        source, _source_path = self.load(entry_id)
+        stored = replace(
+            source,
+            name=self._available_copy_name(source.name),
+            metadata=_metadata(
+                source,
+                **{LIBRARY_ORIGIN_KEY: MotionOrigin.USER.value},
+            ),
         )
-        artifact_path = self.compiled_dir / f"{gesture_id}.gesture.json"
-        self.gestures.save(artifact_path, artifact)
-        return ApprovedMotion(approved, motion_path, artifact_path)
+        path = self.save(stored)
+        return stored, path
 
     def delete(self, entry_id: str) -> Path:
         path = self._user_path(entry_id)
@@ -207,4 +167,34 @@ class MotionLibrary:
         path = self.motions_dir / name
         if not path.is_file():
             raise FileNotFoundError(path)
+        return path
+
+    def _available_name(self, requested: str) -> str:
+        base = requested.strip() or "Untitled ERIC Motion"
+        existing = {entry.display_name.casefold() for entry in self.entries()}
+        if base.casefold() not in existing:
+            return base
+        index = 2
+        while f"{base} {index}".casefold() in existing:
+            index += 1
+        return f"{base} {index}"
+
+    def _available_copy_name(self, source_name: str) -> str:
+        base = re.sub(r"\s+Copy(?:\s+\d+)?$", "", source_name, flags=re.IGNORECASE)
+        existing = {entry.display_name.casefold() for entry in self.entries()}
+        candidate = f"{base} Copy"
+        if candidate.casefold() not in existing:
+            return candidate
+        index = 2
+        while f"{candidate} {index}".casefold() in existing:
+            index += 1
+        return f"{candidate} {index}"
+
+    def _available_path(self, display_name: str) -> Path:
+        stem = motion_slug(display_name)
+        path = self.motions_dir / f"{stem}.json"
+        index = 2
+        while path.exists():
+            path = self.motions_dir / f"{stem}-{index}.json"
+            index += 1
         return path

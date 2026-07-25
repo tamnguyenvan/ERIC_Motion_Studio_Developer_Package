@@ -225,26 +225,52 @@ class QtCriticalFlowTests(unittest.TestCase):
             0.0,
         )
 
-    def test_builtin_motion_can_be_copied_saved_and_approved(self):
+    def test_builtin_motion_duplicates_to_saved_custom_editable_copy(self):
         idle = next(
             entry for entry in self.window.library.entries() if entry.canonical_id == "idle_pose"
         )
 
         self.window._load_library_motion(idle.entry_id)
+        first_path = self.window.documents.state.path
+        self.assertFalse(self.window.documents.state.dirty)
+        self.assertIsNotNone(first_path)
+        self.assertEqual(first_path.parent, self.window.settings.motions_dir)
+        self.assertTrue(first_path.is_file())
+        self.assertNotIn(
+            "library_status",
+            dict(self.window.documents.state.motion.metadata),
+        )
+
+        self.window.documents.rename_selected("Edited keyframe")
         self.assertTrue(self.window.documents.state.dirty)
+        self.window.save_action.trigger()
+        self.assertFalse(self.window.documents.state.dirty)
+        self.assertEqual(self.store.saved[-1][0], first_path)
+
+        custom = next(entry for entry in self.window.library.entries() if entry.path == first_path)
+        self.window._duplicate_library_motion(custom.entry_id)
+        second_path = self.window.documents.state.path
+        self.assertNotEqual(first_path, second_path)
+        self.assertTrue(second_path.is_file())
+        self.assertFalse(any(self.window.settings.compiled_dir.glob("*.gesture.json")))
+        self.assertFalse(hasattr(self.window.gesture_widget, "approve_button"))
+        self.assertFalse(hasattr(self.window.gesture_widget, "save_button"))
+
+        second = next(entry for entry in self.window.library.entries() if entry.path == second_path)
+        self.window._delete_library_motion(second.entry_id)
+        self.assertFalse(second_path.exists())
         self.assertIsNone(self.window.documents.state.path)
 
-        self.window._save_to_library()
-        motion_path = self.window.documents.state.path
-        self.assertIsNotNone(motion_path)
-        self.assertEqual(motion_path.parent, self.window.settings.motions_dir)
+    def test_new_motion_is_added_to_custom_library_immediately(self):
+        self.window._new_document()
 
-        self.window._approve_motion()
-        self.assertEqual(
-            dict(self.window.documents.state.motion.metadata)["library_status"],
-            "approved",
+        path = self.window.documents.state.path
+        self.assertIsNotNone(path)
+        self.assertTrue(path.is_file())
+        self.assertFalse(self.window.documents.state.dirty)
+        self.assertTrue(
+            any(entry.path == path for entry in self.window.library.entries()),
         )
-        self.assertTrue(any(self.window.settings.compiled_dir.glob("*.gesture.json")))
 
     def test_keyframe_rename_duplicate_preview_and_playback_actions(self):
         item = self.window.keyframe_widget.keyframe_list.item(0)

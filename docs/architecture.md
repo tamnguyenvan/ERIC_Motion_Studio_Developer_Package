@@ -22,14 +22,16 @@ The Motion Library is layered:
 
 ```text
 gesture definitions + stages -> generated read-only built-ins
-user data/motions/            -> editable draft or approved motions
-user data/compiled/           -> derived dense gesture artifacts
+user data/motions/            -> editable custom motions
+playback/export               -> derived trajectories generated on demand
 ```
 
 Built-ins and user motions appear in one UI library, but package resources
-remain immutable. Loading a built-in creates an editable user copy. Approval is
-metadata on the source motion and produces a replaceable compiled artifact; the
-dense artifact is never the canonical authoring source.
+remain immutable. Duplicating a built-in or custom motion immediately creates
+and opens a uniquely named custom motion. Custom motions are edited with the
+normal Save command and can be duplicated or deleted. There is no draft or
+approval state. Dense trajectories are runtime output and never the canonical
+authoring source.
 
 Supported entry points are declared in `pyproject.toml`:
 

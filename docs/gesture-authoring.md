@@ -27,9 +27,10 @@ Generated frames are normalized, compiled, joint-limit checked, and passed
 through semantic and safety validators before they reach the editor or viewer.
 
 Every definition also appears as a read-only built-in in the Motion Library.
-Loading it creates a draft copy. User edits are saved under `motions/`.
-Approving a motion records `library_status=approved` in the source motion and
-generates a dense runtime artifact under `compiled/`.
+Select a built-in and choose **Duplicate** to create an editable custom copy
+under `motions/`. The copy is added to the library and opened immediately.
+Use the normal **Save** command while editing. Custom motions can be opened,
+duplicated, or deleted; built-ins remain read-only. No approval step is needed.
 
 Do not manually maintain a second built-in dense gesture file. The definition,
 lexicon, and stages are the canonical built-in source.

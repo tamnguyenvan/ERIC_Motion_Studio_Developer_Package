@@ -85,14 +85,18 @@ release checks.
 
 Packaged resources are immutable and live under
 `src/eric_motion_studio/resources/`. Built-in motions are generated from
-definitions and stages. User motions, poses, compiled artifacts, exports, logs,
-and viewer IPC state are stored in platform user-data/state directories by
-default.
+definitions and stages. User motions, poses, compatibility artifacts, exports,
+logs, and viewer IPC state are stored in platform user-data/state directories
+by default.
 
 Writable data is separated into `motions/`, `poses/`, `compiled/`, and
 `exports/`. On Linux the default root is
 `~/.local/share/eric-motion-studio/`; on macOS it is
 `~/Library/Application Support/ERIC Motion Studio/`.
+
+Built-ins are read-only. Duplicate one to create and immediately open a custom
+motion, then use the normal Save or Delete commands. Playback derives dense
+frames automatically; there is no approval workflow.
 
 Override paths with these CLI options or matching environment variables:
 
