@@ -7,7 +7,7 @@ name = "eric-motion-studio"
 version = "0.1.0"
 description = "Simulation-only motion authoring tools for ERIC"
 readme = "README.md"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "absl-py==2.5.0",
     "etils==1.14.0",
