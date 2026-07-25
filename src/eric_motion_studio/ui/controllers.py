@@ -18,7 +18,11 @@ from eric_motion_studio.domain import (
     remove_keyframe,
     replace_keyframe,
 )
-from eric_motion_studio.domain.values import DEFAULT_KEYFRAME_DURATION_MS
+from eric_motion_studio.domain.values import (
+    DEFAULT_KEYFRAME_DURATION_MS,
+    MAX_KEYFRAME_DURATION_MS,
+    MIN_KEYFRAME_DURATION_MS,
+)
 from eric_motion_studio.ui.services import (
     GestureAuthoringService,
     MotionExportService,
@@ -201,6 +205,91 @@ class DocumentController:
             JointValues.neutral(self._state.motion.keyframes[0].joints.profile),
             name=f"Neutral {len(self._state.motion.keyframes) + 1}",
         )
+
+    def apply_preset(self, preset: str) -> None:
+        factors = {
+            "less_movement": 0.85,
+            "more_movement": 1.15,
+        }
+        duration_factors = {
+            "slower": 1.15,
+            "faster": 0.85,
+        }
+        if preset in factors:
+            factor = factors[preset]
+            frames = [
+                replace(
+                    frame,
+                    joints=JointValues.from_mapping(
+                        {
+                            name: max(
+                                frame.joints.profile.limits[name].lower,
+                                min(
+                                    frame.joints.profile.limits[name].upper,
+                                    value * factor,
+                                ),
+                            )
+                            for name, value in frame.joints.to_mapping().items()
+                        },
+                        frame.joints.profile,
+                    ),
+                )
+                for frame in self._state.motion.keyframes
+            ]
+            message = "Movement reduced" if preset == "less_movement" else "Movement increased"
+        elif preset == "hands_lower":
+            frames = [
+                replace(
+                    frame,
+                    joints=JointValues.from_mapping(
+                        {
+                            **frame.joints.to_mapping(),
+                            "left_shoulder_pitch_joint": frame.joints.get(
+                                "left_shoulder_pitch_joint"
+                            )
+                            + 0.025,
+                            "right_shoulder_pitch_joint": frame.joints.get(
+                                "right_shoulder_pitch_joint"
+                            )
+                            + 0.025,
+                        },
+                        frame.joints.profile,
+                    ),
+                )
+                for frame in self._state.motion.keyframes
+            ]
+            message = "Hands moved lower"
+        elif preset in duration_factors:
+            factor = duration_factors[preset]
+            frames = [
+                replace(
+                    frame,
+                    duration_ms=max(
+                        MIN_KEYFRAME_DURATION_MS,
+                        min(MAX_KEYFRAME_DURATION_MS, round(frame.duration_ms * factor)),
+                    ),
+                )
+                for frame in self._state.motion.keyframes
+            ]
+            message = "Motion slowed down" if preset == "slower" else "Motion sped up"
+        else:
+            raise ValueError(f"Unknown motion preset: {preset}")
+        self._replace_motion(replace(self._state.motion, keyframes=tuple(frames)), status=message)
+
+    def less_movement(self) -> None:
+        self.apply_preset("less_movement")
+
+    def more_movement(self) -> None:
+        self.apply_preset("more_movement")
+
+    def hands_lower(self) -> None:
+        self.apply_preset("hands_lower")
+
+    def slower_motion(self) -> None:
+        self.apply_preset("slower")
+
+    def faster_motion(self) -> None:
+        self.apply_preset("faster")
 
     def capture_selected(self, joints: JointValues) -> None:
         index = self._state.selected_keyframe

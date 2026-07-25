@@ -212,6 +212,28 @@ class DocumentControllerTests(unittest.TestCase):
         self.controller.redo()
         self.assertEqual(len(self.controller.state.motion.keyframes), 3)
 
+    def test_motion_presets_transform_joints_and_timing(self):
+        self.controller.replace_with_generated(two_frame_motion())
+        self.controller.more_movement()
+        raised = self.controller.state.motion.keyframes[1]
+        self.assertAlmostEqual(raised.joints.get("right_shoulder_pitch_joint"), -0.575)
+
+        self.controller.hands_lower()
+        lowered = self.controller.state.motion.keyframes[1]
+        self.assertAlmostEqual(lowered.joints.get("right_shoulder_pitch_joint"), -0.55)
+
+        self.controller.slower_motion()
+        self.assertEqual(self.controller.state.motion.keyframes[1].duration_ms, 345)
+        self.controller.faster_motion()
+        self.assertEqual(self.controller.state.motion.keyframes[1].duration_ms, 293)
+
+        self.controller.less_movement()
+        self.assertAlmostEqual(
+            self.controller.state.motion.keyframes[1].joints.get("right_shoulder_pitch_joint"),
+            -0.4675,
+        )
+        self.assertGreaterEqual(self.controller.state.undo_depth, 5)
+
 
 class PlaybackControllerTests(unittest.TestCase):
     def test_play_pause_seek_stop_and_completion(self):

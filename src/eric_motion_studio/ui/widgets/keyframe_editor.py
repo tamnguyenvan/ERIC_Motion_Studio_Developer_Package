@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QGridLayout,
     QGroupBox,
+    QHBoxLayout,
     QInputDialog,
     QLabel,
     QLineEdit,
@@ -12,6 +13,8 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QPushButton,
     QSpinBox,
+    QStyle,
+    QToolButton,
     QVBoxLayout,
 )
 
@@ -32,6 +35,7 @@ class KeyframeEditorWidget(QGroupBox):
     renameRequested = Signal(int, str)
     duplicateRequested = Signal()
     previewRequested = Signal()
+    presetRequested = Signal(str)
 
     def __init__(self, parent=None) -> None:
         super().__init__("Keyframes", parent)
@@ -48,35 +52,67 @@ class KeyframeEditorWidget(QGroupBox):
         self.duration_spin.setSingleStep(50)
         self.duration_spin.setSuffix(" ms")
 
-        self.add_button = QPushButton("ADD")
+        self.add_button = QToolButton()
         self.add_button.setObjectName("addKeyframeButton")
+        self.add_button.setIcon(self.style().standardIcon(QStyle.SP_FileDialogNewFolder))
+        self.add_button.setToolTip("Add keyframe")
         self.capture_button = QPushButton("CAPTURE")
         self.capture_button.setObjectName("captureKeyframeButton")
-        self.delete_button = QPushButton("DELETE")
+        self.delete_button = QToolButton()
         self.delete_button.setObjectName("deleteKeyframeButton")
-        self.up_button = QPushButton("↑")
+        self.delete_button.setIcon(self.style().standardIcon(QStyle.SP_TrashIcon))
+        self.delete_button.setToolTip("Delete selected keyframe")
+        self.up_button = QToolButton()
         self.up_button.setObjectName("moveKeyframeUpButton")
-        self.down_button = QPushButton("↓")
+        self.up_button.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
+        self.up_button.setToolTip("Move selected keyframe up")
+        self.down_button = QToolButton()
         self.down_button.setObjectName("moveKeyframeDownButton")
-        self.duplicate_button = QPushButton("DUPLICATE")
+        self.down_button.setIcon(self.style().standardIcon(QStyle.SP_ArrowDown))
+        self.down_button.setToolTip("Move selected keyframe down")
+        self.duplicate_button = QToolButton()
         self.duplicate_button.setObjectName("duplicateKeyframeButton")
+        self.duplicate_button.setIcon(self.style().standardIcon(QStyle.SP_FileDialogContentsView))
+        self.duplicate_button.setToolTip("Duplicate selected keyframe")
         self.preview_button = QPushButton("PREVIEW")
         self.preview_button.setObjectName("previewKeyframeButton")
 
         buttons = QGridLayout()
-        buttons.addWidget(self.add_button, 0, 0)
-        buttons.addWidget(self.capture_button, 0, 1)
-        buttons.addWidget(self.delete_button, 0, 2)
-        buttons.addWidget(self.up_button, 1, 0)
-        buttons.addWidget(self.down_button, 1, 1)
-        buttons.addWidget(self.duplicate_button, 1, 2)
-        buttons.addWidget(self.preview_button, 2, 0, 1, 3)
-        buttons.addWidget(QLabel("Duration"), 3, 0)
-        buttons.addWidget(self.duration_spin, 3, 1, 1, 2)
+        toolbar = QHBoxLayout()
+        for button in (
+            self.add_button,
+            self.delete_button,
+            self.up_button,
+            self.down_button,
+            self.duplicate_button,
+        ):
+            toolbar.addWidget(button)
+        toolbar.addWidget(self.capture_button)
+        buttons.addLayout(toolbar, 0, 0, 1, 3)
+        buttons.addWidget(self.preview_button, 1, 0, 1, 3)
+        buttons.addWidget(QLabel("Duration"), 2, 0)
+        buttons.addWidget(self.duration_spin, 2, 1, 1, 2)
+
+        presets = QHBoxLayout()
+        for label, preset in (
+            ("Less movement", "less_movement"),
+            ("More movement", "more_movement"),
+            ("Hands lower", "hands_lower"),
+            ("Slower", "slower"),
+            ("Faster", "faster"),
+        ):
+            button = QPushButton(label)
+            button.setObjectName(f"{preset}PresetButton")
+            button.setToolTip(f"Apply preset: {label}")
+            button.clicked.connect(
+                lambda _checked=False, value=preset: self.presetRequested.emit(value)
+            )
+            presets.addWidget(button)
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.keyframe_list, 1)
         layout.addLayout(buttons)
+        layout.addLayout(presets)
 
         self.keyframe_list.currentRowChanged.connect(self.selectionChanged)
         self.keyframe_list.itemDoubleClicked.connect(self._begin_rename)

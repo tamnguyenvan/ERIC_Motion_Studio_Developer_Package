@@ -256,6 +256,7 @@ class MotionStudioWindow(QMainWindow):
         self.keyframe_widget.renameRequested.connect(self._rename_keyframe)
         self.keyframe_widget.duplicateRequested.connect(self.documents.duplicate_selected)
         self.keyframe_widget.previewRequested.connect(self._preview_selected)
+        self.keyframe_widget.presetRequested.connect(self.documents.apply_preset)
         self.keyframe_widget.deleteRequested.connect(self.documents.delete_selected)
         self.keyframe_widget.moveRequested.connect(self.documents.move_selected)
         self.keyframe_widget.durationChanged.connect(self.documents.set_keyframe_duration)
