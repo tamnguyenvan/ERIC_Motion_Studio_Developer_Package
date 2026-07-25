@@ -57,6 +57,7 @@ class DocumentState:
     motion: Motion
     path: Path | None = None
     dirty: bool = False
+    editable: bool = True
     selected_keyframe: int = 0
     undo_depth: int = 0
     redo_depth: int = 0
@@ -108,6 +109,9 @@ class DocumentController:
         selected_keyframe: int | None = None,
         status: str,
     ) -> None:
+        if not self._state.editable:
+            self.report_status("Built-in motions are read-only; duplicate to edit")
+            return
         self._undo.append(self._state.motion)
         self._redo.clear()
         selection = (
@@ -146,6 +150,9 @@ class DocumentController:
         return True
 
     def save(self, path: Path | None = None) -> bool:
+        if not self._state.editable:
+            self.report_status("Built-in motions are read-only; duplicate to save")
+            return False
         target = path or self._state.path
         if target is None:
             self.report_status("Save path required")
@@ -374,19 +381,24 @@ class DocumentController:
             status="Keyframe reordered",
         )
 
-    def replace_with_generated(self, motion: Motion) -> None:
-        self._replace_motion(
-            motion,
+    def load_generated_motion(self, motion: Motion) -> None:
+        self._undo.clear()
+        self._redo.clear()
+        self._saved_motion = motion
+        self._state = DocumentState(
+            motion=motion,
+            editable=True,
             selected_keyframe=0,
-            status=f"Gesture compiled: {motion.name}",
         )
+        self._publish()
+        self.report_status(f"Gesture activated: {motion.name}")
 
     def load_library_motion(
         self,
         motion: Motion,
         *,
         path: Path | None,
-        editable_copy: bool,
+        editable: bool,
     ) -> None:
         self._undo.clear()
         self._redo.clear()
@@ -394,18 +406,18 @@ class DocumentController:
         self._state = DocumentState(
             motion=motion,
             path=path,
-            dirty=editable_copy,
+            editable=editable,
             selected_keyframe=0,
         )
         self._publish()
         self.report_status(
-            f"Editable built-in copy loaded: {motion.name}"
-            if editable_copy
-            else f"Library motion opened: {motion.name}"
+            f"Custom motion activated: {motion.name}"
+            if editable
+            else f"Built-in motion activated: {motion.name}"
         )
 
     def undo(self) -> None:
-        if not self._undo:
+        if not self._state.editable or not self._undo:
             return
         previous = self._undo.pop()
         self._redo.append(self._state.motion)
@@ -422,7 +434,7 @@ class DocumentController:
         self.report_status("Undo")
 
     def redo(self) -> None:
-        if not self._redo:
+        if not self._state.editable or not self._redo:
             return
         next_motion = self._redo.pop()
         self._undo.append(self._state.motion)
@@ -461,17 +473,17 @@ class GestureAuthoringController:
         self.service = service
         self.documents = documents
 
-    def compile_and_apply(self, prompt: str) -> bool:
+    def activate_command(self, prompt: str) -> bool:
         clean_prompt = prompt.strip()
         if not clean_prompt:
-            self.documents.report_status("Gesture prompt is empty")
+            self.documents.report_status("Gesture command is empty")
             return False
         result = self.service.compile(clean_prompt)
         if not result.succeeded or result.motion is None:
             message = result.error or result.resolution.message or "Compilation failed"
-            self.documents.report_status(f"Gesture compilation failed: {message}")
+            self.documents.report_status(f"Gesture command failed: {message}")
             return False
-        self.documents.replace_with_generated(result.motion)
+        self.documents.load_generated_motion(result.motion)
         LOGGER.info(
             "motion_created_from_description",
             extra={

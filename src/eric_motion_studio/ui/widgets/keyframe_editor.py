@@ -40,6 +40,7 @@ class KeyframeEditorWidget(QGroupBox):
     def __init__(self, parent=None) -> None:
         super().__init__("Keyframes", parent)
         self.setObjectName("keyframeEditorPanel")
+        self._editable = True
         self.keyframe_list = QListWidget()
         self.keyframe_list.setObjectName("keyframeList")
         self.keyframe_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -102,6 +103,7 @@ class KeyframeEditorWidget(QGroupBox):
         buttons.addWidget(self.duration_spin, 3, 1, 1, 2)
 
         presets = QHBoxLayout()
+        self.preset_buttons: list[QPushButton] = []
         for label, preset in (
             ("Less movement", "less_movement"),
             ("More movement", "more_movement"),
@@ -115,6 +117,7 @@ class KeyframeEditorWidget(QGroupBox):
             button.clicked.connect(
                 lambda _checked=False, value=preset: self.presetRequested.emit(value)
             )
+            self.preset_buttons.append(button)
             presets.addWidget(button)
 
         layout = QVBoxLayout(self)
@@ -146,14 +149,24 @@ class KeyframeEditorWidget(QGroupBox):
             self.keyframe_list.addItem(item)
         self.keyframe_list.setCurrentRow(selected_index)
         self.duration_spin.setValue(motion.keyframes[selected_index].duration_ms)
-        self.delete_button.setEnabled(len(motion.keyframes) > 1)
-        self.up_button.setEnabled(selected_index > 0)
-        self.down_button.setEnabled(selected_index < len(motion.keyframes) - 1)
-        self.duplicate_button.setEnabled(bool(motion.keyframes))
+        self.add_button.setEnabled(self._editable)
+        self.capture_button.setEnabled(self._editable)
+        self.delete_button.setEnabled(self._editable and len(motion.keyframes) > 1)
+        self.up_button.setEnabled(self._editable and selected_index > 0)
+        self.down_button.setEnabled(self._editable and selected_index < len(motion.keyframes) - 1)
+        self.duplicate_button.setEnabled(self._editable and bool(motion.keyframes))
         self.preview_button.setEnabled(bool(motion.keyframes))
+        self.duration_spin.setEnabled(self._editable)
+        for button in self.preset_buttons:
+            button.setEnabled(self._editable)
         del blockers
 
+    def set_editable(self, editable: bool) -> None:
+        self._editable = editable
+
     def _begin_rename(self, item: QListWidgetItem) -> None:
+        if not self._editable:
+            return
         row = self.keyframe_list.row(item)
         original = str(item.data(Qt.UserRole) or item.text())
         name, accepted = QInputDialog.getText(

@@ -198,6 +198,9 @@ class JointEditorWidget(QGroupBox):
             spin.setValue(joints.get(name))
         del blockers
 
+    def set_motion_editable(self, editable: bool) -> None:
+        self.add_neutral_button.setEnabled(editable)
+
     def reset_defaults(self) -> None:
         """Restore the model's neutral pose and publish it as the preview pose."""
         self.set_joints(JointValues.neutral(self.profile), respect_locks=True)

@@ -33,6 +33,12 @@ normal Save command and can be duplicated or deleted. There is no draft or
 approval state. Dense trajectories are runtime output and never the canonical
 authoring source.
 
+Library selection is activation: selecting a different item resolves unsaved
+changes, stops active playback, loads the motion at its first keyframe, and
+updates the MuJoCo preview. Built-ins activate in read-only mode. Natural-language
+commands use the same switch path and produce a temporary editable motion; the
+parser and compiler remain internal services rather than separate UI actions.
+
 Supported entry points are declared in `pyproject.toml`:
 
 - `eric-motion-studio` for authoring, audits, and headless diagnostics;

@@ -60,3 +60,8 @@ class MotionMetadataWidget(QGroupBox):
         self.description_edit.setPlainText(motion.description)
         self.loop_check.setChecked(motion.loop)
         del blockers
+
+    def set_editable(self, editable: bool) -> None:
+        self.name_edit.setReadOnly(not editable)
+        self.description_edit.setReadOnly(not editable)
+        self.loop_check.setEnabled(editable)

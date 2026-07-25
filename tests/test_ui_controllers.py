@@ -181,10 +181,10 @@ class DocumentControllerTests(unittest.TestCase):
         exports = FakeExportService()
         exporter = ExportController(exports, self.controller)
 
-        self.assertTrue(authoring.compile_and_apply("wave"))
+        self.assertTrue(authoring.activate_command("wave"))
         self.assertEqual(gestures.prompts, ["wave"])
         self.assertEqual(self.controller.state.motion, generated)
-        self.assertIn("Gesture compiled", self.statuses[-1])
+        self.assertIn("Gesture activated", self.statuses[-1])
 
         path = Path("/tmp/generated.brainos-motion.json")
         self.assertTrue(exporter.export(path))
@@ -213,7 +213,7 @@ class DocumentControllerTests(unittest.TestCase):
         self.assertEqual(len(self.controller.state.motion.keyframes), 3)
 
     def test_motion_presets_transform_joints_and_timing(self):
-        self.controller.replace_with_generated(two_frame_motion())
+        self.controller.load_generated_motion(two_frame_motion())
         self.controller.more_movement()
         raised = self.controller.state.motion.keyframes[1]
         self.assertAlmostEqual(raised.joints.get("right_shoulder_pitch_joint"), -0.575)
@@ -226,13 +226,28 @@ class DocumentControllerTests(unittest.TestCase):
         self.assertEqual(self.controller.state.motion.keyframes[1].duration_ms, 345)
         self.controller.faster_motion()
         self.assertEqual(self.controller.state.motion.keyframes[1].duration_ms, 293)
-
         self.controller.less_movement()
         self.assertAlmostEqual(
             self.controller.state.motion.keyframes[1].joints.get("right_shoulder_pitch_joint"),
             -0.4675,
         )
         self.assertGreaterEqual(self.controller.state.undo_depth, 5)
+
+    def test_read_only_library_motion_rejects_edits_and_save(self):
+        builtin = two_frame_motion("Built-in")
+        self.controller.load_library_motion(
+            builtin,
+            path=None,
+            editable=False,
+        )
+
+        self.controller.rename_selected("Changed")
+
+        self.assertFalse(self.controller.state.editable)
+        self.assertEqual(self.controller.state.motion, builtin)
+        self.assertFalse(self.controller.state.dirty)
+        self.assertFalse(self.controller.save(Path("/tmp/must-not-save.json")))
+        self.assertIn("read-only", self.statuses[-1])
 
 
 class PlaybackControllerTests(unittest.TestCase):

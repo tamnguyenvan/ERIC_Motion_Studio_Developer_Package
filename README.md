@@ -94,9 +94,12 @@ Writable data is separated into `motions/`, `poses/`, `compiled/`, and
 `~/.local/share/eric-motion-studio/`; on macOS it is
 `~/Library/Application Support/ERIC Motion Studio/`.
 
-Built-ins are read-only. Duplicate one to create and immediately open a custom
-motion, then use the normal Save or Delete commands. Playback derives dense
-frames automatically; there is no approval workflow.
+Clicking a library item stops active playback and makes that motion current.
+Built-ins activate read-only; choose Duplicate to create and activate an
+editable custom copy. Custom motions use the normal Save, Duplicate, and Delete
+commands. Type a natural-language gesture command and press Enter to activate
+its generated motion. Playback derives dense frames automatically; there is no
+Open, Compile/Apply, or approval workflow.
 
 Override paths with these CLI options or matching environment variables:
 

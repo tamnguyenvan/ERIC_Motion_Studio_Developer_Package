@@ -115,19 +115,14 @@ class MotionStudioWindow(QMainWindow):
         self.exports = ExportController(self.services.exports, self.documents)
         self.playback = PlaybackController(self.services.playback)
         self._rendered_motion = None
+        self._active_library_entry_id: str | None = None
 
         self.setObjectName("motionStudioMainWindow")
         self.setWindowTitle("ERIC Motion Studio")
         self.resize(1280, 820)
 
-        definitions = getattr(
-            getattr(self.services.gestures, "compiler", None),
-            "registry",
-            None,
-        )
-        definition_items = definitions.definitions if definitions is not None else ()
         self.metadata_widget = MotionMetadataWidget()
-        self.gesture_widget = GestureLibraryWidget(definition_items)
+        self.gesture_widget = GestureLibraryWidget()
         self.gesture_widget.set_entries(self.library.entries())
         self.joint_widget = JointEditorWidget()
         self.keyframe_widget = KeyframeEditorWidget()
@@ -288,9 +283,8 @@ class MotionStudioWindow(QMainWindow):
         self.joint_widget.addNeutralKeyframeRequested.connect(self.documents.add_neutral_keyframe)
         self.joint_widget.savePoseRequested.connect(self._save_pose)
         self.joint_widget.loadPoseRequested.connect(self._load_pose)
-        self.gesture_widget.compileRequested.connect(self.gesture_authoring.compile_and_apply)
-        self.gesture_widget.gestureSelected.connect(self._select_gesture)
-        self.gesture_widget.motionLoadRequested.connect(self._load_library_motion)
+        self.gesture_widget.commandRequested.connect(self._activate_gesture_command)
+        self.gesture_widget.activationRequested.connect(self._activate_library_motion)
         self.gesture_widget.duplicateRequested.connect(self._duplicate_library_motion)
         self.gesture_widget.deleteRequested.connect(self._delete_library_motion)
         self.gesture_widget.refreshRequested.connect(self._refresh_library)
@@ -306,18 +300,26 @@ class MotionStudioWindow(QMainWindow):
     def _render_document(self, state: DocumentState) -> None:
         motion_changed = state.motion is not self._rendered_motion
         self._rendered_motion = state.motion
+        self.metadata_widget.set_editable(state.editable)
         self.metadata_widget.set_motion(state.motion)
+        self.keyframe_widget.set_editable(state.editable)
         self.keyframe_widget.set_motion(
             state.motion,
             state.selected_keyframe,
         )
+        self.joint_widget.set_motion_editable(state.editable)
         selected = state.motion.keyframes[state.selected_keyframe]
         self.joint_widget.set_joints(selected.joints)
         self.status_panel.set_dirty(state.dirty)
-        self.undo_action.setEnabled(state.undo_depth > 0)
-        self.redo_action.setEnabled(state.redo_depth > 0)
+        self.save_action.setEnabled(state.editable)
+        self.save_as_action.setEnabled(state.editable)
+        self.undo_action.setEnabled(state.editable and state.undo_depth > 0)
+        self.redo_action.setEnabled(state.editable and state.redo_depth > 0)
+        self.add_keyframe_action.setEnabled(state.editable)
+        self.duplicate_keyframe_action.setEnabled(state.editable)
         marker = " *" if state.dirty else ""
-        self.setWindowTitle(f"{state.motion.name}{marker} — ERIC Motion Studio")
+        mode = "" if state.editable else " [Built-in · Read-only]"
+        self.setWindowTitle(f"{state.motion.name}{marker}{mode} — ERIC Motion Studio")
         if motion_changed:
             self.playback.set_motion(state.motion)
 
@@ -327,14 +329,6 @@ class MotionStudioWindow(QMainWindow):
             self.timer.start()
         elif not state.playing and self.timer.isActive():
             self.timer.stop()
-
-    def _select_gesture(self, canonical_id: str) -> None:
-        try:
-            definition = self.services.gestures.compiler.registry.get(canonical_id)
-        except (AttributeError, KeyError):
-            return
-        self.gesture_widget.prompt_edit.setText(definition.aliases[0])
-        self.status_panel.set_message(f"Gesture selected: {canonical_id}")
 
     def _ensure_safe_to_replace(self) -> bool:
         state = self.documents.state
@@ -346,10 +340,27 @@ class MotionStudioWindow(QMainWindow):
             save_path = self.services.dialogs.select_save_motion(_slugify(state.motion.name))
             if save_path is None:
                 return False
-        return self.documents.resolve_unsaved(decision, save_path)
+        resolved = self.documents.resolve_unsaved(decision, save_path)
+        if resolved and decision is UnsavedDecision.SAVE:
+            self._refresh_library()
+        return resolved
+
+    def _restore_active_library_selection(self) -> None:
+        if self._active_library_entry_id is None:
+            self.gesture_widget.clear_selection()
+        else:
+            self.gesture_widget.select_entry(self._active_library_entry_id)
+
+    def _prepare_motion_switch(self) -> bool:
+        if not self._ensure_safe_to_replace():
+            self._restore_active_library_selection()
+            return False
+        if self.playback.state.playing or self.playback.state.paused:
+            self.playback.stop()
+        return True
 
     def _new_document(self) -> None:
-        if not self._ensure_safe_to_replace():
+        if not self._prepare_motion_switch():
             return
         self.documents.new_document()
         try:
@@ -360,18 +371,21 @@ class MotionStudioWindow(QMainWindow):
         self.documents.load_library_motion(
             motion,
             path=path,
-            editable_copy=False,
+            editable=True,
         )
+        self._active_library_entry_id = f"user:{path.name}"
         self._refresh_library()
-        self.gesture_widget.select_entry(f"user:{path.name}")
+        self.playback.preview_keyframe(0)
         self.status_panel.set_message(f"Custom motion created: {path.name}")
 
     def _open_document(self) -> None:
-        if not self._ensure_safe_to_replace():
+        if not self._prepare_motion_switch():
             return
         path = self.services.dialogs.select_open_motion()
-        if path is not None:
-            self.documents.open_document(path)
+        if path is not None and self.documents.open_document(path):
+            self._active_library_entry_id = None
+            self.gesture_widget.clear_selection()
+            self.playback.preview_keyframe(0)
 
     def _save_document(self, force_path: bool = False) -> bool:
         path: Path | None = None if force_path else self.documents.state.path
@@ -386,30 +400,50 @@ class MotionStudioWindow(QMainWindow):
 
     def _refresh_library(self) -> None:
         self.gesture_widget.set_entries(self.library.entries())
+        self._restore_active_library_selection()
 
-    def _load_library_motion(self, entry_id: str) -> None:
+    def _activate_library_motion(self, entry_id: str) -> None:
+        if entry_id == self._active_library_entry_id:
+            return
         entry = next(
             (item for item in self.library.entries() if item.entry_id == entry_id),
             None,
         )
-        if entry is not None and not entry.editable:
-            self._duplicate_library_motion(entry_id)
+        if entry is None:
+            self._restore_active_library_selection()
             return
-        if not self._ensure_safe_to_replace():
+        if not self._prepare_motion_switch():
             return
         try:
             motion, path = self.library.load(entry_id)
         except Exception as error:
-            self.services.dialogs.show_error("Load library motion failed", str(error))
+            self.services.dialogs.show_error("Activate motion failed", str(error))
+            self._restore_active_library_selection()
             return
         self.documents.load_library_motion(
             motion,
             path=path,
-            editable_copy=path is None,
+            editable=entry.editable,
         )
+        self._active_library_entry_id = entry_id
+        self.gesture_widget.select_entry(entry_id)
+        self.playback.preview_keyframe(0)
+
+    def _activate_gesture_command(self, prompt: str) -> None:
+        if not prompt.strip():
+            self.gesture_authoring.activate_command(prompt)
+            return
+        if not self._prepare_motion_switch():
+            return
+        if not self.gesture_authoring.activate_command(prompt):
+            self._restore_active_library_selection()
+            return
+        self._active_library_entry_id = None
+        self.gesture_widget.clear_selection()
+        self.playback.preview_keyframe(0)
 
     def _duplicate_library_motion(self, entry_id: str) -> None:
-        if not self._ensure_safe_to_replace():
+        if not self._prepare_motion_switch():
             return
         try:
             motion, path = self.library.duplicate(entry_id)
@@ -419,10 +453,11 @@ class MotionStudioWindow(QMainWindow):
         self.documents.load_library_motion(
             motion,
             path=path,
-            editable_copy=False,
+            editable=True,
         )
+        self._active_library_entry_id = f"user:{path.name}"
         self._refresh_library()
-        self.gesture_widget.select_entry(f"user:{path.name}")
+        self.playback.preview_keyframe(0)
         self.status_panel.set_message(f"Custom motion created: {path.name}")
 
     def _delete_library_motion(self, entry_id: str) -> None:
@@ -439,6 +474,7 @@ class MotionStudioWindow(QMainWindow):
             return
         if self.documents.state.path == deleted:
             self.documents.new_document()
+            self._active_library_entry_id = None
         self._refresh_library()
         self.status_panel.set_message(f"Motion deleted: {deleted.name}")
 

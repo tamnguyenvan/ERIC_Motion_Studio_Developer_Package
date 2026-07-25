@@ -225,14 +225,37 @@ class QtCriticalFlowTests(unittest.TestCase):
             0.0,
         )
 
-    def test_builtin_motion_duplicates_to_saved_custom_editable_copy(self):
-        idle = next(
-            entry for entry in self.window.library.entries() if entry.canonical_id == "idle_pose"
+    def test_click_switches_playback_to_read_only_builtin_then_duplicate_edits(self):
+        entries = self.window.library.entries()
+        idle_row, idle = next(
+            (row, entry) for row, entry in enumerate(entries) if entry.canonical_id == "idle_pose"
         )
 
-        self.window._load_library_motion(idle.entry_id)
+        QTest.mouseClick(self.window.playback_widget.play_button, Qt.LeftButton)
+        self.assertTrue(self.window.playback.state.playing)
+        self.window.gesture_widget.gesture_list.setCurrentRow(idle_row)
+        self.application.processEvents()
+
+        self.assertFalse(self.window.playback.state.playing)
+        self.assertFalse(self.window.documents.state.editable)
+        self.assertIsNone(self.window.documents.state.path)
+        self.assertFalse(self.window.save_action.isEnabled())
+        self.assertFalse(self.window.keyframe_widget.add_button.isEnabled())
+        self.assertIsNotNone(self.services.playback.last_frame)
+        self.assertFalse(hasattr(self.window.gesture_widget, "load_button"))
+        self.assertFalse(hasattr(self.window.gesture_widget, "compile_button"))
+
+        original_name = self.window.documents.state.motion.keyframes[0].name
+        self.window.documents.rename_selected("Must not change")
+        self.assertEqual(
+            self.window.documents.state.motion.keyframes[0].name,
+            original_name,
+        )
+
+        self.window._duplicate_library_motion(idle.entry_id)
         first_path = self.window.documents.state.path
         self.assertFalse(self.window.documents.state.dirty)
+        self.assertTrue(self.window.documents.state.editable)
         self.assertIsNotNone(first_path)
         self.assertEqual(first_path.parent, self.window.settings.motions_dir)
         self.assertTrue(first_path.is_file())
@@ -271,6 +294,20 @@ class QtCriticalFlowTests(unittest.TestCase):
         self.assertTrue(
             any(entry.path == path for entry in self.window.library.entries()),
         )
+
+    def test_cancelled_switch_restores_current_custom_selection(self):
+        self.window._new_document()
+        active_entry_id = self.window._active_library_entry_id
+        self.window.documents.rename_selected("Unsaved edit")
+        self.dialogs.unsaved_decision = UnsavedDecision.CANCEL
+
+        self.window.gesture_widget.gesture_list.setCurrentRow(0)
+        self.application.processEvents()
+
+        current = self.window.gesture_widget.gesture_list.currentItem()
+        self.assertEqual(str(current.data(Qt.UserRole)), active_entry_id)
+        self.assertEqual(self.window._active_library_entry_id, active_entry_id)
+        self.assertTrue(self.window.documents.state.dirty)
 
     def test_keyframe_rename_duplicate_preview_and_playback_actions(self):
         item = self.window.keyframe_widget.keyframe_list.item(0)
@@ -315,10 +352,7 @@ class QtCriticalFlowTests(unittest.TestCase):
 
     def test_gesture_playback_save_and_export_flows(self):
         self.window.gesture_widget.prompt_edit.setText("wave with your left hand")
-        QTest.mouseClick(
-            self.window.gesture_widget.compile_button,
-            Qt.LeftButton,
-        )
+        self.window.gesture_widget.prompt_edit.returnPressed.emit()
         self.application.processEvents()
 
         self.assertGreater(
@@ -326,9 +360,10 @@ class QtCriticalFlowTests(unittest.TestCase):
             3,
         )
         self.assertIn(
-            "Gesture compiled",
+            "Gesture activated",
             self.window.status_panel.status_label.text(),
         )
+        self.assertIsNone(self.window.gesture_widget.gesture_list.currentItem())
 
         QTest.mouseClick(
             self.window.playback_widget.play_button,

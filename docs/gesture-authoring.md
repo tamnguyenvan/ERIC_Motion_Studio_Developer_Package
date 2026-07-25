@@ -27,10 +27,15 @@ Generated frames are normalized, compiled, joint-limit checked, and passed
 through semantic and safety validators before they reach the editor or viewer.
 
 Every definition also appears as a read-only built-in in the Motion Library.
-Select a built-in and choose **Duplicate** to create an editable custom copy
-under `motions/`. The copy is added to the library and opened immediately.
-Use the normal **Save** command while editing. Custom motions can be opened,
-duplicated, or deleted; built-ins remain read-only. No approval step is needed.
+Click a built-in or custom entry to make it current. Switching stops active
+playback, resets to the first keyframe, and updates the preview. Built-ins are
+read-only; choose **Duplicate** to create and activate an editable custom copy
+under `motions/`. Use the normal **Save**, **Duplicate**, and **Delete** commands
+for custom motions.
+
+To use natural language, type a command and press Enter. The resolved motion
+becomes current through the same switch flow. Compilation remains internal;
+there is no Open or Compile/Apply action and no approval step.
 
 Do not manually maintain a second built-in dense gesture file. The definition,
 lexicon, and stages are the canonical built-in source.
