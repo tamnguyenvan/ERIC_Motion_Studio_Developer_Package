@@ -30,7 +30,10 @@ user data/poses/              -> searchable editable custom poses
 
 Built-ins and user motions appear in one UI library, but package resources
 remain immutable. Duplicating a built-in or custom motion immediately creates
-and opens a uniquely named custom motion. Custom motions are edited with the
+and opens a uniquely named custom motion. The Gestures and Poses panels each
+separate **Custom** and **System (Built-in)** entries. System entries are
+read-only and expose only **Make a copy**; copying immediately selects the new
+custom entry. Custom motions are edited with the
 normal Save command and can be duplicated or deleted. There is no draft or
 approval state. Dense trajectories are runtime output and never the canonical
 authoring source.

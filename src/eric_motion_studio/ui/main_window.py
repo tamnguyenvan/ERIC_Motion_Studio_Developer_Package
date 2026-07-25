@@ -317,6 +317,7 @@ class MotionStudioWindow(QMainWindow):
         self.gesture_widget.refreshRequested.connect(self._refresh_library)
         self.pose_widget.searchRequested.connect(self._search_poses)
         self.pose_widget.previewRequested.connect(self._preview_library_pose)
+        self.pose_widget.addAsKeyframeRequested.connect(self._append_pose_keyframe)
         self.pose_widget.createRequested.connect(self._create_library_pose)
         self.pose_widget.updateRequested.connect(self._update_library_pose)
         self.pose_widget.duplicateRequested.connect(self._duplicate_library_pose)
@@ -343,6 +344,7 @@ class MotionStudioWindow(QMainWindow):
             state.selected_keyframe,
         )
         self.joint_widget.set_motion_editable(state.editable)
+        self.pose_widget.set_motion_editable(state.editable)
         selected = state.motion.keyframes[state.selected_keyframe]
         self.joint_widget.set_joints(selected.joints)
         self.status_panel.set_dirty(state.dirty)
@@ -549,6 +551,25 @@ class MotionStudioWindow(QMainWindow):
         metadata = dict(pose.metadata)
         name = str(metadata.get("pose_name") or "Pose")
         self.status_panel.set_message(f"Pose applied to preview: {name}")
+
+    def _append_pose_keyframe(self, entry_id: str) -> None:
+        if not self.documents.state.editable:
+            self.status_panel.set_message(
+                "Duplicate the current built-in gesture before adding a pose keyframe"
+            )
+            return
+        try:
+            pose, _path = self.pose_library.load(entry_id)
+        except Exception as error:
+            self.services.dialogs.show_error("Add pose keyframe failed", str(error))
+            return
+        if self.playback.state.playing or self.playback.state.paused:
+            self.playback.stop()
+        self.joint_widget.set_joints(pose.joints, respect_locks=True)
+        metadata = dict(pose.metadata)
+        name = str(metadata.get("pose_name") or "Pose")
+        self.documents.add_keyframe(self.joint_widget.current_joints(), name=name)
+        self.status_panel.set_message(f"Pose keyframe added: {name}")
 
     def _create_library_pose(self, name: str) -> None:
         try:

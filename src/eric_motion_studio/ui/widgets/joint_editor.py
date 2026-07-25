@@ -39,7 +39,6 @@ class JointEditorWidget(QGroupBox):
         self.spin_boxes: dict[str, QDoubleSpinBox] = {}
         self.reset_buttons: dict[str, QToolButton] = {}
         self.lock_checkboxes: dict[str, QCheckBox] = {}
-        self._copied_pose: JointValues | None = None
         self.reset_button = QPushButton("RESET ALL TO NEUTRAL")
         self.reset_button.setObjectName("resetJointDefaultsButton")
         self.reset_button.clicked.connect(self.reset_defaults)
@@ -102,10 +101,6 @@ class JointEditorWidget(QGroupBox):
         self.return_preview_button.setObjectName("returnPreviewNeutralButton")
         self.add_neutral_button = QPushButton("ADD NEUTRAL KEYFRAME")
         self.add_neutral_button.setObjectName("addNeutralKeyframeButton")
-        self.copy_pose_button = QPushButton("COPY CURRENT POSE")
-        self.copy_pose_button.setObjectName("copyCurrentPoseButton")
-        self.apply_pose_button = QPushButton("APPLY POSE")
-        self.apply_pose_button.setObjectName("applyCopiedPoseButton")
         self.mirror_arms_button = QPushButton("MIRROR ARMS")
         self.mirror_arms_button.setObjectName("mirrorArmsButton")
         self.mirror_legs_button = QPushButton("MIRROR LEGS")
@@ -113,8 +108,6 @@ class JointEditorWidget(QGroupBox):
         preset_buttons = (
             self.return_preview_button,
             self.add_neutral_button,
-            self.copy_pose_button,
-            self.apply_pose_button,
             self.mirror_arms_button,
             self.mirror_legs_button,
         )
@@ -122,8 +115,6 @@ class JointEditorWidget(QGroupBox):
             preset_layout.addWidget(button, index // 2, index % 2)
         self.return_preview_button.clicked.connect(self.returnPreviewNeutralRequested)
         self.add_neutral_button.clicked.connect(self.addNeutralKeyframeRequested)
-        self.copy_pose_button.clicked.connect(self.copy_current_pose)
-        self.apply_pose_button.clicked.connect(self.apply_copied_pose)
         self.mirror_arms_button.clicked.connect(self.mirror_arms)
         self.mirror_legs_button.clicked.connect(self.mirror_legs)
 
@@ -206,15 +197,6 @@ class JointEditorWidget(QGroupBox):
             spin.setValue(0.0)
         self.jointsChanged.emit(self.current_joints())
 
-    def copy_current_pose(self) -> None:
-        self._copied_pose = self.current_joints()
-        LOGGER.info("pose_copied")
-
-    def apply_copied_pose(self) -> None:
-        if self._copied_pose is None:
-            return
-        self.set_joints(self._copied_pose, respect_locks=True)
-        self.jointsChanged.emit(self.current_joints())
         LOGGER.info("pose_applied", extra={"context": {"locks_applied": True}})
 
     def mirror_arms(self) -> None:

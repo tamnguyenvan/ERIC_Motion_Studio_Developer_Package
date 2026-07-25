@@ -204,13 +204,9 @@ class QtCriticalFlowTests(unittest.TestCase):
             )
         )
 
-    def test_pose_copy_apply_preview_neutral_and_file_import_export(self):
+    def test_pose_preview_neutral_and_file_import_export(self):
         spin = self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"]
         spin.setValue(-0.35)
-        QTest.mouseClick(self.window.joint_widget.copy_pose_button, Qt.LeftButton)
-        spin.setValue(0.2)
-        QTest.mouseClick(self.window.joint_widget.apply_pose_button, Qt.LeftButton)
-        self.assertAlmostEqual(spin.value(), -0.35)
 
         self.window.export_pose_action.trigger()
         self.dialogs.pose_open_path = self.dialogs.pose_path
@@ -236,8 +232,8 @@ class QtCriticalFlowTests(unittest.TestCase):
 
         self.window.pose_widget.search_edit.setText("thoughtful")
         self.application.processEvents()
-        self.assertGreater(self.window.pose_widget.pose_list.count(), 0)
-        self.window.pose_widget.pose_list.setCurrentRow(0)
+        self.assertGreater(self.window.pose_widget.system_list.count(), 0)
+        self.window.pose_widget.system_list.setCurrentRow(0)
         self.application.processEvents()
 
         self.assertFalse(self.window.playback.state.playing)
@@ -278,13 +274,16 @@ class QtCriticalFlowTests(unittest.TestCase):
 
     def test_click_switches_playback_to_read_only_builtin_then_duplicate_edits(self):
         entries = self.window.library.entries()
-        idle_row, idle = next(
-            (row, entry) for row, entry in enumerate(entries) if entry.canonical_id == "idle_pose"
+        idle = next(entry for entry in entries if entry.canonical_id == "idle_pose")
+        idle_row = next(
+            row
+            for row in range(self.window.gesture_widget.system_list.count())
+            if self.window.gesture_widget.system_list.item(row).data(Qt.UserRole) == idle.entry_id
         )
 
         QTest.mouseClick(self.window.playback_widget.play_button, Qt.LeftButton)
         self.assertTrue(self.window.playback.state.playing)
-        self.window.gesture_widget.gesture_list.setCurrentRow(idle_row)
+        self.window.gesture_widget.system_list.setCurrentRow(idle_row)
         self.application.processEvents()
 
         self.assertFalse(self.window.playback.state.playing)
@@ -352,10 +351,10 @@ class QtCriticalFlowTests(unittest.TestCase):
         self.window.documents.rename_selected("Unsaved edit")
         self.dialogs.unsaved_decision = UnsavedDecision.CANCEL
 
-        self.window.gesture_widget.gesture_list.setCurrentRow(0)
+        self.window.gesture_widget.custom_list.setCurrentRow(0)
         self.application.processEvents()
 
-        current = self.window.gesture_widget.gesture_list.currentItem()
+        current = self.window.gesture_widget.custom_list.currentItem()
         self.assertEqual(str(current.data(Qt.UserRole)), active_entry_id)
         self.assertEqual(self.window._active_library_entry_id, active_entry_id)
         self.assertTrue(self.window.documents.state.dirty)

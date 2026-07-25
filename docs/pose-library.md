@@ -5,17 +5,20 @@ dialogs in the normal workflow.
 
 ## User workflow
 
-1. Open the **Poses** tab.
+1. Open the **Poses** tab and choose **Custom** or **System (Built-in)**.
 2. Search by name, intent, alias, tag, or body region.
 3. Click a result to stop active playback and apply it to the joint editor and
    MuJoCo preview.
-4. Adjust joints if needed.
-5. Use **Capture** or **Add Keyframe** to commit the preview into the current
-   motion.
+4. System poses are read-only; use **Make a copy** to create and select an
+   editable custom pose.
+5. Adjust joints if needed. Use **Save Current**, **Update**, or **Delete** in
+   the Custom tab to manage the library.
+6. When a custom gesture is current, **Add Pose as Keyframe** appends the
+   selected pose directly to that gesture. It is disabled for built-in
+   read-only gestures.
 
-Built-ins are read-only. **Duplicate** creates a custom copy. **Save Current**
-stores the current joint preview as a custom pose. Custom poses support Update,
-Duplicate, Rename, and Delete.
+Built-ins are read-only. **Make a copy** creates a custom copy and switches to
+the Custom tab. Custom poses support Update, Duplicate, Rename, and Delete.
 
 The File menu retains **Import Pose** and **Export Current Pose** for
 portability. Those file dialogs are not required for normal library use.
@@ -89,6 +92,6 @@ joint_offsets_rad
 Existing V1 pose files without search metadata remain readable. Their filename
 is used as the display name.
 
-Applying a pose never modifies a keyframe automatically. Keyframes capture a
-snapshot of the previewed joints, so later pose-library changes cannot silently
-change an existing motion.
+Applying a pose updates only the preview. **Add Pose as Keyframe** is the
+explicit mutation action; it captures a snapshot, so later pose-library changes
+cannot silently change an existing motion.
