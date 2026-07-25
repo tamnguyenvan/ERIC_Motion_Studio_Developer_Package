@@ -11,6 +11,7 @@ from eric_motion_studio.domain import (
     Keyframe,
     Motion,
     PlaybackPlan,
+    TrajectoryFrame,
     append_keyframe,
     dense_trajectory,
     insert_keyframe,
@@ -193,6 +194,12 @@ class DocumentController:
             updated,
             selected_keyframe=index,
             status=f"Keyframe added: {frame.name}",
+        )
+
+    def add_neutral_keyframe(self) -> None:
+        self.add_keyframe(
+            JointValues.neutral(self._state.motion.keyframes[0].joints.profile),
+            name=f"Neutral {len(self._state.motion.keyframes) + 1}",
         )
 
     def capture_selected(self, joints: JointValues) -> None:
@@ -513,6 +520,18 @@ class PlaybackController:
         if not self.seek_keyframe(keyframe_index):
             return False
         self._state = replace(self._state, playing=False, paused=False)
+        self._publish()
+        return True
+
+    def preview_pose(self, joints: JointValues) -> bool:
+        try:
+            self.output.apply_frame(
+                TrajectoryFrame(timestamp=0.0, joints=joints),
+            )
+        except Exception as error:
+            self._report_output_error(error)
+            return False
+        self._state = replace(self._state, playing=False, paused=False, frame_index=0)
         self._publish()
         return True
 

@@ -7,11 +7,12 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Protocol
 
-from eric_motion_studio.domain import Motion, TrajectoryFrame
+from eric_motion_studio.domain import Motion, Pose, TrajectoryFrame
 from eric_motion_studio.gestures import CompilationResult, GestureCompiler
 from eric_motion_studio.infrastructure import (
     AnimationRepository,
     BrainOSExportRepository,
+    PoseRepository,
 )
 
 
@@ -25,6 +26,12 @@ class MotionStore(Protocol):
     def load(self, path: Path) -> Motion: ...
 
     def save(self, path: Path, motion: Motion) -> None: ...
+
+
+class PoseStore(Protocol):
+    def load(self, path: Path) -> Pose: ...
+
+    def save(self, path: Path, pose: Pose) -> None: ...
 
 
 class GestureAuthoringService(Protocol):
@@ -50,6 +57,10 @@ class DialogService(Protocol):
 
     def select_export_path(self, suggested_name: str) -> Path | None: ...
 
+    def select_open_pose(self) -> Path | None: ...
+
+    def select_save_pose(self, suggested_name: str) -> Path | None: ...
+
     def confirm_unsaved(self, motion_name: str) -> UnsavedDecision: ...
 
     def show_error(self, title: str, message: str) -> None: ...
@@ -64,6 +75,17 @@ class RepositoryMotionStore:
 
     def save(self, path: Path, motion: Motion) -> None:
         self.repository.save(path, motion)
+
+
+class RepositoryPoseStore:
+    def __init__(self, repository: PoseRepository | None = None) -> None:
+        self.repository = repository or PoseRepository()
+
+    def load(self, path: Path) -> Pose:
+        return self.repository.load(path)
+
+    def save(self, path: Path, pose: Pose) -> None:
+        self.repository.save(path, pose)
 
 
 class CompilerGestureAuthoringService:
@@ -106,3 +128,4 @@ class ApplicationServices:
     exports: MotionExportService
     playback: PlaybackOutput
     dialogs: DialogService
+    poses: PoseStore | None = None

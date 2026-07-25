@@ -42,6 +42,24 @@ class QtDialogService(DialogService):
         )
         return Path(path) if path else None
 
+    def select_open_pose(self) -> Path | None:
+        path, _filter = QFileDialog.getOpenFileName(
+            self.parent,
+            "Load ERIC pose",
+            str(self.settings.data_dir),
+            "ERIC pose (*.json);;JSON files (*.json)",
+        )
+        return Path(path) if path else None
+
+    def select_save_pose(self, suggested_name: str) -> Path | None:
+        path, _filter = QFileDialog.getSaveFileName(
+            self.parent,
+            "Save ERIC pose",
+            str(self.settings.data_dir / f"{suggested_name}.json"),
+            "ERIC pose (*.json)",
+        )
+        return Path(path) if path else None
+
     def confirm_unsaved(self, motion_name: str) -> UnsavedDecision:
         result = QMessageBox.warning(
             self.parent,

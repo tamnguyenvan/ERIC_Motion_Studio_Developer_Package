@@ -29,6 +29,8 @@ class FakeDialogs:
     def __init__(self, root: Path) -> None:
         self.open_path: Path | None = None
         self.save_path = root / "saved.json"
+        self.pose_path = root / "pose.json"
+        self.pose_open_path: Path | None = None
         self.export_path = root / "export.brainos-motion.json"
         self.unsaved_decision = UnsavedDecision.DISCARD
         self.errors: list[tuple[str, str]] = []
@@ -41,6 +43,12 @@ class FakeDialogs:
 
     def select_export_path(self, _suggested_name: str) -> Path | None:
         return self.export_path
+
+    def select_open_pose(self) -> Path | None:
+        return self.pose_open_path
+
+    def select_save_pose(self, _suggested_name: str) -> Path | None:
+        return self.pose_path
 
     def confirm_unsaved(self, _motion_name: str) -> UnsavedDecision:
         return self.unsaved_decision
@@ -168,6 +176,51 @@ class QtCriticalFlowTests(unittest.TestCase):
 
         self.assertEqual(shoulder.value(), 0.0)
         self.assertEqual(elbow.value(), -0.4)
+
+    def test_joint_presets_locks_mirroring_and_neutral_keyframe(self):
+        left = self.window.joint_widget.spin_boxes["left_shoulder_pitch_joint"]
+        right = self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"]
+        left.setValue(0.1)
+        self.window.joint_widget.lock_checkboxes["LOCK LEFT ARM"].setChecked(True)
+        self.application.processEvents()
+        self.assertFalse(left.isEnabled())
+
+        QTest.mouseClick(self.window.joint_widget.mirror_arms_button, Qt.LeftButton)
+        self.assertAlmostEqual(right.value(), 0.1)
+
+        QTest.mouseClick(self.window.joint_widget.add_neutral_button, Qt.LeftButton)
+        self.application.processEvents()
+        self.assertEqual(len(self.window.documents.state.motion.keyframes), 2)
+        self.assertTrue(
+            all(
+                value == 0.0
+                for value in self.window.documents.state.motion.keyframes[-1].joints.values
+            )
+        )
+
+    def test_pose_copy_apply_preview_neutral_and_save_load(self):
+        spin = self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"]
+        spin.setValue(-0.35)
+        QTest.mouseClick(self.window.joint_widget.copy_pose_button, Qt.LeftButton)
+        spin.setValue(0.2)
+        QTest.mouseClick(self.window.joint_widget.apply_pose_button, Qt.LeftButton)
+        self.assertAlmostEqual(spin.value(), -0.35)
+
+        QTest.mouseClick(self.window.joint_widget.save_pose_button, Qt.LeftButton)
+        self.dialogs.pose_open_path = self.dialogs.pose_path
+        spin.setValue(0.2)
+        QTest.mouseClick(self.window.joint_widget.load_pose_button, Qt.LeftButton)
+        self.application.processEvents()
+        self.assertAlmostEqual(spin.value(), -0.35)
+
+        QTest.mouseClick(
+            self.window.joint_widget.return_preview_button,
+            Qt.LeftButton,
+        )
+        self.assertEqual(
+            self.services.playback.last_frame.joints.get("right_shoulder_pitch_joint"),
+            0.0,
+        )
 
     def test_keyframe_rename_duplicate_preview_and_playback_actions(self):
         item = self.window.keyframe_widget.keyframe_list.item(0)

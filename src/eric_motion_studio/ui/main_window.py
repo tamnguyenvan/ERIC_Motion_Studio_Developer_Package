@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from eric_motion_studio.config import Settings
+from eric_motion_studio.domain import JointValues, Pose
 from eric_motion_studio.runtime import (
     ViewerPlaybackOutput,
     ViewerProcessManager,
@@ -36,6 +37,7 @@ from eric_motion_studio.ui.services import (
     CompilerGestureAuthoringService,
     RepositoryMotionExportService,
     RepositoryMotionStore,
+    RepositoryPoseStore,
     UnsavedDecision,
 )
 from eric_motion_studio.ui.widgets import (
@@ -70,6 +72,7 @@ def default_services(
         exports=RepositoryMotionExportService(),
         playback=ViewerPlaybackOutput(state_store, viewer_process),
         dialogs=QtDialogService(parent, settings),
+        poses=RepositoryPoseStore(),
     )
 
 
@@ -83,6 +86,7 @@ class MotionStudioWindow(QMainWindow):
         super().__init__(parent)
         self.settings = settings
         self.services = services or default_services(self, settings)
+        self.pose_store = self.services.poses or RepositoryPoseStore()
         self.documents = DocumentController(self.services.motions)
         self.gesture_authoring = GestureAuthoringController(
             self.services.gestures,
@@ -246,6 +250,10 @@ class MotionStudioWindow(QMainWindow):
         self.joint_widget.jointsChanged.connect(
             lambda _joints: self.status_panel.set_message("Pose preview updated")
         )
+        self.joint_widget.returnPreviewNeutralRequested.connect(self._return_preview_to_neutral)
+        self.joint_widget.addNeutralKeyframeRequested.connect(self.documents.add_neutral_keyframe)
+        self.joint_widget.savePoseRequested.connect(self._save_pose)
+        self.joint_widget.loadPoseRequested.connect(self._load_pose)
         self.gesture_widget.compileRequested.connect(self.gesture_authoring.compile_and_apply)
         self.gesture_widget.gestureSelected.connect(self._select_gesture)
 
@@ -328,6 +336,34 @@ class MotionStudioWindow(QMainWindow):
 
     def _add_keyframe(self) -> None:
         self.documents.add_keyframe(self.joint_widget.current_joints())
+
+    def _return_preview_to_neutral(self) -> None:
+        if self.playback.preview_pose(JointValues.neutral(self.joint_widget.profile)):
+            self.status_panel.set_message("Preview returned to neutral")
+
+    def _save_pose(self, joints: JointValues) -> None:
+        path = self.services.dialogs.select_save_pose("pose")
+        if path is None:
+            return
+        try:
+            self.pose_store.save(path, Pose(joints=joints))
+        except Exception as error:
+            self.services.dialogs.show_error("Save pose failed", str(error))
+            return
+        self.status_panel.set_message(f"Pose saved: {path.name}")
+
+    def _load_pose(self) -> None:
+        path = self.services.dialogs.select_open_pose()
+        if path is None:
+            return
+        try:
+            pose = self.pose_store.load(path)
+            self.joint_widget.set_joints(pose.joints, respect_locks=True)
+        except Exception as error:
+            self.services.dialogs.show_error("Load pose failed", str(error))
+            return
+        self.joint_widget.jointsChanged.emit(self.joint_widget.current_joints())
+        self.status_panel.set_message(f"Pose loaded: {path.name}")
 
     def _rename_keyframe(self, index: int, name: str) -> None:
         if index != self.documents.state.selected_keyframe:
