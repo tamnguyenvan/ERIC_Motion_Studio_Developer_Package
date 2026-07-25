@@ -3,6 +3,22 @@
 ERIC Motion Studio uses a deterministic, data-driven command framework. It does
 not use an AI model, embeddings, or an external language service.
 
+## User-extensible commands
+
+Custom gestures can be given conversational commands directly in the **Gestures
+→ Custom** tab. Select a custom motion, enter comma-separated commands in
+**Custom commands**, and choose **Save commands**. The first command is the
+primary label; the remaining commands are aliases. These commands are stored
+inside the custom motion file and are available immediately from the command
+box after refresh/restart.
+
+The UI rejects commands that collide with built-in aliases/triggers or another
+custom gesture. Built-in definitions remain read-only so the standard command
+language cannot be accidentally overridden. This UI layer intentionally maps
+phrases to complete custom motions; reusable semantic vocabulary (for example,
+adding `hoist` as a synonym for `raise`) remains maintained in the validated
+lexicon resource below.
+
 ## Resolution order
 
 Commands pass through four layers:

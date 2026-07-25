@@ -357,6 +357,23 @@ class QtCriticalFlowTests(unittest.TestCase):
             any(entry.path == path for entry in self.window.library.entries()),
         )
 
+    def test_custom_gesture_commands_are_editable_and_invokable(self):
+        builtin = next(
+            entry for entry in self.window.library.entries() if entry.canonical_id == "idle_pose"
+        )
+        self.window._duplicate_library_motion(builtin.entry_id)
+        custom_id = self.window._active_library_entry_id
+        self.window._save_custom_commands(custom_id, "take a rest, chill out")
+        custom = next(
+            entry for entry in self.window.library.entries() if entry.entry_id == custom_id
+        )
+        self.assertEqual(custom.aliases, ("chill out",))
+        self.window.gesture_widget.prompt_edit.setText("take a rest")
+        self.window.gesture_widget.prompt_edit.returnPressed.emit()
+        self.application.processEvents()
+        self.assertEqual(self.window.documents.state.path, custom.path)
+        self.assertEqual(self.window.documents.state.motion.name, custom.display_name)
+
     def test_cancelled_switch_restores_current_custom_selection(self):
         self.window._new_document()
         active_entry_id = self.window._active_library_entry_id

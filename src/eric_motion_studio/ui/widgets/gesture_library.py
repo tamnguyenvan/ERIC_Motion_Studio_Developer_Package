@@ -22,6 +22,7 @@ class GestureLibraryWidget(QGroupBox):
     duplicateRequested = Signal(str)
     deleteRequested = Signal(str)
     refreshRequested = Signal()
+    commandsSaveRequested = Signal(str, str)
 
     def __init__(self, parent=None) -> None:
         super().__init__("Motion library", parent)
@@ -37,6 +38,11 @@ class GestureLibraryWidget(QGroupBox):
         self.prompt_edit = QLineEdit()
         self.prompt_edit.setObjectName("gesturePromptEdit")
         self.prompt_edit.setPlaceholderText("Type a gesture command and press Enter…")
+        self.commands_edit = QLineEdit()
+        self.commands_edit.setObjectName("customGestureCommandsEdit")
+        self.commands_edit.setPlaceholderText("Custom commands, comma-separated")
+        self.commands_save_button = QPushButton("SAVE COMMANDS")
+        self.commands_save_button.setObjectName("saveCustomGestureCommandsButton")
         self.duplicate_button = QPushButton("DUPLICATE")
         self.duplicate_button.setObjectName("duplicateLibraryMotionButton")
         self.duplicate_button.setToolTip("Create and open an editable custom copy")
@@ -53,6 +59,10 @@ class GestureLibraryWidget(QGroupBox):
         layout.addWidget(QLabel("Click a motion to make it current"))
         layout.addWidget(self.tabs, 1)
         layout.addLayout(actions)
+        command_layout = QHBoxLayout()
+        command_layout.addWidget(self.commands_edit, 1)
+        command_layout.addWidget(self.commands_save_button)
+        layout.addLayout(command_layout)
         layout.addWidget(self.prompt_edit)
         self.prompt_edit.returnPressed.connect(
             lambda: self.commandRequested.emit(self.prompt_edit.text())
@@ -63,6 +73,7 @@ class GestureLibraryWidget(QGroupBox):
         self.duplicate_button.clicked.connect(self._request_duplicate)
         self.delete_button.clicked.connect(self._request_delete)
         self.refresh_button.clicked.connect(self.refreshRequested)
+        self.commands_save_button.clicked.connect(self._request_save_commands)
         self._update_actions(None)
 
     @staticmethod
@@ -87,13 +98,14 @@ class GestureLibraryWidget(QGroupBox):
                     item.setData(256, entry.entry_id)
                     details = [f"Origin: {entry.origin.value}"]
                     if entry.command:
-                        details.append(f"Command: {entry.command}")
+                        details.append(f"Commands: {', '.join((entry.command, *entry.aliases))}")
                     item.setToolTip("\n".join(details))
                     widget.addItem(item)
         if current:
             self.select_entry(current)
         else:
             self._update_actions(None)
+            self._set_commands(None)
 
     def select_entry(self, entry_id: str) -> None:
         entry = self._entries.get(entry_id)
@@ -106,6 +118,7 @@ class GestureLibraryWidget(QGroupBox):
                 with QSignalBlocker(widget):
                     widget.setCurrentRow(row)
                 self._update_actions(entry)
+                self._set_commands(entry)
                 return
 
     def clear_selection(self) -> None:
@@ -114,6 +127,7 @@ class GestureLibraryWidget(QGroupBox):
                 widget.clearSelection()
                 widget.setCurrentRow(-1)
         self._update_actions(None)
+        self._set_commands(None)
 
     def _current_list(self) -> QListWidget:
         return self.tabs.currentWidget()  # type: ignore[return-value]
@@ -130,6 +144,7 @@ class GestureLibraryWidget(QGroupBox):
     ) -> None:
         entry = self._entries.get(str(current.data(256))) if current is not None else None
         self._update_actions(entry)
+        self._set_commands(entry)
         if entry is not None:
             self.activationRequested.emit(entry.entry_id)
 
@@ -141,9 +156,21 @@ class GestureLibraryWidget(QGroupBox):
         if entry_id := self._selected_entry_id():
             self.deleteRequested.emit(entry_id)
 
+    def _request_save_commands(self) -> None:
+        if entry_id := self._selected_entry_id():
+            self.commandsSaveRequested.emit(entry_id, self.commands_edit.text())
+
+    def _set_commands(self, entry: MotionLibraryEntry | None) -> None:
+        commands = () if entry is None else (entry.command, *entry.aliases)
+        with QSignalBlocker(self.commands_edit):
+            self.commands_edit.setText(", ".join(command for command in commands if command))
+
     def _update_actions(self, entry: MotionLibraryEntry | None) -> None:
         self.duplicate_button.setText(
             "MAKE A COPY" if entry and entry.origin is MotionOrigin.BUILTIN else "DUPLICATE"
         )
         self.duplicate_button.setEnabled(entry is not None)
         self.delete_button.setEnabled(entry is not None and entry.origin is MotionOrigin.USER)
+        custom = entry is not None and entry.origin is MotionOrigin.USER
+        self.commands_edit.setEnabled(custom)
+        self.commands_save_button.setEnabled(custom)

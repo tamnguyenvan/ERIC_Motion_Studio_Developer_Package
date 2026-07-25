@@ -18,8 +18,10 @@ from PySide6.QtWidgets import (
 from eric_motion_studio.config import Settings
 from eric_motion_studio.domain import JointValues, Pose
 from eric_motion_studio.gestures import GestureCompiler
+from eric_motion_studio.gestures.normalization import normalize_text
 from eric_motion_studio.infrastructure import (
     MotionLibrary,
+    MotionOrigin,
     PoseLibrary,
     migrate_legacy_user_files,
 )
@@ -314,6 +316,7 @@ class MotionStudioWindow(QMainWindow):
         self.gesture_widget.activationRequested.connect(self._activate_library_motion)
         self.gesture_widget.duplicateRequested.connect(self._duplicate_library_motion)
         self.gesture_widget.deleteRequested.connect(self._delete_library_motion)
+        self.gesture_widget.commandsSaveRequested.connect(self._save_custom_commands)
         self.gesture_widget.refreshRequested.connect(self._refresh_library)
         self.pose_widget.searchRequested.connect(self._search_poses)
         self.pose_widget.previewRequested.connect(self._preview_library_pose)
@@ -473,12 +476,62 @@ class MotionStudioWindow(QMainWindow):
             return
         if not self._prepare_motion_switch():
             return
+        normalized = normalize_text(prompt)
+        custom = next(
+            (
+                entry
+                for entry in self.library.entries()
+                if entry.origin is MotionOrigin.USER
+                and normalized
+                in {normalize_text(command) for command in (entry.command, *entry.aliases)}
+            ),
+            None,
+        )
+        if custom is not None:
+            self._activate_library_motion(custom.entry_id)
+            return
         if not self.gesture_authoring.activate_command(prompt):
             self._restore_active_library_selection()
             return
         self._active_library_entry_id = None
         self.gesture_widget.clear_selection()
         self.playback.preview_keyframe(0)
+
+    def _save_custom_commands(self, entry_id: str, raw_commands: str) -> None:
+        entry = next((item for item in self.library.entries() if item.entry_id == entry_id), None)
+        if entry is None or entry.origin is not MotionOrigin.USER:
+            return
+        commands = tuple(
+            dict.fromkeys(
+                normalize_text(value) for value in raw_commands.split(",") if normalize_text(value)
+            )
+        )
+        builtin_commands = {
+            normalize_text(command)
+            for definition in self.gesture_authoring.service.compiler.registry.definitions
+            for command in (*definition.aliases, *definition.triggers)
+        }
+        other_custom = {
+            normalize_text(command)
+            for item in self.library.entries()
+            if item.entry_id != entry_id and item.origin is MotionOrigin.USER
+            for command in (item.command, *item.aliases)
+        }
+        collisions = sorted(set(commands) & (builtin_commands | other_custom))
+        if collisions:
+            self.services.dialogs.show_error(
+                "Save commands failed",
+                f"Command already in use: {', '.join(collisions)}",
+            )
+            return
+        try:
+            self.library.update_commands(entry_id, commands)
+        except Exception as error:
+            self.services.dialogs.show_error("Save commands failed", str(error))
+            return
+        self._refresh_library()
+        self.gesture_widget.select_entry(entry_id)
+        self.status_panel.set_message("Custom gesture commands saved")
 
     def _duplicate_library_motion(self, entry_id: str) -> None:
         if not self._prepare_motion_switch():

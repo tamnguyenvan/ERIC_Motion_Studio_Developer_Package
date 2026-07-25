@@ -13,6 +13,7 @@ from eric_motion_studio.infrastructure.formats import AnimationRepository
 
 LIBRARY_ORIGIN_KEY = "library_origin"
 LIBRARY_COMMAND_KEY = "library_command"
+LIBRARY_ALIASES_KEY = "library_aliases"
 LIBRARY_CANONICAL_ID_KEY = "library_canonical_id"
 _LEGACY_LIBRARY_STATUS_KEY = "library_status"
 
@@ -31,6 +32,7 @@ class MotionLibraryEntry:
     path: Path | None = None
     canonical_id: str | None = None
     command: str = ""
+    aliases: tuple[str, ...] = ()
 
 
 def motion_slug(value: str) -> str:
@@ -76,6 +78,9 @@ class MotionLibrary:
             except (OSError, ValueError):
                 continue
             metadata = dict(motion.metadata)
+            raw_aliases = metadata.get(LIBRARY_ALIASES_KEY, ())
+            if not isinstance(raw_aliases, list | tuple):
+                raw_aliases = ()
             users.append(
                 MotionLibraryEntry(
                     entry_id=f"user:{path.name}",
@@ -84,6 +89,9 @@ class MotionLibrary:
                     editable=True,
                     path=path,
                     command=str(metadata.get(LIBRARY_COMMAND_KEY, "")),
+                    aliases=tuple(
+                        str(alias).strip() for alias in raw_aliases if str(alias).strip()
+                    ),
                 )
             )
         return (*builtins, *users)
@@ -110,6 +118,23 @@ class MotionLibrary:
             return motion, None
         path = self._user_path(entry_id)
         return self.motions.load(path), path
+
+    def update_commands(self, entry_id: str, commands: tuple[str, ...]) -> tuple[Motion, Path]:
+        path = self._user_path(entry_id)
+        motion = self.motions.load(path)
+        cleaned = tuple(dict.fromkeys(command.strip() for command in commands if command.strip()))
+        updated = replace(
+            motion,
+            metadata=_metadata(
+                motion,
+                **{
+                    LIBRARY_COMMAND_KEY: cleaned[0] if cleaned else "",
+                    LIBRARY_ALIASES_KEY: list(cleaned[1:]),
+                },
+            ),
+        )
+        self.motions.save(path, updated)
+        return updated, path
 
     def save(self, motion: Motion, path: Path | None = None) -> Path:
         target = path or self._available_path(motion.name)
