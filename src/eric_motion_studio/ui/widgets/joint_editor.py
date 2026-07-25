@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from PySide6.QtCore import QSignalBlocker, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -17,6 +19,8 @@ from PySide6.QtWidgets import (
 
 from eric_motion_studio.domain import UNITREE_G1, JointValues, ModelProfile
 from eric_motion_studio.ui.icons import load_icon
+
+LOGGER = logging.getLogger("eric_motion_studio")
 
 
 class JointEditorWidget(QGroupBox):
@@ -174,6 +178,10 @@ class JointEditorWidget(QGroupBox):
 
     def _lock_changed(self, _checked: bool) -> None:
         self._update_lock_widgets()
+        LOGGER.info(
+            "joint_lock_changed",
+            extra={"context": {"locked_joints": sorted(self._locked_joints())}},
+        )
 
     def _update_lock_widgets(self) -> None:
         locked = self._locked_joints()
@@ -209,12 +217,14 @@ class JointEditorWidget(QGroupBox):
 
     def copy_current_pose(self) -> None:
         self._copied_pose = self.current_joints()
+        LOGGER.info("pose_copied")
 
     def apply_copied_pose(self) -> None:
         if self._copied_pose is None:
             return
         self.set_joints(self._copied_pose, respect_locks=True)
         self.jointsChanged.emit(self.current_joints())
+        LOGGER.info("pose_applied", extra={"context": {"locks_applied": True}})
 
     def mirror_arms(self) -> None:
         mapping = (
@@ -231,6 +241,7 @@ class JointEditorWidget(QGroupBox):
             values[right] = values[left] * sign
         self.set_joints(JointValues.from_mapping(values, self.profile), respect_locks=True)
         self.jointsChanged.emit(self.current_joints())
+        LOGGER.info("arms_mirrored")
 
     def mirror_legs(self) -> None:
         mapping = (
@@ -246,3 +257,4 @@ class JointEditorWidget(QGroupBox):
             values[right] = values[left] * sign
         self.set_joints(JointValues.from_mapping(values, self.profile), respect_locks=True)
         self.jointsChanged.emit(self.current_joints())
+        LOGGER.info("legs_mirrored")

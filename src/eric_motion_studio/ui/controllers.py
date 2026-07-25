@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -34,6 +35,7 @@ from eric_motion_studio.ui.services import (
 DocumentListener = Callable[["DocumentState"], None]
 StatusListener = Callable[[str], None]
 PlaybackListener = Callable[["PlaybackViewState"], None]
+LOGGER = logging.getLogger("eric_motion_studio")
 
 
 def new_motion(name: str = "Untitled ERIC Motion") -> Motion:
@@ -86,6 +88,7 @@ class DocumentController:
         self._status_listeners.append(listener)
 
     def report_status(self, message: str) -> None:
+        LOGGER.info("ui_status", extra={"context": {"message": message}})
         for listener in self._status_listeners:
             listener(message)
 
@@ -207,6 +210,7 @@ class DocumentController:
         )
 
     def apply_preset(self, preset: str) -> None:
+        LOGGER.info("motion_adjustment_requested", extra={"context": {"preset": preset}})
         factors = {
             "less_movement": 0.85,
             "more_movement": 1.15,
@@ -445,6 +449,15 @@ class GestureAuthoringController:
             self.documents.report_status(f"Gesture compilation failed: {message}")
             return False
         self.documents.replace_with_generated(result.motion)
+        LOGGER.info(
+            "motion_created_from_description",
+            extra={
+                "context": {
+                    "prompt": clean_prompt,
+                    "frames": len(result.motion.keyframes),
+                }
+            },
+        )
         return True
 
 
@@ -523,6 +536,16 @@ class PlaybackController:
             speed=self._state.speed,
         )
         self._publish()
+        LOGGER.info(
+            "trajectory_loaded",
+            extra={
+                "context": {
+                    "keyframes": len(motion.keyframes),
+                    "dense_frames": len(self._plan.frames),
+                    "duration_ms": motion.total_duration_ms,
+                }
+            },
+        )
 
     def play(self) -> bool:
         if self._plan is None:
@@ -556,12 +579,19 @@ class PlaybackController:
             return False
         self._state = replace(self._state, playing=True, paused=False)
         self._publish()
+        LOGGER.info(
+            "playback_started",
+            extra={"context": {"frame_index": self._state.frame_index, "speed": self._state.speed}},
+        )
         return True
 
     def pause(self) -> None:
         if self._state.playing:
             self._state = replace(self._state, playing=False, paused=True)
             self._publish()
+            LOGGER.info(
+                "playback_paused", extra={"context": {"frame_index": self._state.frame_index}}
+            )
 
     def stop(self) -> bool:
         self._elapsed = 0.0
@@ -577,6 +607,7 @@ class PlaybackController:
             frame_index=0,
         )
         self._publish()
+        LOGGER.info("playback_stopped")
         return True
 
     def set_speed(self, speed: float) -> None:
@@ -622,6 +653,7 @@ class PlaybackController:
             return False
         self._state = replace(self._state, playing=False, paused=False, frame_index=0)
         self._publish()
+        LOGGER.info("pose_preview_applied")
         return True
 
     def advance(self, elapsed_seconds: float) -> None:

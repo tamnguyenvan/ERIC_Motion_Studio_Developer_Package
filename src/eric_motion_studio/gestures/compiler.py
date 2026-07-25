@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -70,14 +71,38 @@ class GestureCompiler:
         return cls(registry, stages, default_generator_registry(), lexicon)
 
     def compile(self, command: str) -> CompilationResult:
+        logger = logging.getLogger("eric_motion_studio")
+        logger.info("motion_prompt_received", extra={"context": {"prompt": command}})
         resolution = self.resolver.resolve(command)
         if not resolution.succeeded:
+            logger.warning(
+                "motion_parse_failed",
+                extra={
+                    "context": {
+                        "prompt": command,
+                        "normalized": resolution.normalized_command,
+                        "status": resolution.status.value,
+                        "candidates": resolution.candidates,
+                        "reason": resolution.message,
+                    }
+                },
+            )
             return CompilationResult(resolution=resolution)
         assert resolution.definition is not None
         assert resolution.slots is not None
         assert resolution.semantic is not None
         try:
             generator = self.generators.get(resolution.definition.generator_id)
+            logger.info(
+                "motion_template_selected",
+                extra={
+                    "context": {
+                        "canonical_id": resolution.definition.canonical_id,
+                        "generator": resolution.definition.generator_id,
+                        "slots": repr(resolution.slots),
+                    }
+                },
+            )
             motion = generator.generate(
                 GenerationRequest(
                     command=command,
@@ -88,6 +113,15 @@ class GestureCompiler:
                 )
             )
         except (KeyError, TypeError, ValueError) as error:
+            logger.error(
+                "motion_generation_failed",
+                extra={
+                    "context": {
+                        "canonical_id": resolution.definition.canonical_id,
+                        "reason": str(error),
+                    }
+                },
+            )
             return CompilationResult(
                 resolution=resolution,
                 error=str(error),
@@ -97,6 +131,31 @@ class GestureCompiler:
             resolution.definition,
             resolution.slots,
         )
+        if not validation.passed:
+            logger.error(
+                "motion_rejected",
+                extra={
+                    "context": {
+                        "canonical_id": resolution.definition.canonical_id,
+                        "issues": [issue.code for issue in validation.issues],
+                    }
+                },
+            )
+        else:
+            logger.info(
+                "motion_generation_ok",
+                extra={
+                    "context": {
+                        "canonical_id": resolution.definition.canonical_id,
+                        "frames": len(motion.keyframes),
+                        "duration_ms": motion.total_duration_ms,
+                        "nonzero_joints": sum(
+                            any(abs(value) > 1e-6 for value in frame.joints.values)
+                            for frame in motion.keyframes
+                        ),
+                    }
+                },
+            )
         return CompilationResult(
             resolution=resolution,
             motion=motion,

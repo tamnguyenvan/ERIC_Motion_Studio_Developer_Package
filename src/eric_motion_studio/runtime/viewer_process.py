@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import shutil
 import subprocess
 import sys
@@ -128,6 +129,10 @@ class ViewerProcessManager:
             raise ViewerProcessError(
                 f"Viewer exited during startup with code {self._last_exit_code}"
             )
+        logging.getLogger("eric_motion_studio").info(
+            "mujoco_viewer_process_started",
+            extra={"context": {"pid": self._process.pid, "command": self.settings.command()}},
+        )
         return self._process.pid
 
     def assert_running(self) -> None:
@@ -152,6 +157,10 @@ class ViewerProcessManager:
         except subprocess.TimeoutExpired:
             process.kill()
             self._last_exit_code = process.wait(timeout=self.shutdown_timeout)
+        logging.getLogger("eric_motion_studio").info(
+            "mujoco_viewer_process_stopped",
+            extra={"context": {"exit_code": self._last_exit_code}},
+        )
 
 
 class ViewerPlaybackOutput:
