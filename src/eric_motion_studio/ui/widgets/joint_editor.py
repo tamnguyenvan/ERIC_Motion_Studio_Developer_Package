@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QFormLayout,
     QGroupBox,
+    QPushButton,
     QScrollArea,
     QVBoxLayout,
     QWidget,
@@ -25,6 +26,9 @@ class JointEditorWidget(QGroupBox):
         self.setObjectName("jointEditorPanel")
         self.profile = profile
         self.spin_boxes: dict[str, QDoubleSpinBox] = {}
+        self.reset_button = QPushButton("RESET DEFAULTS")
+        self.reset_button.setObjectName("resetJointDefaultsButton")
+        self.reset_button.clicked.connect(self.reset_defaults)
 
         content = QWidget()
         form = QFormLayout(content)
@@ -44,6 +48,7 @@ class JointEditorWidget(QGroupBox):
         scroll.setWidgetResizable(True)
         scroll.setWidget(content)
         layout = QVBoxLayout(self)
+        layout.addWidget(self.reset_button)
         layout.addWidget(scroll)
 
     def _emit_joints(self) -> None:
@@ -60,3 +65,8 @@ class JointEditorWidget(QGroupBox):
         for name, spin in self.spin_boxes.items():
             spin.setValue(joints.get(name))
         del blockers
+
+    def reset_defaults(self) -> None:
+        """Restore the model's neutral pose and publish it as the preview pose."""
+        self.set_joints(JointValues.neutral(self.profile))
+        self.jointsChanged.emit(self.current_joints())

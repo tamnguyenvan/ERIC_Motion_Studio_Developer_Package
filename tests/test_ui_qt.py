@@ -137,6 +137,23 @@ class QtCriticalFlowTests(unittest.TestCase):
         self.assertEqual(self.window.documents.state.motion.description, "abc")
         self.assertEqual(self.window.documents.state.undo_depth, 1)
 
+    def test_joint_editor_resets_to_default_pose(self):
+        spin = self.window.joint_widget.spin_boxes["right_shoulder_pitch_joint"]
+        spin.setValue(-0.5)
+        self.assertAlmostEqual(spin.value(), -0.5)
+
+        QTest.mouseClick(self.window.joint_widget.reset_button, Qt.LeftButton)
+        self.application.processEvents()
+
+        self.assertEqual(spin.value(), 0.0)
+        self.assertTrue(
+            all(value == 0.0 for value in self.window.joint_widget.current_joints().values)
+        )
+        self.assertEqual(
+            self.window.status_panel.status_label.text(),
+            "Pose preview updated",
+        )
+
     def test_keyframe_rename_duplicate_preview_and_playback_actions(self):
         item = self.window.keyframe_widget.keyframe_list.item(0)
         with patch(
