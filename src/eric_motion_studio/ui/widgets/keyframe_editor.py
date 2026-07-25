@@ -84,6 +84,7 @@ class KeyframeEditorWidget(QGroupBox):
 
         buttons = QGridLayout()
         toolbar = QHBoxLayout()
+        toolbar.setSpacing(2)
         toolbar.setAlignment(Qt.AlignLeft)
         for button in (
             self.add_button,
@@ -93,6 +94,7 @@ class KeyframeEditorWidget(QGroupBox):
             self.duplicate_button,
         ):
             toolbar.addWidget(button)
+        toolbar.addStretch(1)
         buttons.addLayout(toolbar, 0, 0, 1, 3)
         buttons.addWidget(self.capture_button, 1, 0, 1, 3)
         buttons.addWidget(self.preview_button, 2, 0, 1, 3)
