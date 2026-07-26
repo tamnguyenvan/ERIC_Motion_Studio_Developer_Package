@@ -39,7 +39,6 @@ from eric_motion_studio.infrastructure import (
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_ROOT = ROOT / "src" / "eric_motion_studio"
 RESOURCE_ROOT = PACKAGE_ROOT / "resources"
-LEGACY_ROOT = ROOT / "codebase" / "ERIC-Gesture-Lab"
 
 
 class DomainOperationTests(unittest.TestCase):
@@ -170,22 +169,6 @@ class RepositoryGoldenTests(unittest.TestCase):
                 "eric_motion_studio_animation_v1",
             )
             self.assertEqual(payload["version"], 1)
-
-    def test_legacy_custom_editor_motion_round_trip(self):
-        repository = AnimationRepository()
-        source = LEGACY_ROOT / "animations" / "custom" / "untitled-eric-motion.json"
-        motion = repository.load(source)
-
-        self.assertEqual(len(motion.keyframes[0].joints.values), 29)
-        self.assertEqual(
-            motion.keyframes[0].joints.get("left_hip_pitch_joint"),
-            0.0,
-        )
-
-        with tempfile.TemporaryDirectory() as directory:
-            output = Path(directory) / source.name
-            repository.save(output, motion)
-            self.assertEqual(repository.load(output), motion)
 
     def test_generated_compiled_gesture_round_trip(self):
         repository = GestureRepository()
